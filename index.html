@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#19231c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>رومانیا — قلمرو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/game.css?v=romania-raster-20261001-5">
+</head>
+<body>
+<!-- صفحه بارگذاری -->
+<div id="loadingScreen" class="loading-screen" aria-live="polite">
+  <img src="assets/ui/loading.webp" class="loading-image" alt="" onerror="this.onerror=null;this.src='assets/ui/loading.jpg'">
+  <div class="loading-vignette"></div>
+  <div class="loading-card">
+    <div class="loading-subtitle">عدالت در رقابت، لذت در پیروزی</div>
+    <div class="loading-progress"><div id="loadingProgress" class="loading-progress-fill"></div></div>
+    <div id="loadingPercent" class="loading-percent">0%</div>
+  </div>
+</div>
+
+<!-- انتخاب روش ورود -->
+<section id="entryScreen" class="entry-screen" role="dialog" aria-modal="true" aria-labelledby="entryTitle" hidden>
+  <div class="entry-card">
+    <img src="assets/ui/loading.jpg" alt="" class="entry-art">
+    <h1 id="entryTitle">به رومانیا خوش آمدید</h1>
+    <p>برای شروع، روش ورود خود را انتخاب کنید.</p>
+    <button id="continueEntry" class="entry-primary" type="button" hidden>ادامه بازی ذخیره‌شده</button>
+    <button id="guestEntry" class="entry-primary" type="button">ورود به عنوان میهمان</button>
+    <button id="accountEntry" class="entry-secondary" type="button">اتصال حساب</button>
+    <p id="entryNotice" class="entry-notice" role="status" hidden></p>
+  </div>
+</section>
+
+<main class="game-shell" aria-label="رومانیا">
+  <!-- اطلاعات بازیکن و منابع -->
+<header class="top-bar" aria-label="اطلاعات بازیکن">
+    <section class="hud-portrait">
+      <button class="portrait-button" id="profileButton" type="button" aria-label="پروفایل بازیکن">
+        <span class="portrait-frame"><img src="assets/ui/player-portrait.webp" class="portrait-image" alt="پروفایل"><span class="online-dot" aria-hidden="true"></span></span>
+      </button>
+      <div class="hud-stamina" title="استقامت"><i id="hudStaminaFill"></i><span id="hudStaminaText">100/100</span></div>
+    </section>
+    <div class="hud-main">
+      <section class="hud-resources" aria-label="منابع">
+        <div class="hud-resource"><img src="assets/resources/wood.webp" alt=""><strong id="woodValue">10k</strong></div>
+        <div class="hud-resource"><img src="assets/resources/food.webp" alt=""><strong id="foodValue">10k</strong></div>
+        <div class="hud-resource"><img src="assets/resources/stone.webp" alt=""><strong id="stoneValue">10k</strong></div>
+        <div class="hud-resource"><img src="assets/resources/iron.webp" alt=""><strong id="ironValue">10k</strong></div>
+        <div class="hud-gold"><img src="assets/resources/gold.webp" alt=""><strong id="goldValue">500</strong></div>
+      </section>
+      <section class="hud-bottom" aria-label="امکانات بازیکن">
+        <button class="hud-vip" id="vipButton" type="button"><span>VIP 1</span></button>
+        <div class="hud-power"><span class="power-icon">⚔</span><strong id="playerPower">31.6k</strong></div>
+        <button class="hud-store" id="storeButton" type="button"><span>فروشگاه</span></button>
+      </section>
+    </div>
+  </header>
+
+  <!-- نمای قلمرو و نقشه جهان -->
+<section class="territory-frame" aria-label="قلمرو">
+    <button id="eventsButton" class="world-corner-button event-button" type="button" aria-label="رویدادها"><img src="assets/icons/event.webp" alt=""><span>رویدادها</span></button>
+    <button id="shieldButton" class="world-corner-button shield-button" type="button" aria-label="شیلد"><img src="assets/icons/shield.webp" alt=""><span>شیلد</span></button>
+    <div id="territoryPerk" class="territory-perk" aria-label="مزیت فعال"></div>
+    <div id="stage"><svg id="hexSvg" viewBox="0 0 100 100" aria-hidden="true"></svg></div>
+    <div id="worldMapLayer" class="world-map-layer" aria-label="نقشه جهان" aria-hidden="true">
+      <div id="worldMapSurface" class="world-map-surface">
+        <canvas id="worldMapCanvas"></canvas>
+        <svg id="marchSvg" class="march-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+      </div>
+      <button id="myCastleButton" class="my-castle-button" type="button" aria-label="بازگشت به قلعه من"><img src="assets/buildings/castle.webp" alt=""><span>قلعه من</span></button>
+      <div class="map-coordinates" aria-live="polite">
+        <button id="mapSearchButton" type="button" aria-label="جستجوی مختصات">⌕</button>
+        <span id="mapCoordinateText">X:400 · Y:400</span>
+        <button id="mapBookmarksButton" type="button" aria-label="مختصات نشان‌شده">☆</button>
+      </div>
+    </div>
+
+    <button id="missionStatus" class="mission-status" type="button" aria-label="باز کردن ماموریت‌ها">
+      <span class="mission-status-icon"><img src="assets/icons/quest.webp" alt=""></span>
+      <span><small>ماموریت فعلی</small><strong id="missionStatusText">ساخت اولین ساختمان</strong></span>
+      <span class="mission-open-arrow">‹</span>
+      <b id="missionBadge" class="mission-badge" hidden aria-label="پاداش‌های آماده دریافت"></b>
+    </button>
+
+    <section id="marchPanel" class="march-panel" aria-label="صف لشکرکشی">
+      <button id="marchToggle" class="march-toggle" type="button" aria-label="باز و بسته کردن پنل لشکرها"><span class="march-arrow">›</span><b id="marchCount">0</b></button>
+      <div id="marchQueue" class="march-queue"></div>
+    </section>
+
+    <div id="resourceGainLayer" class="resource-gain-layer" aria-live="polite"></div>
+  </section>
+
+  <!-- منوی اصلی با ترتیب چپ به راست و متن فارسی -->
+<nav class="bottom-nav" aria-label="منوی بازی">
+    <button class="nav-item nav-disabled" type="button" data-action="heroes" disabled aria-disabled="true"><span class="nav-icon"><img src="assets/icons/hero.webp" alt=""></span><span>قهرمان‌ها</span></button>
+    <button class="nav-item" type="button" data-action="items"><span class="nav-icon"><img src="assets/icons/bag.webp" alt=""><b id="itemBadge" class="nav-badge">3</b></span><span>آیتم‌ها</span></button>
+    <button class="nav-item center" type="button" data-action="map" aria-current="false"><span class="nav-emblem"><img src="assets/icons/world-map.webp" alt=""></span><span id="mapNavLabel">نقشه</span></button>
+    <button class="nav-item" type="button" data-action="messages"><span class="nav-icon"><img src="assets/icons/mail.webp" alt=""><b id="mailBadge" class="nav-badge">+13</b></span><span>پیام‌ها</span></button>
+    <button class="nav-item" type="button" data-action="missions"><span class="nav-icon"><img src="assets/icons/quest.webp" alt=""></span><span>ماموریت‌ها</span></button>
+  </nav>
+</main>
+
+<!-- پنل‌های داخلی بازی -->
+<div id="panelLayer" class="panel-layer" aria-hidden="true">
+  <button class="panel-backdrop" type="button" data-close-panel aria-label="بستن"></button>
+  <section id="buildingPanel" class="game-panel building-panel" role="dialog" aria-modal="true">
+    <div class="panel-handle"></div><button class="panel-close" type="button" data-close-panel aria-label="بستن">×</button>
+    <div class="panel-header"><div id="buildingPanelIcon" class="panel-building-icon">♜</div><div><div class="panel-kicker">قلمرو</div><h2 id="buildingPanelTitle">ساختمان</h2><span id="buildingPanelLevel">سطح 1</span></div></div>
+    <div id="buildingPanelContent" class="panel-empty-content"></div>
+  </section>
+  <section id="genericPanel" class="game-panel generic-panel page-panel" role="dialog" aria-modal="true">
+    <div class="panel-page-topbar"><div class="panel-page-heading"><div id="genericPanelIcon" class="page-panel-icon">✦</div><div><div class="panel-kicker">رومانیا</div><h2 id="genericPanelTitle">پنل</h2></div></div><button class="panel-close page-close" type="button" data-close-panel aria-label="بستن">×</button></div>
+    <div id="genericPanelContent" class="page-panel-content"></div>
+  </section>
+  <section id="inventoryUsePanel" class="game-panel inventory-use-panel" role="dialog" aria-modal="true" aria-labelledby="inventoryUseTitle">
+    <div class="panel-handle"></div><button class="panel-close" type="button" data-close-panel aria-label="بستن">×</button>
+    <div class="use-item-head"><div id="inventoryUseIcon" class="use-item-icon"></div><div><div class="panel-kicker">استفاده از آیتم</div><h2 id="inventoryUseTitle">5k</h2><span id="inventoryUseSubtitle">چوب</span></div></div>
+    <div id="inventoryUseContent" class="inventory-use-content"></div>
+  </section>
+
+</div>
+<!-- تأیید عملیات و ورود مختصات -->
+<div id="gameDialog" class="game-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="gameDialogTitle">
+  <div class="game-dialog-card"><h2 id="gameDialogTitle"></h2><div id="gameDialogContent"></div><div id="gameDialogActions"></div></div>
+</div>
+<script src="assets/js/game.js?v=romania-raster-20261001-5" defer></script>
+</body>
+</html>
