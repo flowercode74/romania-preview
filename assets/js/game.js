@@ -1252,7 +1252,7 @@
       proposeMoveBuilding(state.moveBuildingId, cell.q, cell.r);
       return;
     }
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing) {
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing) {
       const gesture = state.gesture;
       if (gesture?.type === "pan") {
         gesture.moved += Math.hypot(event.clientX - gesture.lastX, event.clientY - gesture.lastY);
@@ -1344,7 +1344,7 @@
   }
   function zoomAt(event) {
     event.preventDefault();
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing) return;
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing) return;
     showBuildingLabels();
     const rect = stage.getBoundingClientRect();
     const sx = event.clientX - rect.left;
@@ -1548,7 +1548,7 @@
     } : null;
   }
   function selectBuilding(id, type = "building") {
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing && id !== tutorialTargetId() && id !== state.missionFocus?.id) return;
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing && id !== tutorialTargetId() && id !== state.missionFocus?.id) return;
     const building = id === "wall" ? getSelectedBuildingForId("wall") : state.buildings.find(x => x.id === id);
     if (!building) return;
     state.selectedId = id;
@@ -1663,7 +1663,7 @@
   function openBuildingPanel(mode = "upgrade") {
     const building = getSelectedBuilding();
     if (!building) return;
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing && building.id !== tutorialTargetId() && building.id !== state.missionFocus?.id) return;
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing && building.id !== tutorialTargetId() && building.id !== state.missionFocus?.id) return;
     hideBuildingActionMenu();
     const layer = document.getElementById("panelLayer");
     const panel = document.getElementById("buildingPanel");
@@ -1710,82 +1710,51 @@
 
 
 /* Source: src/js/03-army-production.js */
-  // صف‌های مستقل ساخت نیرو و درمان؛ تعداد، نوع، هزینه و پایان صف ذخیره می‌شوند.
-  const TROOPS = {
-    sword: {
-      name: "شمشیرزن",
-      power: 80,
-      seconds: 18,
-      cost: 35
-    },
-    archer: {
-      name: "کماندار",
-      power: 90,
-      seconds: 21,
-      cost: 40
-    },
-    knight: {
-      name: "شوالیه",
-      power: 120,
-      seconds: 26,
-      cost: 65
+  // Eight distinct units: four roles in each of the assault and defense branches.
+  const UNIT_ROLES = Object.freeze([
+    { id: "spear", name: "نیزه", symbol: "♜", counters: "special" },
+    { id: "bow", name: "کمان", symbol: "➶", counters: "cavalry" },
+    { id: "cavalry", name: "سوارکار", symbol: "♞", counters: "spear" },
+    { id: "special", name: "ویژه", symbol: "✦", counters: "bow" }
+  ]);
+  const TROOP_LINES = [
+    { id: "sword", role: "spear", group: "attack", name: "نیزه‌دار هجومی", attack: 32, defense: 15, health: 110, power: 80, seconds: 18, cost: 35 },
+    { id: "archer", role: "bow", group: "attack", name: "کماندار هجومی", attack: 38, defense: 12, health: 95, power: 90, seconds: 21, cost: 40 },
+    { id: "knight", role: "cavalry", group: "attack", name: "سوارکار هجومی", attack: 46, defense: 22, health: 140, power: 120, seconds: 26, cost: 65 },
+    { id: "beast", role: "special", group: "attack", name: "تبرزن هجومی", attack: 52, defense: 18, health: 125, power: 115, seconds: 25, cost: 60 },
+    { id: "guard", role: "spear", group: "defense", name: "نگهبان نیزه‌دار", attack: 20, defense: 35, health: 165, power: 80, seconds: 18, cost: 35 },
+    { id: "scout", role: "bow", group: "defense", name: "کماندار محافظ", attack: 26, defense: 29, health: 140, power: 90, seconds: 21, cost: 40 },
+    { id: "spear", role: "cavalry", group: "defense", name: "سوارکار زرهی", attack: 30, defense: 44, health: 205, power: 120, seconds: 26, cost: 65 },
+    { id: "heavy", role: "special", group: "defense", name: "نگهبان پتک‌دار", attack: 32, defense: 48, health: 195, power: 115, seconds: 25, cost: 60 }
+  ].map(t => ({ ...t, image: `assets/troops/${t.group}-${t.role}.webp` }));
+  const TROOPS = Object.fromEntries(TROOP_LINES.map(t => [t.id, { ...t, line: t.id, tier: 1, speed: t.role === "cavalry" ? 240 : t.role === "bow" ? 170 : 150, capacity: t.role === "cavalry" ? 12 : 8 }]));
+  const TRAINING_KEYS = Object.freeze(["training", "training2", "training3"]);
+  function isTrainingQueue(kind) { return TRAINING_KEYS.includes(kind); }
+  function armyPage(kind) { return isTrainingQueue(kind) ? "training" : "healing"; }
+  function hasTrainingTasks() { return TRAINING_KEYS.some(k => !!APP.army[k]); }
+  function trainingCapacity() { return 100 * Math.max(1, buildingById("barracks")?.level || 1); }
+  function legacyTroopId(id) { const base = String(id).replace(/-[23]$/, ""); return TROOPS[base] ? base : "sword"; }
+  function migrateUnitStock(stock) {
+    const result = Object.fromEntries(Object.keys(TROOPS).map(id => [id, 0]));
+    for (const [id, value] of Object.entries(stock || {})) {
+      const count = boundedInteger(value, 0, 0, 1000000);
+      result[legacyTroopId(id)] = Math.min(1000000, result[legacyTroopId(id)] + count);
     }
-  };
-  // هشت رسته؛ عکس هر رسته مشترک است و نیازی به تصویر جداگانه هر واحد نیست.
-  const TROOP_LINES = [{
-    id: "sword",
-    name: "شمشیرزنان",
-    image: "assets/enemies/swordsmen.webp"
-  }, {
-    id: "archer",
-    name: "کمانداران",
-    image: "assets/enemies/archer.webp"
-  }, {
-    id: "knight",
-    name: "سواره‌نظام",
-    image: "assets/enemies/cavalry.webp"
-  }, {
-    id: "scout",
-    name: "پیشاهنگان",
-    image: "assets/enemies/archer.webp"
-  }, {
-    id: "spear",
-    name: "نیزه‌داران",
-    image: "assets/enemies/swordsmen.webp"
-  }, {
-    id: "beast",
-    name: "جنگاوران",
-    image: "assets/enemies/viking.webp"
-  }, {
-    id: "guard",
-    name: "نگهبانان",
-    image: "assets/enemies/swordsmen.webp"
-  }, {
-    id: "heavy",
-    name: "سنگین‌نظام",
-    image: "assets/enemies/viking.webp"
-  }];
-  for (const [index, line] of TROOP_LINES.entries()) for (let tier = 1; tier <= 3; tier++) {
-    const id = tier === 1 ? line.id : `${line.id}-${tier}`;
-    const base = TROOPS[line.id] || {
-      name: line.name,
-      power: 80 + index * 8,
-      seconds: 18 + index,
-      cost: 35 + index * 4
-    };
-    TROOPS[id] = {
-      ...base,
-      line: line.id,
-      tier,
-      name: tier === 1 ? base.name : `${line.name} ${tier === 2 ? "کارآزموده" : "نخبه"}`,
-      power: Math.round(base.power * tier * 1.25 ** (tier - 1)),
-      seconds: Math.round(base.seconds * (1 + .25 * (tier - 1))),
-      cost: Math.round(base.cost * tier ** 1.6),
-      health: Math.round((100 + index * 12) * tier ** 1.4),
-      attack: Math.round((20 + index * 3) * tier ** 1.4),
-      defense: Math.round((15 + index * 4) * tier ** 1.4),
-      image: line.image
-    };
+    return result;
+  }
+  function troopCounterMultiplier(role, defenderRole) {
+    if (UNIT_ROLES.find(r => r.id === role)?.counters === defenderRole) return 1.25;
+    if (UNIT_ROLES.find(r => r.id === defenderRole)?.counters === role) return .8;
+    return 1;
+  }
+  function armyCounterMultiplier(units, defenderRole) {
+    let total = 0, effective = 0;
+    for (const [id, count] of Object.entries(units || {})) {
+      const t = TROOPS[legacyTroopId(id)];
+      const power = t.power * Math.max(0, count || 0);
+      total += power; effective += power * troopCounterMultiplier(t.role, defenderRole);
+    }
+    return total ? effective / total : 1;
   }
   // ترکیب لشکر از موجودی واقعی رزرو می‌شود؛ نیروی اعزامی دوباره قابل مصرف نیست.
   function reserveTroops(count) {
@@ -1810,15 +1779,15 @@
     return Math.round(500 + 44500 * Math.pow(Math.max(0, (buildingById("camp").level - 1) / 19), 1.25));
   }
   function startArmyTask(kind) {
-    if (!["training", "healing"].includes(kind) || APP.army[kind]) return;
-    const building = buildingById(kind === "training" ? "barracks" : "hospital");
+    if (![...TRAINING_KEYS, "healing"].includes(kind) || APP.army[kind]) return;
+    const building = buildingById(isTrainingQueue(kind) ? "barracks" : "hospital");
     if (!building?.level) return showBuildNotice("ابتدا ساختمان را بسازید.");
     const requested = document.getElementById("armyType")?.value;
     const type = TROOPS[requested] ? requested : "sword",
       unit = TROOPS[type];
     let count = Math.floor(Number(document.getElementById("armyCount")?.value || 100));
-    if (!Number.isFinite(count) || count < 1 || count > (kind === "training" ? 10000 : 1000000)) return showBuildNotice("تعداد معتبر از ۱ تا ۱۰۰۰۰ وارد کنید.");
-    if (kind === "training" && !troopUnlocked(type)) return showBuildNotice("ابتدا این نیرو را پژوهش کنید.");
+    if (!Number.isFinite(count) || count < 1 || count > (isTrainingQueue(kind) ? trainingCapacity() : 1000000)) return showBuildNotice("تعداد انتخاب‌شده از ظرفیت این صف بیشتر است.");
+    if (isTrainingQueue(kind) && !troopUnlocked(type)) return showBuildNotice("ابتدا این نیرو را پژوهش کنید.");
     let units = null;
     if (kind === "healing") {
       const stock = woundedStock();
@@ -1831,16 +1800,16 @@
       if (count > 1000000) return showBuildNotice("تعداد مجروحان معتبر نیست.");
     }
     if (!count) return showBuildNotice("نیروی مجروح ندارید.");
-    const cost = count * (kind === "training" ? unit.cost : 12);
-    if (APP.resources.food < cost || kind === "training" && APP.resources.iron < cost) return showBuildNotice("منابع کافی نیست.");
+    const cost = count * (isTrainingQueue(kind) ? unit.cost : 12);
+    if (APP.resources.food < cost || isTrainingQueue(kind) && APP.resources.iron < cost) return showBuildNotice("منابع کافی نیست.");
     APP.resources.food -= cost;
-    if (kind === "training") APP.resources.iron -= cost;else {
+    if (isTrainingQueue(kind)) APP.resources.iron -= cost;else {
       APP.army.wounded -= count;
       for (const [id, n] of Object.entries(units)) APP.army.woundedUnits[id] -= n;
     }
     document.body.classList.toggle("tutorial-working", APP.tutorial.active);
     hideTutorialCard();
-    const duration = Math.round(count * (kind === "training" ? unit.seconds : 6) * 1000 / (1 + (building.level - 1) * .04));
+    const duration = Math.round(count * (isTrainingQueue(kind) ? unit.seconds : 6) * 1000 / (1 + (building.level - 1) * .04));
     APP.army[kind] = {
       count,
       type,
@@ -1852,12 +1821,14 @@
     };
     updateTopHud();
     saveGameProgress();
-    kind === "training" ? openTraining() : openHealing();
+    if (isTrainingQueue(kind)) trainingSlot = TRAINING_KEYS.indexOf(kind);
+    isTrainingQueue(kind) ? openTraining() : openHealing();
   }
   async function speedArmy(kind, itemId) {
     const task = APP.army[kind],
       item = INVENTORY.find(i => i.id === itemId);
-    if (!task) return;
+    if (!task || ![...TRAINING_KEYS, "healing"].includes(kind)) return;
+    if (itemId && (!item || !["universal", isTrainingQueue(kind) ? "troop" : "heal"].includes(item.family))) return showBuildNotice("این آیتم برای این صف قابل استفاده نیست.");
     const gold = instantGold(task.endsAt - Date.now());
     if (itemId ? !item?.count : APP.resources.gold < gold) return showBuildNotice("موجودی کافی نیست.");
     if (!(await gameConfirm(itemId ? `استفاده از ${item.name}؟` : `اتمام آنی با ${gold} سکه؟`))) return;
@@ -1865,7 +1836,7 @@
     if (itemId) {
       item.count--;
       task.endsAt = Math.max(Date.now(), task.endsAt - item.value);
-      APP.missions[kind === "training" ? "troopSpeedUsed" : "healSpeedUsed"] += item.value / 60000;
+      APP.missions[isTrainingQueue(kind) ? "troopSpeedUsed" : "healSpeedUsed"] += item.value / 60000;
     } else {
       APP.resources.gold -= gold;
       task.endsAt = Date.now();
@@ -1874,17 +1845,19 @@
     saveGameProgress();
     updateTopHud();
     // Completion can advance the tutorial to another facility or the UI tour.
-    if (APP.army[kind] === task && APP.openPage === kind) kind === "training" ? openTraining() : openHealing();
+    if (APP.army[kind] === task && APP.openPage === armyPage(kind)) isTrainingQueue(kind) ? openTraining() : openHealing();
   }
   function tickArmy() {
     ensureMissionDay();
-    for (const [kind, field] of [["training", "trained"], ["healing", "healed"]]) {
+    for (const [kind, field] of [...TRAINING_KEYS.map(k => [k, "trained"]), ["healing", "healed"]]) {
       const task = APP.army[kind];
       if (!task) continue;
       if (task.endsAt > Date.now()) {
         const time = document.querySelector(`[data-army-timer="${kind}"]`),
           progress = document.querySelector(`[data-army-progress="${kind}"]`);
         if (time) time.textContent = formatDuration(task.endsAt - Date.now());
+        const goldButton = document.querySelector(`[data-army-gold="${kind}"]`);
+        if (goldButton) goldButton.textContent = `اتمام · ${instantGold(task.endsAt - Date.now())} سکه`;
         if (progress) progress.value = Math.max(0, (task.duration || 1) - (task.endsAt - Date.now()));
         continue;
       }
@@ -1899,9 +1872,9 @@
       APP.army.troops += task.count;
       APP.missions[field] += task.count;
       APP.army[kind] = null;
-      if (APP.openPage === kind) kind === "training" ? openTraining() : openHealing();
-      APP.army[kind === "training" ? "totalTrained" : "totalHealed"] = (APP.army[kind === "training" ? "totalTrained" : "totalHealed"] || 0) + task.count;
-      if (APP.tutorial.active && APP.tutorial.phase === `army-${kind}`) finishTutorial();
+      if (APP.openPage === armyPage(kind)) isTrainingQueue(kind) ? openTraining() : openHealing();
+      APP.army[isTrainingQueue(kind) ? "totalTrained" : "totalHealed"] = (APP.army[isTrainingQueue(kind) ? "totalTrained" : "totalHealed"] || 0) + task.count;
+      if (APP.tutorial.active && APP.tutorial.phase === `army-${armyPage(kind)}`) finishTutorial();
       updatePower();
       saveGameProgress();
       updateMissionStatus();
@@ -2129,6 +2102,8 @@
       troops: 0,
       wounded: 0,
       training: null,
+      training2: null,
+      training3: null,
       healing: null
     },
     accountCreatedAt: Date.now(),
@@ -2924,7 +2899,7 @@
       if (validObject(saved.research)) {
         APP.research.level = boundedInteger(saved.research.level, 0, 0, 20);
         APP.research.lines = Object.fromEntries(TROOP_LINES.map(line => [line.id, {
-          unlocked: saved.research.lines?.[line.id]?.unlocked === true || line.id === "sword",
+          unlocked: saved.research.lines?.[line.id]?.unlocked === true || ["sword", "guard"].includes(line.id),
           attack: boundedInteger(saved.research.lines?.[line.id]?.attack, 0, 0, 20),
           defense: boundedInteger(saved.research.lines?.[line.id]?.defense, 0, 0, 20),
           health: boundedInteger(saved.research.lines?.[line.id]?.health, 0, 0, 20),
@@ -2955,6 +2930,7 @@
       if (Array.isArray(saved.marches)) APP.marches = saved.marches.slice(0, WORLD.marchSlots).filter(m => validObject(m) && ["attack", "spy", "camp", "reinforce"].includes(m.type) && ["outbound", "waiting", "returning"].includes(m.phase) && validMapPoint(m.origin) && validMapPoint(m.target) && Array.isArray(m.route) && m.route.length > 0 && m.route.length <= 30000 && m.route.every((p, i) => validMapPoint(p) && (!i || mapDistance(p, m.route[i - 1]) === 1 || i === m.route.length - 1 && mapDistance(p, m.route[i - 1]) === 0 && Number.isFinite(p.wx) && Number.isFinite(p.wy)) && (p.wx === undefined || Number.isFinite(p.wx) && Number.isFinite(p.wy) && Math.hypot(p.wx - mapCenter(p.q, p.r)[0], p.wy - mapCenter(p.q, p.r)[1]) <= 18)) && [m.startedAt, m.arriveAt, m.travelMs, m.returnAt].every(Number.isFinite)).map(m => ({
         ...m,
         id: String(m.id),
+        unitCounts: m.unitCounts ? migrateUnitStock(m.unitCounts) : undefined,
         name: String(m.name)
       }));
       if (Array.isArray(saved.buildings)) saved.buildings.forEach(item => {
@@ -3015,13 +2991,15 @@
         APP.army.practiceWounded = saved.army.practiceWounded === true;
         APP.army.troops = boundedInteger(saved.army.troops, 0, 0, 1_000_000);
         APP.army.wounded = boundedInteger(saved.army.wounded, 0, 0, 1_000_000);
-        for (const kind of ["training", "healing"]) if (validObject(saved.army[kind])) {
+        for (const kind of [...TRAINING_KEYS, "healing"]) {
+          APP.army[kind] = null;
+          if (!validObject(saved.army[kind])) continue;
           const value = saved.army[kind];
           APP.army[kind] = {
-            count: boundedInteger(value.count, 0, 1, 10000),
-            type: TROOPS[value.type] ? value.type : "sword",
+            count: boundedInteger(value.count, 0, 1, 1000000),
+            type: legacyTroopId(value.type),
             cost: boundedInteger(value.cost, 0, 0, 100000000),
-            units: validObject(value.units) ? Object.fromEntries(Object.keys(TROOPS).map(id => [id, boundedInteger(value.units[id], 0, 0, 10000)])) : null,
+            units: validObject(value.units) ? migrateUnitStock(value.units) : null,
             startedAt: boundedInteger(value.startedAt, Date.now(), 0, Date.now()),
             duration: boundedInteger(value.duration, 3600000, 1, Number.MAX_SAFE_INTEGER),
             endsAt: boundedInteger(value.endsAt, 0, 0, Number.MAX_SAFE_INTEGER)
@@ -3029,9 +3007,9 @@
           if (!APP.army[kind].count) APP.army[kind] = null;
         }
       }
-      if (validObject(saved.army?.units)) APP.army.units = Object.fromEntries(Object.keys(TROOPS).map(id => [id, boundedInteger(saved.army.units[id], 0, 0, 1000000)]));
+      if (validObject(saved.army?.units)) APP.army.units = migrateUnitStock(saved.army.units);
       if (!saved.research?.lines) for (const id of ["archer", "knight"]) if ((APP.army.units?.[id] || 0) > 0 || saved.army?.training?.type === id) researchLine(id).unlocked = true;
-      APP.army.woundedUnits = validObject(saved.army?.woundedUnits) ? Object.fromEntries(Object.keys(TROOPS).map(id => [id, boundedInteger(saved.army.woundedUnits[id], 0, 0, 1000000)])) : {
+      APP.army.woundedUnits = validObject(saved.army?.woundedUnits) ? migrateUnitStock(saved.army.woundedUnits) : {
         sword: APP.army.wounded
       };
       APP.preferences = {
@@ -3088,7 +3066,7 @@
     }
   }
   function startBuildingTask(id) {
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing && id !== tutorialTargetId()) return;
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing && id !== tutorialTargetId()) return;
     const building = buildingById(id);
     if (!building || building.level >= 20 || APP.worker.task?.id === id || APP.worker2.task?.id === id) return;
     if (APP.worker.task) {
@@ -3144,11 +3122,11 @@
     if (enemiesReady) respawnEnemies();
     const now = Date.now();
     const task = APP.worker?.task;
-    document.body.classList.toggle("tutorial-working", APP.tutorial.active && !!(APP.worker.task || APP.army.training || APP.army.healing));
+    document.body.classList.toggle("tutorial-working", APP.tutorial.active && !!(APP.worker.task || hasTrainingTasks() || APP.army.healing));
     tickCollectors(now);
     if (!task) return;
     const remaining = APP.worker.endsAt - now;
-    document.body.classList.toggle("tutorial-working", APP.tutorial.active && (remaining > 0 || APP.army.training || APP.army.healing));
+    document.body.classList.toggle("tutorial-working", APP.tutorial.active && (remaining > 0 || hasTrainingTasks() || APP.army.healing));
     if (remaining > 0) {
       updateBuildingProgress();
       const panel = document.getElementById("marchQueue");
@@ -3597,7 +3575,7 @@
       APP.tutorial.step++;
       changed = true;
     }
-    if (!APP.worker.task && !APP.army.training && !APP.army.healing) document.body.classList.remove("tutorial-working");
+    if (!APP.worker.task && !hasTrainingTasks() && !APP.army.healing) document.body.classList.remove("tutorial-working");
     if (APP.tutorial.step >= BUILD_ORDER.length) finishTutorial();else if (APP.worker.task?.id === tutorialTargetId()) {
       APP.tutorial.phase = "working";
       document.body.classList.add("tutorial-working");
@@ -3650,7 +3628,7 @@
       APP.army.wounded += 10;
     }
     document.getElementById("tutorialTitle").textContent = kind === "training" ? "آموزش صد سرباز" : "درمان ده مجروح تمرین";
-    setNarratorText(kind === "training" ? "در سربازخانه صد شمشیرزن آموزش دهید. نوع و تعداد نیرو را انتخاب کنید؛ در زمان انتظار می‌توانید دوربین را حرکت دهید." : "ده سرباز در تمرین دفاعی مجروح شده‌اند. در بیمارستان آن‌ها را درمان کنید.");
+    setNarratorText(kind === "training" ? "در سربازخانه صد نیزه‌دار هجومی آموزش دهید. تعداد نیرو را با اسلایدر انتخاب کنید؛ در زمان انتظار می‌توانید دوربین را حرکت دهید." : "ده سرباز در تمرین دفاعی مجروح شده‌اند. در بیمارستان آن‌ها را درمان کنید.");
     state.selectedId = kind === "training" ? "barracks" : "hospital";
     const b = buildingById(state.selectedId);
     focusBuilding(b.id);
@@ -3789,7 +3767,7 @@
       events: ["رویدادها", "✦", "mission-modal"],
       shop: ["فروشگاه", "◇", "shop-page"],
       vip: ["VIP", "VIP", "vip-modal"],
-      training: ["سربازخانه", "⚔", "military-page"],
+      training: ["سربازخانه", "⚔", "military-page training-page"],
       healing: ["بیمارستان", "✚", "military-page"],
       research: ["مرکز تحقیقات", "◈", "military-page"],
       unit: ["اطلاعات نیرو", "⚔", "military-page"],
@@ -3808,6 +3786,7 @@
     else panelIcon.textContent = data[1];
     content.onclick = null;
     content.oninput = null;
+    content.onkeydown = null;
     content.innerHTML = contentHTML;
     panel.classList.add("is-active");
     document.getElementById("panelLayer")?.classList.add("is-open");
@@ -3941,7 +3920,7 @@
       return openInventory("other");
     }
     if (item.family === "universal") {
-      const kinds = ["training", "healing"].filter(k => APP.army[k]);
+      const kinds = [...TRAINING_KEYS, "healing"].filter(k => APP.army[k]);
       if (kinds.length) return speedArmy(kinds[0], item.id);
       if (APP.worker.task) return useInventoryItem(item, 1, true);
       return showBuildNotice("صف فعالی وجود ندارد.");
@@ -3949,7 +3928,7 @@
     if (item.family === "research") return speedResearch(item.id);
     if (item.id.startsWith("march-speed-")) return showBuildNotice("لشکر در حال حرکت را انتخاب کنید و از دکمه تسریع استفاده کنید.");
     if (item.id.startsWith("teleport-")) return useTeleportItem(item);
-    const kind = item.id.startsWith("troop-speed-") ? "training" : "healing";
+    const kind = item.id.startsWith("troop-speed-") ? TRAINING_KEYS.find(k => APP.army[k]) : "healing";
     if (item.id !== "production-boost" && !APP.army[kind]) return showBuildNotice("صف مربوط به این تسریع فعال نیست.");
     if (!(await gameConfirm(`استفاده از ${item.name} تأیید می‌شود؟`))) return;
     if (!item.count || item.id !== "production-boost" && !APP.army[kind]) return;
@@ -3959,7 +3938,7 @@
       APP.missions.productionUsed++;
     } else {
       APP.army[kind].endsAt = Math.max(Date.now(), APP.army[kind].endsAt - item.value);
-      APP.missions[kind === "training" ? "troopSpeedUsed" : "healSpeedUsed"] += item.value / 60000;
+      APP.missions[isTrainingQueue(kind) ? "troopSpeedUsed" : "healSpeedUsed"] += item.value / 60000;
       tickArmy();
     }
     saveGameProgress();
@@ -4201,21 +4180,25 @@
   // دشمنان سرگردان: موقعیت پایدار، سطح بر اساس فاصله مرکز و کش منطقه‌ای برای رندر سبک.
   const ENEMY_TYPES = [{
     id: "viking",
+    role: "special",
     name: "وایکینگ",
     image: "assets/enemies/viking.webp",
     drop: "random"
   }, {
     id: "archer",
+    role: "bow",
     name: "کماندار سرگردان",
     image: "assets/enemies/archer.webp",
     drop: "troop-speed-60"
   }, {
     id: "swordmen",
+    role: "spear",
     name: "شمشیرزن سرگردان",
     image: "assets/enemies/swordsmen.webp",
     drop: "speed-60"
   }, {
     id: "cavarly",
+    role: "cavalry",
     name: "سوارنظام سرگردان",
     image: "assets/enemies/cavalry.webp",
     drop: "heal-speed-10"
@@ -4438,7 +4421,7 @@
       return false;
     }
     const req = enemyRequirement(m.enemyLevel),
-      power = m.combatPower || m.troops * 80;
+      power = (m.combatPower || m.troops * 80) * armyCounterMultiplier(m.unitCounts, ENEMY_TYPES[m.enemyType]?.role || "spear");
     if (power < req.power) {
       m.result = "شکست";
       m.lostTroops = Math.ceil(m.troops * .2);
@@ -5374,7 +5357,7 @@
               knight: 0
             };
             let losses = m.lostTroops || 0;
-            for (const [id, count] of Object.entries(m.unitCounts)) {
+            for (const [id, count] of Object.entries(migrateUnitStock(m.unitCounts))) {
               if (!TROOPS[id]) continue;
               const lost = Math.min(count, losses);
               losses -= lost;
@@ -6356,7 +6339,7 @@
       fill = document.getElementById("loadingProgress"),
       percent = document.getElementById("loadingPercent");
     if (!screen) return;
-    const urls = [...new Set(["assets/ui/loading.webp", "assets/ui/player-portrait.webp", "assets/icons/quest.webp", "assets/icons/mail.webp", "assets/icons/world-map.webp", "assets/icons/bag.webp", "assets/icons/hero.webp", ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image), ...AVATAR_SKINS.flatMap(s => [s.avatar, s.portrait])])];
+    const urls = [...new Set(["assets/ui/loading.webp", "assets/ui/player-portrait.webp", "assets/icons/quest.webp", "assets/icons/mail.webp", "assets/icons/world-map.webp", "assets/icons/bag.webp", "assets/icons/hero.webp", ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...TROOP_LINES.map(t => t.image), ...CASTLE_SKINS.map(s => s.image), ...AVATAR_SKINS.flatMap(s => [s.avatar, s.portrait])])];
     setTimeout(() => {
       createEmpireLayout();
       createWorldMap();
@@ -6442,7 +6425,7 @@
   function researchLine(id) {
     APP.research.lines ||= {};
     return APP.research.lines[id] ||= {
-      unlocked: id === "sword",
+      unlocked: id === "sword" || id === "guard",
       tier: 1,
       attack: 0,
       defense: 0,
@@ -6481,9 +6464,9 @@
     const stock = woundedStock();
     m.casualties = {};
     let left = m.lostTroops || 0;
-    for (const [id, n] of Object.entries(m.unitCounts || {
+    for (const [id, n] of Object.entries(migrateUnitStock(m.unitCounts || {
       sword: m.troops
-    })) {
+    }))) {
       const take = Math.min(left, n);
       m.casualties[id] = take;
       stock[id] = (stock[id] || 0) + take;
@@ -6509,7 +6492,7 @@
   }
   function unitCard(id, action = "unit", selected = false) {
     const t = TROOPS[id];
-    return `<button class="unit-card ${selected ? "is-selected" : ""}" data-${action}="${id}"><img src="${t.image}" alt=""><strong>${t.name}</strong><small>${action === "unit" ? formatCompact(APP.army.units?.[id] || 0) : troopUnlocked(id) ? `رده ${t.tier}` : "قفل · پژوهش لازم"}</small></button>`;
+    return `<button class="unit-card ${selected ? "is-selected" : ""}" data-${action}="${id}"><img src="${t.image}" alt=""><strong>${t.name}</strong><small>${action === "unit" ? formatCompact(APP.army.units?.[id] || 0) : troopUnlocked(id) ? t.group === "attack" ? "هجومی" : "دفاعی" : "قفل · پژوهش لازم"}</small></button>`;
   }
   function queueMarkup(kind) {
     const task = APP.army[kind];
@@ -6585,11 +6568,7 @@
       if (event.target.matches?.("[data-heal-count]")) updateHealingTotals();
     };
   }
-  function openTraining() {
-    const t = TROOPS[selectedTroop];
-    openPage("training", `<div class="military-summary"><span>نیروهای آماده <b>${formatCompact(APP.army.troops)}</b></span><span>ظرفیت لشکر <b>${formatCompact(marchCapacity())}</b></span></div><div class="line-tabs">${TROOP_LINES.map(l => `<button data-line="${l.id}" class="${selectedLine === l.id ? "is-selected" : ""}"><img src="${l.image}" alt=""><span>${l.name}</span></button>`).join("")}</div><section class="troop-hero"><img src="${t.image}" alt="${t.name}"><h2>${t.name}</h2><button data-unit="${selectedTroop}">اطلاعات نیرو</button></section><div class="unit-carousel">${Object.keys(TROOPS).filter(id => TROOPS[id].line === selectedLine).map(id => unitCard(id, "choose", id === selectedTroop)).join("")}</div>${APP.army.training ? queueMarkup("training") : `<div class="military-form"><input id="armyType" type="hidden" value="${selectedTroop}"><label>تعداد نیرو<input id="armyCount" type="number" min="1" max="10000" value="100" inputmode="numeric"></label><p>${t.cost} غذا و ${t.cost} آهن برای هر نفر · ${t.seconds} ثانیه پایه</p><button class="panel-primary-button" data-start-army="training" ${troopUnlocked(selectedTroop) ? "" : "disabled"}>${troopUnlocked(selectedTroop) ? "آغاز ساخت نیرو" : "ابتدا این واحد را پژوهش کنید"}</button></div>`}`);
-    bindMilitaryPage();
-  }
+  function openTraining() { renderTrainingPage(); }
   function openHealing() {
     const stock = woundedStock();
     openPage("healing", `<div class="military-summary"><span>مجروحان <b>${formatCompact(APP.army.wounded)}</b></span><span>در صف درمان <b>${formatCompact(APP.army.healing?.count || 0)}</b></span></div>${APP.army.healing ? queueMarkup("healing") : `<button data-heal-all class="select-all">انتخاب همه مجروحان</button><div class="heal-list">${Object.entries(stock).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<article><img src="${TROOPS[id].image}" alt=""><div><strong>${TROOPS[id].name}</strong><span>${formatCompact(n)} مجروح</span><input data-heal-count="${id}" type="number" min="0" max="${n}" value="0" inputmode="numeric"></div></article>`).join("") || '<p class="empty-page">نیروی مجروحی ندارید.</p>'}</div><div class="military-form"><p id="healingTotals">نیروهای موردنظر را انتخاب کنید.</p><button data-start-army="healing" class="panel-primary-button" ${APP.army.wounded ? "" : "disabled"}>شروع درمان</button></div>`}`);
@@ -6607,7 +6586,7 @@
   function openUnit(id) {
     const t = troopStats(id),
       stock = APP.army.units?.[id] || 0;
-    openPage("unit", `<section class="troop-hero"><img src="${t.image}" alt=""><h2>${t.name}</h2><p>${TROOP_LINES.find(l => l.id === t.line).name} · رده ${t.tier}</p></section><div class="panel-stat-grid">${Object.entries({
+    openPage("unit", `<section class="troop-hero"><img src="${t.image}" alt=""><h2>${t.name}</h2><p>${TROOP_LINES.find(l => l.id === t.line).name} · ${t.group === "attack" ? "هجومی" : "دفاعی"}</p></section><div class="panel-stat-grid">${Object.entries({
       "تعداد آماده": stock,
       "قدرت هر نفر": t.power,
       "حمله": t.attack,
@@ -6622,7 +6601,7 @@
     const line = TROOP_LINES.find(l => l.id === selectedResearchLine),
       r = researchLine(line.id),
       task = APP.research.task;
-    openPage("research", `<div class="military-summary"><span>کتیبه <b>${availableTablets()}</b></span><span>سقف دریافت <b>۲۰</b></span></div><div class="line-tabs">${TROOP_LINES.map(l => `<button data-research-line="${l.id}" class="${l.id === line.id ? "is-selected" : ""}"><img src="${l.image}" alt=""><span>${l.name}</span></button>`).join("")}</div><h2 class="tree-title">${line.name}</h2>${!r.unlocked ? `<div class="research-lock"><img src="${line.image}" alt=""><p>برای باز کردن این رسته یک کتیبه لازم است.</p><button data-unlock-line ${availableTablets() ? "" : "disabled"}>باز کردن رسته</button></div>` : `<div class="research-tree"><div class="research-units">${[1, 2, 3].map(tier => `<button class="research-node ${r.tier >= tier ? "is-unlocked" : ""}" data-research-stat="tier" ${r.tier >= tier || tier !== r.tier + 1 ? "disabled" : ""}><img src="${line.image}" alt=""><strong>رده ${tier}</strong><small>${r.tier >= tier ? "باز شده" : "پژوهش واحد"}</small></button>`).join("")}</div><div class="research-branches">${Object.entries({
+    openPage("research", `<div class="military-summary"><span>کتیبه <b>${availableTablets()}</b></span><span>سقف دریافت <b>۲۰</b></span></div><div class="line-tabs">${TROOP_LINES.map(l => `<button data-research-line="${l.id}" class="${l.id === line.id ? "is-selected" : ""}"><img src="${l.image}" alt=""><span>${l.name}</span></button>`).join("")}</div><h2 class="tree-title">${line.name}</h2>${!r.unlocked ? `<div class="research-lock"><img src="${line.image}" alt=""><p>برای باز کردن این رسته یک کتیبه لازم است.</p><button data-unlock-line ${availableTablets() ? "" : "disabled"}>باز کردن رسته</button></div>` : `<div class="research-tree"><div class="research-units">${[1, 2, 3].map(tier => `<button class="research-node ${r.tier >= tier ? "is-unlocked" : ""}" data-research-stat="tier" ${r.tier >= tier || tier !== r.tier + 1 ? "disabled" : ""}><img src="${line.image}" alt=""><strong>تخصص ${tier}</strong><small>${r.tier >= tier ? "باز شده" : "پژوهش تخصص"}</small></button>`).join("")}</div><div class="research-branches">${Object.entries({
       attack: "حمله",
       defense: "دفاع",
       health: "سلامتی"
@@ -6784,6 +6763,102 @@
   }, {
     passive: true
   });
+
+
+/* Source: src/js/12z-training-interface.js */
+  function trainingRoleIcon(role) {
+    const paths = {
+      spear: '<path d="M5 21 17 9m-3 2 3 3M17 9l-1-6 5 1-4 5Z"/>',
+      bow: '<path d="M6 3c13 3 13 15 0 18L11 12 6 3Zm-3 9h18m-4-3 4 3-4 3"/>',
+      cavalry: '<path d="M5 21h14l-2-5c2-4 1-8-2-11V2l-4 3-5 5 2 3 4-2-1 5-6 5Zm9-13h.01"/>',
+      special: '<path d="m5 21 9-9m-3-3 5 5m-5-5 4-5 5 5-4 5-5-5ZM3 4l2-2m-2 9h3m14 10v-3"/>'
+    };
+    return `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[role] || paths.spear}</svg>`;
+  }
+  let trainingGroup = "attack", trainingRole = "spear", trainingSlot = 0;
+  let trainingCount = 100, trainingOverlay = null;
+  function trainingUnit() {
+    return TROOP_LINES.find(t => t.group === trainingGroup && t.role === trainingRole) || TROOP_LINES[0];
+  }
+  function trainingLimit(unit = trainingUnit()) {
+    return Math.min(trainingCapacity(), Math.floor(APP.resources.food / unit.cost), Math.floor(APP.resources.iron / unit.cost));
+  }
+  function trainingDuration(count, unit = trainingUnit()) {
+    return Math.round(count * unit.seconds * 1000 / (1 + Math.max(0, buildingById("barracks").level - 1) * .04));
+  }
+  function trainingDialogMarkup(unit, key) {
+    if (!trainingOverlay) return "";
+    const role = UNIT_ROLES.find(r => r.id === unit.role), stats = troopStats(unit.id);
+    let body = "", title = "";
+    if (trainingOverlay === "stats") {
+      title = "آمار " + unit.name;
+      body = `<div class="training-stats">${[["قدرت", stats.power, 150], ["حمله", stats.attack, 80], ["دفاع", stats.defense, 80], ["سلامتی", stats.health, 300], ["سرعت", stats.speed, 260], ["ظرفیت حمل", stats.capacity, 15]].map(([label, value, max]) => `<article><span>${label}</span><strong>${formatCompact(value)}</strong><i><b style="width:${Math.min(100, value / max * 100)}%"></b></i></article>`).join("")}</div><p class="training-dialog-note">زمان پایه آموزش: ${unit.seconds} ثانیه · غذا و آهن: ${unit.cost} از هر منبع</p>`;
+    } else if (trainingOverlay === "counters") {
+      title = "تقابل رسته‌ها";
+      body = `<div class="counter-center"><span>${trainingRoleIcon(role.id)}</span><strong>${role.name}</strong></div><div class="counter-grid">${UNIT_ROLES.filter(r => r.id !== role.id).map(r => {const value = troopCounterMultiplier(role.id, r.id); return `<article class="${value > 1 ? "counter-strong" : value < 1 ? "counter-weak" : "counter-neutral"}"><span>${trainingRoleIcon(r.id)}</span><strong>${r.name}</strong><small>${value > 1 ? "قوی در مقابل · ۲۵٪ برتری" : value < 1 ? "ضعیف در مقابل · ۲۰٪ کاهش" : "تقابل برابر"}</small></article>`;}).join("")}</div><p class="training-dialog-note">کمان بر سوارکار، سوارکار بر نیزه، نیزه بر ویژه و ویژه بر کمان برتری دارد.<br>این تقابل‌ها برای هر دو دسته یکسان‌اند.</p>`;
+    } else if (trainingOverlay === "speed") {
+      title = "تسریع صف " + (trainingSlot + 1);
+      body = `<div class="training-speed-items">${INVENTORY.filter(i => i.count > 0 && ["troop", "universal"].includes(i.family)).map(i => `<button data-training-speed="${i.id}"><img src="${i.image}" alt=""><span>${i.name}</span><small>×${i.count}</small></button>`).join("") || '<p>آیتم تسریع در موجودی ندارید.</p>'}</div>`;
+    }
+    return `<div class="training-dialog-backdrop"><button class="training-dialog-dismiss" data-training-close aria-label="بستن پنجره جزئیات"></button><section class="training-dialog" role="dialog" aria-modal="true" aria-label="${title}"><header><h3>${title}</h3><button data-training-close aria-label="بستن جزئیات">×</button></header>${body}</section></div>`;
+  }
+  function renderTrainingPage() {
+    const unit = trainingUnit(), key = TRAINING_KEYS[trainingSlot], task = APP.army[key];
+    selectedTroop = unit.id; selectedLine = unit.id;
+    const limit = trainingLimit(unit);
+    trainingCount = Math.max(1, Math.min(trainingCount, Math.max(1, limit)));
+    const remain = Math.max(0, (task?.endsAt || 0) - Date.now());
+    const groupName = trainingGroup === "attack" ? "هجومی" : "دفاعی";
+    openPage("training", `<section class="training-screen"><img class="training-art" src="${unit.image}" alt="${unit.name}"><div class="training-vignette"></div><div class="training-title"><small>سربازخانه · سطح ${buildingById("barracks").level}</small><h2>${unit.name}</h2><span>${groupName} · ${formatCompact(APP.army.units?.[unit.id] || 0)} نیروی آماده</span></div><aside class="training-info-buttons"><button data-training-panel="counters" aria-label="دیدن تقابل رسته‌ها">⇄</button><button data-training-panel="stats" aria-label="دیدن آمار نیرو">i</button></aside><div class="training-controls"><nav class="training-groups" aria-label="دسته نیرو"><button data-training-group="attack" class="${trainingGroup === "attack" ? "is-selected" : ""}">هجومی</button><button data-training-group="defense" class="${trainingGroup === "defense" ? "is-selected" : ""}">دفاعی</button></nav><nav class="training-roles" aria-label="رسته نیرو">${UNIT_ROLES.map(r => `<button data-training-role="${r.id}" class="${trainingRole === r.id ? "is-selected" : ""}"><b>${trainingRoleIcon(r.id)}</b><span>${r.name}</span></button>`).join("")}</nav><div class="training-unit-cards">${TROOP_LINES.filter(t => t.group === trainingGroup).map(t => `<button data-training-unit="${t.id}" class="${unit.id === t.id ? "is-selected" : ""}"><img src="${t.image}" alt=""><span>${t.name}</span><small>${formatCompact(APP.army.units?.[t.id] || 0)}${troopUnlocked(t.id) ? "" : " · قفل پژوهش"}</small></button>`).join("")}</div><nav class="training-slots" aria-label="صف‌های آموزش">${TRAINING_KEYS.map((k, i) => `<button data-training-slot="${i}" class="${trainingSlot === i ? "is-selected" : ""}"><strong>صف ${i + 1}</strong><small>${APP.army[k] ? formatCompact(APP.army[k].count) + " در حال آموزش" : "آماده · " + formatCompact(trainingCapacity()) + " نفر"}</small></button>`).join("")}</nav><section class="training-task">${task ? `<div class="training-task-heading"><img src="${TROOPS[task.type].image}" alt=""><div><strong>${TROOPS[task.type].name}</strong><span>${formatCompact(task.count)} نفر در حال آموزش</span></div><button class="training-cancel" data-training-cancel aria-label="لغو صف ${trainingSlot + 1}">×</button></div><div class="training-progress"><progress data-army-progress="${key}" max="${task.duration}" value="${Math.max(0, task.duration - remain)}"></progress><span data-army-timer="${key}">${formatDuration(remain)}</span></div><div class="training-queue-actions"><button data-training-panel="speed">تسریع</button><button data-training-instant data-army-gold="${key}">اتمام · ${instantGold(remain)} سکه</button></div>` : `<input id="armyType" type="hidden" value="${unit.id}"><div class="training-slider-label"><label for="armyCount">تعداد آموزش</label><output id="trainingCountOutput" for="armyCount">${formatCompact(trainingCount)} / ${formatCompact(trainingCapacity())}</output></div><input id="armyCount" type="range" min="1" max="${Math.max(1, limit)}" value="${trainingCount}" step="1" ${!limit ? "disabled" : ""} aria-label="تعداد نیرو برای آموزش"><div class="training-costs"><span><img src="${RESOURCE_META.food.image}" alt="غذا"><b id="trainingFoodCost">${formatCompact(trainingCount * unit.cost)}</b></span><span><img src="${RESOURCE_META.iron.image}" alt="آهن"><b id="trainingIronCost">${formatCompact(trainingCount * unit.cost)}</b></span><span id="trainingDuration">${formatDuration(trainingDuration(trainingCount))}</span></div><button class="training-start" data-start-army="${key}" ${!limit || !troopUnlocked(unit.id) ? "disabled" : ""}>${!troopUnlocked(unit.id) ? "باز کردن رسته در مرکز تحقیقات" : !limit ? "منابع کافی نیست" : "آغاز آموزش"}</button>`}</section><p class="training-capacity-note">۳ صف مستقل · ظرفیت هر صف ${formatCompact(trainingCapacity())} نفر · هر سطح ارتقا +۱۰۰ نفر</p></div>${trainingDialogMarkup(unit, key)}</section>`);
+    bindTrainingPage();
+  }
+  async function cancelArmyQueue(kind) {
+    if (!isTrainingQueue(kind)) return false;
+    const task = APP.army[kind];
+    if (!task || !(await gameConfirm("صف لغو شود؟ ۷۰٪ هزینه بازگردانده می‌شود."))) return false;
+    if (APP.army[kind] !== task) return false;
+    const cost = task.cost || task.count * TROOPS[task.type].cost;
+    APP.resources.food += Math.floor(cost * .7);
+    if (isTrainingQueue(kind)) APP.resources.iron += Math.floor(cost * .7);
+    APP.army[kind] = null;
+    saveGameProgress(); updateTopHud(); updateMissionStatus();
+    return true;
+  }
+  function bindTrainingPage() {
+    const content = document.getElementById("genericPanelContent");
+    content.onkeydown = event => {
+      if (event.key === "Escape" && trainingOverlay) { event.preventDefault(); event.stopPropagation(); trainingOverlay = null; renderTrainingPage(); }
+    };
+    content.oninput = event => {
+      if (event.target.id !== "armyCount") return;
+      trainingCount = boundedInteger(Number(event.target.value), 1, 1, Math.max(1, trainingLimit()));
+      const unit = trainingUnit();
+      document.getElementById("trainingCountOutput").textContent = `${formatCompact(trainingCount)} / ${formatCompact(trainingCapacity())}`;
+      for (const id of ["trainingFoodCost", "trainingIronCost"]) document.getElementById(id).textContent = formatCompact(trainingCount * unit.cost);
+      document.getElementById("trainingDuration").textContent = formatDuration(trainingDuration(trainingCount));
+    };
+    content.onclick = async event => {
+      const d = event.target.closest("button")?.dataset;
+      if (!d) return;
+      const key = TRAINING_KEYS[trainingSlot];
+      if (d.trainingClose !== undefined) trainingOverlay = null;
+      else if (d.trainingPanel) trainingOverlay = d.trainingPanel;
+      else if (["attack", "defense"].includes(d.trainingGroup)) { trainingGroup = d.trainingGroup; trainingOverlay = null; }
+      else if (UNIT_ROLES.some(r => r.id === d.trainingRole)) { trainingRole = d.trainingRole; trainingOverlay = null; }
+      else if (TROOPS[d.trainingUnit]) { trainingGroup = TROOPS[d.trainingUnit].group; trainingRole = TROOPS[d.trainingUnit].role; trainingOverlay = null; }
+      else if (d.trainingSlot !== undefined) {
+        trainingSlot = boundedInteger(Number(d.trainingSlot), 0, 0, 2); trainingOverlay = null;
+        const task = APP.army[TRAINING_KEYS[trainingSlot]];
+        if (task) { trainingGroup = TROOPS[task.type].group; trainingRole = TROOPS[task.type].role; }
+      }
+      else if (d.startArmy) { trainingOverlay = null; return startArmyTask(d.startArmy); }
+      else if (d.trainingSpeed) { await speedArmy(key, d.trainingSpeed); if (APP.openPage === "training") { trainingOverlay = null; renderTrainingPage(); } return; }
+      else if (d.trainingInstant !== undefined) return speedArmy(key);
+      else if (d.trainingCancel !== undefined) { if (await cancelArmyQueue(key)) renderTrainingPage(); return; }
+      else return;
+      renderTrainingPage();
+    };
+  }
 
 
 /* Source: src/js/13-bootstrap.js */

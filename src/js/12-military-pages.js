@@ -2,7 +2,7 @@
   function researchLine(id) {
     APP.research.lines ||= {};
     return APP.research.lines[id] ||= {
-      unlocked: id === "sword",
+      unlocked: id === "sword" || id === "guard",
       tier: 1,
       attack: 0,
       defense: 0,
@@ -41,9 +41,9 @@
     const stock = woundedStock();
     m.casualties = {};
     let left = m.lostTroops || 0;
-    for (const [id, n] of Object.entries(m.unitCounts || {
+    for (const [id, n] of Object.entries(migrateUnitStock(m.unitCounts || {
       sword: m.troops
-    })) {
+    }))) {
       const take = Math.min(left, n);
       m.casualties[id] = take;
       stock[id] = (stock[id] || 0) + take;
@@ -69,7 +69,7 @@
   }
   function unitCard(id, action = "unit", selected = false) {
     const t = TROOPS[id];
-    return `<button class="unit-card ${selected ? "is-selected" : ""}" data-${action}="${id}"><img src="${t.image}" alt=""><strong>${t.name}</strong><small>${action === "unit" ? formatCompact(APP.army.units?.[id] || 0) : troopUnlocked(id) ? `رده ${t.tier}` : "قفل · پژوهش لازم"}</small></button>`;
+    return `<button class="unit-card ${selected ? "is-selected" : ""}" data-${action}="${id}"><img src="${t.image}" alt=""><strong>${t.name}</strong><small>${action === "unit" ? formatCompact(APP.army.units?.[id] || 0) : troopUnlocked(id) ? t.group === "attack" ? "هجومی" : "دفاعی" : "قفل · پژوهش لازم"}</small></button>`;
   }
   function queueMarkup(kind) {
     const task = APP.army[kind];
@@ -145,11 +145,7 @@
       if (event.target.matches?.("[data-heal-count]")) updateHealingTotals();
     };
   }
-  function openTraining() {
-    const t = TROOPS[selectedTroop];
-    openPage("training", `<div class="military-summary"><span>نیروهای آماده <b>${formatCompact(APP.army.troops)}</b></span><span>ظرفیت لشکر <b>${formatCompact(marchCapacity())}</b></span></div><div class="line-tabs">${TROOP_LINES.map(l => `<button data-line="${l.id}" class="${selectedLine === l.id ? "is-selected" : ""}"><img src="${l.image}" alt=""><span>${l.name}</span></button>`).join("")}</div><section class="troop-hero"><img src="${t.image}" alt="${t.name}"><h2>${t.name}</h2><button data-unit="${selectedTroop}">اطلاعات نیرو</button></section><div class="unit-carousel">${Object.keys(TROOPS).filter(id => TROOPS[id].line === selectedLine).map(id => unitCard(id, "choose", id === selectedTroop)).join("")}</div>${APP.army.training ? queueMarkup("training") : `<div class="military-form"><input id="armyType" type="hidden" value="${selectedTroop}"><label>تعداد نیرو<input id="armyCount" type="number" min="1" max="10000" value="100" inputmode="numeric"></label><p>${t.cost} غذا و ${t.cost} آهن برای هر نفر · ${t.seconds} ثانیه پایه</p><button class="panel-primary-button" data-start-army="training" ${troopUnlocked(selectedTroop) ? "" : "disabled"}>${troopUnlocked(selectedTroop) ? "آغاز ساخت نیرو" : "ابتدا این واحد را پژوهش کنید"}</button></div>`}`);
-    bindMilitaryPage();
-  }
+  function openTraining() { renderTrainingPage(); }
   function openHealing() {
     const stock = woundedStock();
     openPage("healing", `<div class="military-summary"><span>مجروحان <b>${formatCompact(APP.army.wounded)}</b></span><span>در صف درمان <b>${formatCompact(APP.army.healing?.count || 0)}</b></span></div>${APP.army.healing ? queueMarkup("healing") : `<button data-heal-all class="select-all">انتخاب همه مجروحان</button><div class="heal-list">${Object.entries(stock).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<article><img src="${TROOPS[id].image}" alt=""><div><strong>${TROOPS[id].name}</strong><span>${formatCompact(n)} مجروح</span><input data-heal-count="${id}" type="number" min="0" max="${n}" value="0" inputmode="numeric"></div></article>`).join("") || '<p class="empty-page">نیروی مجروحی ندارید.</p>'}</div><div class="military-form"><p id="healingTotals">نیروهای موردنظر را انتخاب کنید.</p><button data-start-army="healing" class="panel-primary-button" ${APP.army.wounded ? "" : "disabled"}>شروع درمان</button></div>`}`);
@@ -167,7 +163,7 @@
   function openUnit(id) {
     const t = troopStats(id),
       stock = APP.army.units?.[id] || 0;
-    openPage("unit", `<section class="troop-hero"><img src="${t.image}" alt=""><h2>${t.name}</h2><p>${TROOP_LINES.find(l => l.id === t.line).name} · رده ${t.tier}</p></section><div class="panel-stat-grid">${Object.entries({
+    openPage("unit", `<section class="troop-hero"><img src="${t.image}" alt=""><h2>${t.name}</h2><p>${TROOP_LINES.find(l => l.id === t.line).name} · ${t.group === "attack" ? "هجومی" : "دفاعی"}</p></section><div class="panel-stat-grid">${Object.entries({
       "تعداد آماده": stock,
       "قدرت هر نفر": t.power,
       "حمله": t.attack,
@@ -182,7 +178,7 @@
     const line = TROOP_LINES.find(l => l.id === selectedResearchLine),
       r = researchLine(line.id),
       task = APP.research.task;
-    openPage("research", `<div class="military-summary"><span>کتیبه <b>${availableTablets()}</b></span><span>سقف دریافت <b>۲۰</b></span></div><div class="line-tabs">${TROOP_LINES.map(l => `<button data-research-line="${l.id}" class="${l.id === line.id ? "is-selected" : ""}"><img src="${l.image}" alt=""><span>${l.name}</span></button>`).join("")}</div><h2 class="tree-title">${line.name}</h2>${!r.unlocked ? `<div class="research-lock"><img src="${line.image}" alt=""><p>برای باز کردن این رسته یک کتیبه لازم است.</p><button data-unlock-line ${availableTablets() ? "" : "disabled"}>باز کردن رسته</button></div>` : `<div class="research-tree"><div class="research-units">${[1, 2, 3].map(tier => `<button class="research-node ${r.tier >= tier ? "is-unlocked" : ""}" data-research-stat="tier" ${r.tier >= tier || tier !== r.tier + 1 ? "disabled" : ""}><img src="${line.image}" alt=""><strong>رده ${tier}</strong><small>${r.tier >= tier ? "باز شده" : "پژوهش واحد"}</small></button>`).join("")}</div><div class="research-branches">${Object.entries({
+    openPage("research", `<div class="military-summary"><span>کتیبه <b>${availableTablets()}</b></span><span>سقف دریافت <b>۲۰</b></span></div><div class="line-tabs">${TROOP_LINES.map(l => `<button data-research-line="${l.id}" class="${l.id === line.id ? "is-selected" : ""}"><img src="${l.image}" alt=""><span>${l.name}</span></button>`).join("")}</div><h2 class="tree-title">${line.name}</h2>${!r.unlocked ? `<div class="research-lock"><img src="${line.image}" alt=""><p>برای باز کردن این رسته یک کتیبه لازم است.</p><button data-unlock-line ${availableTablets() ? "" : "disabled"}>باز کردن رسته</button></div>` : `<div class="research-tree"><div class="research-units">${[1, 2, 3].map(tier => `<button class="research-node ${r.tier >= tier ? "is-unlocked" : ""}" data-research-stat="tier" ${r.tier >= tier || tier !== r.tier + 1 ? "disabled" : ""}><img src="${line.image}" alt=""><strong>تخصص ${tier}</strong><small>${r.tier >= tier ? "باز شده" : "پژوهش تخصص"}</small></button>`).join("")}</div><div class="research-branches">${Object.entries({
       attack: "حمله",
       defense: "دفاع",
       health: "سلامتی"

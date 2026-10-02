@@ -749,7 +749,7 @@
       proposeMoveBuilding(state.moveBuildingId, cell.q, cell.r);
       return;
     }
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing) {
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing) {
       const gesture = state.gesture;
       if (gesture?.type === "pan") {
         gesture.moved += Math.hypot(event.clientX - gesture.lastX, event.clientY - gesture.lastY);
@@ -841,7 +841,7 @@
   }
   function zoomAt(event) {
     event.preventDefault();
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing) return;
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing) return;
     showBuildingLabels();
     const rect = stage.getBoundingClientRect();
     const sx = event.clientX - rect.left;
@@ -1045,7 +1045,7 @@
     } : null;
   }
   function selectBuilding(id, type = "building") {
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing && id !== tutorialTargetId() && id !== state.missionFocus?.id) return;
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing && id !== tutorialTargetId() && id !== state.missionFocus?.id) return;
     const building = id === "wall" ? getSelectedBuildingForId("wall") : state.buildings.find(x => x.id === id);
     if (!building) return;
     state.selectedId = id;
@@ -1160,7 +1160,7 @@
   function openBuildingPanel(mode = "upgrade") {
     const building = getSelectedBuilding();
     if (!building) return;
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing && building.id !== tutorialTargetId() && building.id !== state.missionFocus?.id) return;
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing && building.id !== tutorialTargetId() && building.id !== state.missionFocus?.id) return;
     hideBuildingActionMenu();
     const layer = document.getElementById("panelLayer");
     const panel = document.getElementById("buildingPanel");

@@ -89,7 +89,7 @@
       events: ["رویدادها", "✦", "mission-modal"],
       shop: ["فروشگاه", "◇", "shop-page"],
       vip: ["VIP", "VIP", "vip-modal"],
-      training: ["سربازخانه", "⚔", "military-page"],
+      training: ["سربازخانه", "⚔", "military-page training-page"],
       healing: ["بیمارستان", "✚", "military-page"],
       research: ["مرکز تحقیقات", "◈", "military-page"],
       unit: ["اطلاعات نیرو", "⚔", "military-page"],
@@ -108,6 +108,7 @@
     else panelIcon.textContent = data[1];
     content.onclick = null;
     content.oninput = null;
+    content.onkeydown = null;
     content.innerHTML = contentHTML;
     panel.classList.add("is-active");
     document.getElementById("panelLayer")?.classList.add("is-open");
@@ -241,7 +242,7 @@
       return openInventory("other");
     }
     if (item.family === "universal") {
-      const kinds = ["training", "healing"].filter(k => APP.army[k]);
+      const kinds = [...TRAINING_KEYS, "healing"].filter(k => APP.army[k]);
       if (kinds.length) return speedArmy(kinds[0], item.id);
       if (APP.worker.task) return useInventoryItem(item, 1, true);
       return showBuildNotice("صف فعالی وجود ندارد.");
@@ -249,7 +250,7 @@
     if (item.family === "research") return speedResearch(item.id);
     if (item.id.startsWith("march-speed-")) return showBuildNotice("لشکر در حال حرکت را انتخاب کنید و از دکمه تسریع استفاده کنید.");
     if (item.id.startsWith("teleport-")) return useTeleportItem(item);
-    const kind = item.id.startsWith("troop-speed-") ? "training" : "healing";
+    const kind = item.id.startsWith("troop-speed-") ? TRAINING_KEYS.find(k => APP.army[k]) : "healing";
     if (item.id !== "production-boost" && !APP.army[kind]) return showBuildNotice("صف مربوط به این تسریع فعال نیست.");
     if (!(await gameConfirm(`استفاده از ${item.name} تأیید می‌شود؟`))) return;
     if (!item.count || item.id !== "production-boost" && !APP.army[kind]) return;
@@ -259,7 +260,7 @@
       APP.missions.productionUsed++;
     } else {
       APP.army[kind].endsAt = Math.max(Date.now(), APP.army[kind].endsAt - item.value);
-      APP.missions[kind === "training" ? "troopSpeedUsed" : "healSpeedUsed"] += item.value / 60000;
+      APP.missions[isTrainingQueue(kind) ? "troopSpeedUsed" : "healSpeedUsed"] += item.value / 60000;
       tickArmy();
     }
     saveGameProgress();

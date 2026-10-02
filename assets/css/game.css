@@ -5715,3 +5715,96 @@ html, body, .territory-frame, #stage {
 }
 /* Keep modal focus from scrolling the document underneath the game. */
 body { position: fixed; inset: 0; }
+
+
+/* Source: src/css/07-training.css */
+/* Full-viewport barracks: cinematic artwork and compact, readable controls. */
+#genericPanel.training-page{position:fixed!important;inset:0!important;width:100%!important;max-width:none!important;height:100dvh!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#101619;direction:rtl;isolation:isolate}
+.training-page .panel-page-topbar{position:absolute;inset:0 0 auto;z-index:5;min-height:64px;padding:12px 20px;background:linear-gradient(#080e16d9,transparent);border:0}
+.training-page #genericPanelContent{height:100%;padding:0!important;overflow-y:auto;overscroll-behavior:contain}
+.training-screen{position:relative;min-height:100%;padding:clamp(235px,35vh,380px) 18px 18px;display:flex;flex-direction:column;justify-content:flex-end;color:#f3ecdb;isolation:isolate}
+.training-art{position:absolute;inset:0;z-index:-3;width:100%;height:100%;object-fit:cover;object-position:50% 25%;pointer-events:none}
+.training-vignette{position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,#10182135 0%,transparent 24%,#10171b85 46%,#0b1215eb 72%,#0b1215 100%);pointer-events:none}
+.training-title{position:absolute;top:82px;right:24px;text-shadow:0 2px 8px #0009}
+.training-title h2{font-size:clamp(24px,4vw,38px);margin:4px 0;color:#fff2d4;font-weight:700}
+.training-title small,.training-title>span{font-size:12px;color:#e4d8bf}
+.training-info-buttons{position:absolute;top:175px;left:20px;display:flex;flex-direction:column;gap:10px}
+.training-info-buttons button{width:44px;height:44px;border:1px solid #d5b67988;border-radius:50%;background:#17222aaa;backdrop-filter:blur(12px);color:#ecd8aa;font-size:24px;font-family:serif}
+.training-controls{width:min(100%,740px);margin:0 auto;position:relative;z-index:2;display:grid;gap:10px}
+.training-groups{display:flex;width:220px;max-width:100%;margin:0 auto;padding:3px;border:1px solid #b59a6555;border-radius:24px;background:#0e1920b8;backdrop-filter:blur(14px)}
+.training-groups button{flex:1;border:0;border-radius:20px;padding:9px;background:transparent;color:#bfc6c6;font:inherit;font-size:13px}
+.training-groups button.is-selected{color:#fff2d0;background:#ad89533d;box-shadow:inset 0 0 0 1px #d8b77777}
+.training-roles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.training-roles button{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 2px;border:0;border-bottom:2px solid transparent;background:#111b20a8;color:#b8c2c4;font:inherit;font-size:12px}
+.training-roles b{font-size:20px;font-weight:400;color:#c4aa7a}
+.training-roles button.is-selected{border-bottom-color:#d4b37b;color:#fff1d0;background:linear-gradient(transparent,#b6905330)}
+.training-unit-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.training-unit-cards button{position:relative;overflow:hidden;min-width:0;height:128px;padding:0 4px 8px;border:1px solid #8c9b9a50;border-radius:7px;background:#16232b;color:#f2e9d5;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font:inherit;font-size:10px;isolation:isolate}
+.training-unit-cards button::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(transparent 20%,#0b1319b0 65%,#0b1319 100%)}
+.training-unit-cards img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;object-position:50% 14%}
+.training-unit-cards button.is-selected{border-color:#edca87;box-shadow:0 0 0 1px #d8b57066,inset 0 -2px #d8b570}
+.training-unit-cards span{line-height:1.5;text-align:center}
+.training-unit-cards small{font-size:10px;color:#c6b88f}
+.training-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.training-slots button{display:flex;flex-direction:column;gap:3px;padding:9px 2px;border:1px solid #9bafaf33;border-radius:7px;background:#12202bcc;color:#d5dfdf;font:inherit;font-size:12px}
+.training-slots small{font-size:10px;color:#a1b0b6;white-space:nowrap}
+.training-slots .is-selected{background:#8a6c3c29;border-color:#c4a16b;color:#f8e6c1}
+.training-task{padding:14px;border:1px solid #b899634d;border-radius:10px;background:#101c25d9;backdrop-filter:blur(16px);box-shadow:0 12px 32px #0003;min-height:152px}
+.training-slider-label{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:#e5ddc9}
+.training-slider-label output{font-variant-numeric:tabular-nums;color:#efd299}
+.training-task input[type=range]{display:block;width:100%;height:28px;margin:10px 0;accent-color:#d3ae6f;cursor:pointer;direction:ltr}
+.training-costs{display:flex;justify-content:space-between;align-items:center;gap:9px;font-size:11px;color:#c5cecc;min-height:28px}
+.training-costs>span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.training-costs img{width:24px;height:24px;object-fit:contain}
+.training-start,.training-queue-actions button{min-height:42px;border:1px solid #d7b676;border-radius:6px;background:linear-gradient(135deg,#c9a260,#8d6e3b);color:#171b1e;font:inherit;font-weight:700;font-size:13px}
+.training-start{width:100%;margin-top:10px}
+.training-task-heading{display:flex;align-items:center;gap:10px}
+.training-task-heading>img{width:44px;height:48px;object-fit:cover;object-position:50% 12%;border-radius:5px;border:1px solid #a88751}
+.training-task-heading>div{flex:1;display:grid;gap:4px;font-size:13px}
+.training-task-heading span{font-size:11px;color:#b7c0bf}
+.training-cancel{width:32px;height:32px;border:1px solid #d4b88f55;border-radius:50%;background:#2e252a;color:#d7b8b1;font-size:23px}
+.training-progress{position:relative;margin:12px 0 10px;height:22px;display:flex;align-items:center;justify-content:center}
+.training-progress progress{appearance:none;position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:4px;overflow:hidden;background:#263540}
+.training-progress progress::-webkit-progress-bar{background:#263540}
+.training-progress progress::-webkit-progress-value{background:linear-gradient(90deg,#806039,#cba96a)}
+.training-progress progress::-moz-progress-bar{background:#cba96a}
+.training-progress>span{position:relative;font-size:11px;color:#fff5dd;text-shadow:0 1px 3px #000;font-variant-numeric:tabular-nums}
+.training-queue-actions{display:flex;gap:10px}
+.training-queue-actions button{flex:1}
+.training-queue-actions button:first-child{background:#29404d;color:#e1e9e8;border-color:#839eaa66}
+.training-capacity-note{text-align:center;font-size:10px;color:#b8b8a7;margin:0;line-height:1.6}
+.training-screen button{cursor:pointer;touch-action:manipulation;transition:border-color .15s,filter .15s}
+.training-screen button:hover{filter:brightness(1.1)}
+.training-screen button:disabled{opacity:.48;cursor:default;filter:none}
+.training-screen button:focus-visible,.training-screen input:focus-visible{outline:2px solid #f4d99b;outline-offset:3px}
+.training-dialog-backdrop{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:#040b12a8;backdrop-filter:blur(9px)}
+.training-dialog-dismiss{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
+.training-dialog{position:relative;z-index:1;width:min(100%,480px);max-height:85dvh;overflow:auto;padding:22px;border:1px solid #c3a57688;border-radius:13px;background:linear-gradient(145deg,#20303cf0,#111d27fa);box-shadow:0 28px 80px #0008}
+.training-dialog header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:20px}
+.training-dialog h3{font-size:17px;color:#f4ddb0;margin:0}
+.training-dialog header button{width:32px;height:32px;background:#ffffff0b;border:1px solid #ffffff22;border-radius:50%;color:#e9dcc3;font-size:24px}
+.training-stats{display:grid;grid-template-columns:1fr 1fr;gap:20px 18px}
+.training-stats article{display:grid;grid-template-columns:1fr auto;gap:7px;font-size:12px;color:#b8c7cc}
+.training-stats strong{color:#f7e4be}
+.training-stats i{grid-column:1/-1;height:5px;overflow:hidden;background:#06111b;border-radius:4px}
+.training-stats i b{display:block;height:100%;background:linear-gradient(90deg,#657e8a,#d1ac6f);border-radius:4px}
+.training-dialog-note{font-size:11px;color:#b7c0bd;line-height:1.9;margin:20px 0 0}
+.counter-center{display:grid;place-items:center;gap:6px;color:#f2d59c;margin-bottom:20px}
+.counter-center>span{font-size:44px}
+.counter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.counter-grid article{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 5px;border:1px solid #ffffff22;border-radius:7px;background:#ffffff05;text-align:center}
+.counter-grid article>span{font-size:29px}
+.counter-grid strong{font-size:12px}
+.counter-grid small{font-size:10px;line-height:1.6}
+.counter-strong{color:#a3d2b3}.counter-weak{color:#dba29d}.counter-neutral{color:#bacbd3}
+.training-speed-items{display:grid;gap:9px}
+.training-speed-items button{display:flex;align-items:center;gap:12px;text-align:right;padding:10px;border:1px solid #b3915c44;border-radius:8px;background:#13212b;color:#eee3ca;font:inherit;font-size:12px}
+.training-speed-items img{width:42px;height:42px;object-fit:contain}
+.training-speed-items small{margin-right:auto;color:#c6ab7e}
+@media(min-width:800px){.training-screen{padding-top:280px}.training-title{right:calc(50% - 350px)}.training-info-buttons{left:calc(50% - 350px)}.training-unit-cards button{height:140px}.training-art{object-position:50% 20%}.training-controls{gap:12px}}
+@media(max-width:360px){.training-screen{padding-inline:10px}.training-unit-cards{gap:5px}.training-unit-cards button{font-size:9px;height:112px}.training-dialog{padding:15px}.training-title{right:16px}.training-slots small{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.training-screen button{transition:none}}
+
+.training-unit-cards img{height:230%;top:-9%;object-position:50% 0}
+
+.training-roles b{display:flex}.counter-center svg{width:46px;height:46px}.counter-grid svg{width:30px;height:30px}

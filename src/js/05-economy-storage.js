@@ -390,7 +390,7 @@
       if (validObject(saved.research)) {
         APP.research.level = boundedInteger(saved.research.level, 0, 0, 20);
         APP.research.lines = Object.fromEntries(TROOP_LINES.map(line => [line.id, {
-          unlocked: saved.research.lines?.[line.id]?.unlocked === true || line.id === "sword",
+          unlocked: saved.research.lines?.[line.id]?.unlocked === true || ["sword", "guard"].includes(line.id),
           attack: boundedInteger(saved.research.lines?.[line.id]?.attack, 0, 0, 20),
           defense: boundedInteger(saved.research.lines?.[line.id]?.defense, 0, 0, 20),
           health: boundedInteger(saved.research.lines?.[line.id]?.health, 0, 0, 20),
@@ -421,6 +421,7 @@
       if (Array.isArray(saved.marches)) APP.marches = saved.marches.slice(0, WORLD.marchSlots).filter(m => validObject(m) && ["attack", "spy", "camp", "reinforce"].includes(m.type) && ["outbound", "waiting", "returning"].includes(m.phase) && validMapPoint(m.origin) && validMapPoint(m.target) && Array.isArray(m.route) && m.route.length > 0 && m.route.length <= 30000 && m.route.every((p, i) => validMapPoint(p) && (!i || mapDistance(p, m.route[i - 1]) === 1 || i === m.route.length - 1 && mapDistance(p, m.route[i - 1]) === 0 && Number.isFinite(p.wx) && Number.isFinite(p.wy)) && (p.wx === undefined || Number.isFinite(p.wx) && Number.isFinite(p.wy) && Math.hypot(p.wx - mapCenter(p.q, p.r)[0], p.wy - mapCenter(p.q, p.r)[1]) <= 18)) && [m.startedAt, m.arriveAt, m.travelMs, m.returnAt].every(Number.isFinite)).map(m => ({
         ...m,
         id: String(m.id),
+        unitCounts: m.unitCounts ? migrateUnitStock(m.unitCounts) : undefined,
         name: String(m.name)
       }));
       if (Array.isArray(saved.buildings)) saved.buildings.forEach(item => {
@@ -481,13 +482,15 @@
         APP.army.practiceWounded = saved.army.practiceWounded === true;
         APP.army.troops = boundedInteger(saved.army.troops, 0, 0, 1_000_000);
         APP.army.wounded = boundedInteger(saved.army.wounded, 0, 0, 1_000_000);
-        for (const kind of ["training", "healing"]) if (validObject(saved.army[kind])) {
+        for (const kind of [...TRAINING_KEYS, "healing"]) {
+          APP.army[kind] = null;
+          if (!validObject(saved.army[kind])) continue;
           const value = saved.army[kind];
           APP.army[kind] = {
-            count: boundedInteger(value.count, 0, 1, 10000),
-            type: TROOPS[value.type] ? value.type : "sword",
+            count: boundedInteger(value.count, 0, 1, 1000000),
+            type: legacyTroopId(value.type),
             cost: boundedInteger(value.cost, 0, 0, 100000000),
-            units: validObject(value.units) ? Object.fromEntries(Object.keys(TROOPS).map(id => [id, boundedInteger(value.units[id], 0, 0, 10000)])) : null,
+            units: validObject(value.units) ? migrateUnitStock(value.units) : null,
             startedAt: boundedInteger(value.startedAt, Date.now(), 0, Date.now()),
             duration: boundedInteger(value.duration, 3600000, 1, Number.MAX_SAFE_INTEGER),
             endsAt: boundedInteger(value.endsAt, 0, 0, Number.MAX_SAFE_INTEGER)
@@ -495,9 +498,9 @@
           if (!APP.army[kind].count) APP.army[kind] = null;
         }
       }
-      if (validObject(saved.army?.units)) APP.army.units = Object.fromEntries(Object.keys(TROOPS).map(id => [id, boundedInteger(saved.army.units[id], 0, 0, 1000000)]));
+      if (validObject(saved.army?.units)) APP.army.units = migrateUnitStock(saved.army.units);
       if (!saved.research?.lines) for (const id of ["archer", "knight"]) if ((APP.army.units?.[id] || 0) > 0 || saved.army?.training?.type === id) researchLine(id).unlocked = true;
-      APP.army.woundedUnits = validObject(saved.army?.woundedUnits) ? Object.fromEntries(Object.keys(TROOPS).map(id => [id, boundedInteger(saved.army.woundedUnits[id], 0, 0, 1000000)])) : {
+      APP.army.woundedUnits = validObject(saved.army?.woundedUnits) ? migrateUnitStock(saved.army.woundedUnits) : {
         sword: APP.army.wounded
       };
       APP.preferences = {
@@ -554,7 +557,7 @@
     }
   }
   function startBuildingTask(id) {
-    if (APP.tutorial.active && !APP.worker.task && !APP.army.training && !APP.army.healing && id !== tutorialTargetId()) return;
+    if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing && id !== tutorialTargetId()) return;
     const building = buildingById(id);
     if (!building || building.level >= 20 || APP.worker.task?.id === id || APP.worker2.task?.id === id) return;
     if (APP.worker.task) {
@@ -610,11 +613,11 @@
     if (enemiesReady) respawnEnemies();
     const now = Date.now();
     const task = APP.worker?.task;
-    document.body.classList.toggle("tutorial-working", APP.tutorial.active && !!(APP.worker.task || APP.army.training || APP.army.healing));
+    document.body.classList.toggle("tutorial-working", APP.tutorial.active && !!(APP.worker.task || hasTrainingTasks() || APP.army.healing));
     tickCollectors(now);
     if (!task) return;
     const remaining = APP.worker.endsAt - now;
-    document.body.classList.toggle("tutorial-working", APP.tutorial.active && (remaining > 0 || APP.army.training || APP.army.healing));
+    document.body.classList.toggle("tutorial-working", APP.tutorial.active && (remaining > 0 || hasTrainingTasks() || APP.army.healing));
     if (remaining > 0) {
       updateBuildingProgress();
       const panel = document.getElementById("marchQueue");
