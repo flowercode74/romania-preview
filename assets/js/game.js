@@ -566,7 +566,7 @@
     canvas.style.left = "0";
     canvas.style.top = "0";
     canvas.style.transformOrigin = "0 0";
-    canvas.style.willChange = "transform";
+    canvas.style.willChange = "auto";
     canvas.style.touchAction = "none";
     canvas.style.userSelect = "none";
     canvas.style.webkitUserSelect = "none";
@@ -576,8 +576,15 @@
     state.canvas = canvas;
     state.ctx = canvas.getContext("2d", {
       alpha: false,
-      desynchronized: true
+      desynchronized: false
     });
+    // Protect the viewport on older browsers that fall back to hidden overflow.
+    stage.scrollLeft = 0; stage.scrollTop = 0;
+    stage.addEventListener("scroll", () => {
+      if (!stage.scrollLeft && !stage.scrollTop) return;
+      stage.scrollLeft = 0; stage.scrollTop = 0;
+      scheduleTerritoryRender();
+    }, { passive: true });
     setupWorldOverlays();
     setupWorldSprites();
     resizeCanvas();
@@ -736,8 +743,14 @@
     positionSecondProgress();
   }
   function drawWorld() {
-    const ctx = state.ctx;
-    if (!ctx || !state.bounds) return;
+    if (!state.ctx || !state.bounds) return;
+    // Never expose the clear/terrain-only stages to the display. Compose the
+    // entire scene offscreen, then publish it with one synchronous canvas copy.
+    if (!state.frameCanvas) state.frameCanvas = document.createElement("canvas");
+    const buffer = state.frameCanvas;
+    if (buffer.width !== state.canvas.width) buffer.width = state.canvas.width;
+    if (buffer.height !== state.canvas.height) buffer.height = state.canvas.height;
+    const ctx = buffer.getContext("2d", { alpha: false, desynchronized: false });
     clampCamera();
     const b = state.bounds;
     const {
@@ -783,6 +796,14 @@
     for (const building of territoryDrawOrder()) drawBuilding(ctx, building);
     ctx.restore();
     drawTerritoryLabels(ctx);
+    const screen = state.ctx;
+    screen.save();
+    screen.setTransform(1, 0, 0, 1, 0, 0);
+    screen.globalAlpha = 1;
+    screen.globalCompositeOperation = "copy";
+    screen.imageSmoothingEnabled = false;
+    screen.drawImage(buffer, 0, 0);
+    screen.restore();
     state.dirty = false;
   }
   function buildingCenter(building, q = building.q, r = building.r) {
@@ -1296,6 +1317,11 @@
       state.gesture = null;
       state.suppressGestureTap=false;
       state.canvas.classList.remove("is-dragging");
+      if (state.deferredCameraFocus) {
+        const target = state.deferredCameraFocus;
+        state.deferredCameraFocus = null;
+        focusBuilding(target);
+      }
     }
   }
   function zoomAt(event) {
@@ -1757,7 +1783,7 @@
     for (const id of Object.keys(TROOPS)) {
       const take = Math.min(remaining, APP.army.units[id] || 0);
       result[id] = take;
-      APP.army.units[id] -= take;
+      if (take > 0) APP.army.units[id] -= take;
       remaining -= take;
     }
     return result;
@@ -1829,7 +1855,8 @@
     tickArmy();
     saveGameProgress();
     updateTopHud();
-    kind === "training" ? openTraining() : openHealing();
+    // Completion can advance the tutorial to another facility or the UI tour.
+    if (APP.army[kind] === task && APP.openPage === kind) kind === "training" ? openTraining() : openHealing();
   }
   function tickArmy() {
     ensureMissionDay();
@@ -2013,7 +2040,6 @@
   // رابط کاربری جدید بازی
   // این بخش state مشترک منابع، Inventory، پیام‌ها، نقشه جهان و لشکرکشی را مدیریت می‌کند.
   // ===========================================================================
-
 
 
 /* Source: src/js/04-state-inventory.js */
@@ -2696,7 +2722,8 @@
     status?.classList.toggle("has-claims", claimable.length > 0);
     if (APP.tutorial.active || tutorialRewardsPending()) {
       const target = buildingById(tutorialTargetId());
-      label.textContent = claimable.length ? `${claimable.length} پاداش آموزش آماده است` : target ? `${APP.worker.task?.id === target.id ? "در حال ساخت" : "ساخت"} ${target.name}` : "آموزش قلمرو";
+      const action = target?.level > 0 ? "ارتقا" : "ساخت";
+      label.textContent = claimable.length ? `${claimable.length} پاداش آموزش آماده است` : target ? `${APP.worker.task?.id === target.id ? "در حال " : ""}${action} ${target.name}` : "آموزش قلمرو";
       return;
     }
     const next = MISSION_DATA.growth.find(m => !missionClaims("growth").includes(m.id) && missionUnlocked("growth", m));
@@ -3490,6 +3517,11 @@
     const building = buildingById(id);
     if (!building) return;
     cancelAnimationFrame(state.cameraAnimation);
+    state.cameraAnimation = 0;
+    // A task can finish while the player is still dragging. Let that gesture
+    // finish before the tutorial moves the camera to its next target.
+    if (state.pointers.size) { state.deferredCameraFocus = id; return; }
+    state.deferredCameraFocus = null;
     const [x, y] = id === "wall" ? [TERRITORY.gateX, TERRITORY.gateY] : buildingCenter(building);
     const start = {
       ...state.camera
@@ -3507,6 +3539,7 @@
     }
     const began = performance.now();
     function frame(time) {
+      if (state.pointers.size) {state.cameraAnimation = 0;state.deferredCameraFocus = id;return;}
       const t = Math.min(1, (time - began) / 650);
       const ease = 1 - Math.pow(1 - t, 3);
       state.camera.x = start.x + (target.x - start.x) * ease;
@@ -3532,9 +3565,10 @@
     focusBuilding(id);
     document.getElementById("tutorialNext").textContent = "متوجه شدم";
     document.getElementById("tutorialTitle").textContent = `گام ${APP.tutorial.step + 1} از ${BUILD_ORDER.length}`;
-    setNarratorText(`${b?.name || "ساختمان"} را انتخاب کنید، دکمه ساخت را بزنید و پیشرفت آن را تا پایان دنبال کنید.`);
+    const action = b?.level > 0 ? "ارتقا" : "ساخت";
+    setNarratorText(`${b?.name || "ساختمان"} را انتخاب کنید، دکمه ${action} را بزنید و پیشرفت آن را تا پایان دنبال کنید.`);
     const mission = document.getElementById("missionStatusText");
-    if (mission) mission.textContent = `ساخت ${b?.name || "ساختمان"}`;
+    if (mission) mission.textContent = `${action} ${b?.name || "ساختمان"}`;
     overlay.classList.add("is-visible");
     updateMissionStatus();
   }
@@ -6110,9 +6144,13 @@
       if (event.target.closest("#tutorialOverlay")) return;
       const selector = UI_TOUR[APP.tutorial.uiIndex]?.[0];
       if (selector && event.target.closest(selector)) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        openTourTarget();
+        // Panel targets use the tour shortcut; other targets retain their
+        // normal controls (queue toggle and settlement perk disclosure).
+        if (UI_TOUR[APP.tutorial.uiIndex]?.[3]) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          openTourTarget();
+        }
         return;
       }
       if (event.target.closest("[data-close-panel]")) {

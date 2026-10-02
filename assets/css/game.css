@@ -5712,8 +5712,12 @@ body .game-panel .mission-card { display:grid;grid-template-columns:62px minmax(
 .game-shell #missionStatusText {display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;word-break:normal;-webkit-line-clamp:unset;line-clamp:unset;max-height:1.4em;line-height:1.4;}
 .game-shell #missionStatus > span:nth-child(2) {min-width:0;overflow:hidden;}
 
-.territory-frame,
-#stage {
+/* Camera motion belongs to the renderer. Hidden overflow still creates a
+   scroll container: browser focus/scroll anchoring can shift the entire Canvas
+   independently of camera coordinates. Clip both axes without scrolling. */
+html, body, .territory-frame, #stage {
   overflow: clip;
   overflow-anchor: none;
 }
+/* Keep modal focus from scrolling the document underneath the game. */
+body { position: fixed; inset: 0; }
