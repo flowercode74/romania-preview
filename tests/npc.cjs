@@ -12,7 +12,7 @@ const nodes=new Map();const document={getElementById(id){if(!nodes.has(id))nodes
 class Img extends Node{constructor(){super();this.complete=false;this.naturalWidth=0;this.naturalHeight=0;}}
 const local=new Map(),frames=[];let now=0;
 const context={document,console,Date,Math,Map,Set,Uint8Array,Float32Array,Object,Array,Number,String,Promise,Image:Img,ResizeObserver:class{observe(){}},navigator:{deviceMemory:8},window:{devicePixelRatio:1,addEventListener(){},matchMedia(){return {matches:false}}},performance:{now:()=>now},localStorage:{setItem(k,v){local.set(k,v)},getItem(k){return local.get(k)||null},removeItem(k){local.delete(k)}},setTimeout(){return 1},setInterval(){return 1},clearTimeout(){},requestAnimationFrame(fn){frames.push(fn);return frames.length},cancelAnimationFrame(){}};
-vm.createContext(context);let src=fs.readFileSync('assets/js/game.js','utf8');src=src.replace('  createCells();\n  loadAssets();','  globalThis.t={APP,state,startGame,createWorldMap,drawWorldMap,startMarch,mapToScreen,bindMapInput,teleportCastle,validTeleportTarget,recallCamp,insideEventArea,openInventory,openProfile,escapeHTML,renderMapActions,openMapTile,findSpawn,enemyLevel,enemyDropItem,enemies,ENEMY_TYPES,ensureStarterEnemy,resolveEnemyBattle,enemyRequirement,enemyResources,findMapRoute,occupiedTiles,footprintFits,canPlaceBuilding,empireAt,empireCenters,INVENTORY,showUITour,setNarratorText,advanceNarrator,setupTutorial,closePanels,updateMarches,saveGameProgress,loadGameProgress,drawTerritoryTerrain,terrainAtlas};\n  createCells();\n  loadAssets();');vm.runInContext(src,context);
+vm.createContext(context);let src=fs.readFileSync('assets/js/game.js','utf8');src=src.replace('  createCells();\n  loadAssets();','  globalThis.t={APP,state,startGame,createWorldMap,drawWorldMap,startMarch,mapToScreen,bindMapInput,teleportCastle,validTeleportTarget,recallCamp,insideEventArea,openInventory,openProfile,escapeHTML,renderMapActions,openMapTile,findSpawn,enemyLevel,enemyDropItem,enemies,ENEMY_TYPES,ensureStarterEnemy,resolveEnemyBattle,enemyRequirement,enemyResources,findMapRoute,occupiedTiles,footprintFits,canPlaceBuilding,empireAt,empireCenters,INVENTORY,showUITour,setNarratorText,advanceNarrator,setupTutorial,closePanels,updateMarches,saveGameProgress,loadGameProgress,drawTerritoryTerrain,terrainAtlas,mapDistance,enemySpaceFree,applySavedEnemyPositions,repairEnemySpacing};\n  createCells();\n  loadAssets();');vm.runInContext(src,context);
 
 const t=context.t;t.createWorldMap();t.APP.tutorial.active=false;
 assert.equal(t.occupiedTiles(t.state.buildings.find(b=>b.id==='farm'),0,0).length,1);
@@ -34,9 +34,20 @@ const npc=t.enemies.find(e=>e.type===2),before=t.APP.resources.wood;const item=t
 const m={enemyId:npc.id,enemyLevel:1,enemyType:2,troops:20,armyPower:0,arriveAt:Date.now()};assert(t.resolveEnemyBattle(m,()=>.9));assert.equal(t.APP.resources.wood,before+t.enemyResources(1).wood);assert.equal(item.count,itemCount);assert(!t.resolveEnemyBattle(m,()=>0));
 const n={enemyId:'drop-all',enemyLevel:1,enemyType:2,troops:20,armyPower:0,arriveAt:Date.now()};assert(t.resolveEnemyBattle(n,()=>0));assert.equal(item.count,itemCount+1);
 const weak={enemyId:'too-hard',enemyLevel:25,enemyType:0,troops:20,armyPower:0,arriveAt:Date.now()};const food=t.APP.resources.food;assert(!t.resolveEnemyBattle(weak,()=>0));assert.equal(t.APP.resources.food,food);assert.equal(weak.result,'شکست');
-const marchNow=Date.now();t.APP.marches=[{...n,id:'return-army',type:'attack',phase:'returning',route:[{q:100,r:100},{q:101,r:100}],target:{q:101,r:100},origin:{q:100,r:100},startedAt:marchNow-5000,arriveAt:marchNow-1,travelMs:1000,returnAt:0}];const troops=t.APP.army.troops;t.updateMarches();assert.equal(t.APP.army.troops,troops+20);t.updateMarches();assert.equal(t.APP.army.troops,troops+20);
+const marchNow=Date.now();t.APP.marches=[{...n,id:'return-army',type:'attack',phase:'returning',route:[{q:100,r:100},{q:101,r:100}],target:{q:101,r:100},origin:{q:100,r:100},startedAt:marchNow-5000,arriveAt:marchNow-1,travelMs:1000,returnAt:0}];const troops=t.APP.army.troops;t.updateMarches();assert.equal(t.APP.army.troops,troops+20-(n.lostTroops||0));t.updateMarches();assert.equal(t.APP.army.troops,troops+20-(n.lostTroops||0));
 // لمس اول متن را کامل و لمس دوم مرحله معرفی رابط را عوض می‌کند.
 t.APP.tutorial={active:true,step:12,phase:'ui-tour',uiIndex:0};t.showUITour(0);t.advanceNarrator();assert.equal(t.APP.tutorial.uiIndex,0);t.advanceNarrator();assert.equal(t.APP.tutorial.uiIndex,1);
 t.APP.tutorial.active=false;t.openProfile({id:'other',name:'بازیکن دیگری',q:140,r:160,own:false});const profile=nodes.get('genericPanelContent').innerHTML;assert(profile.includes('بازیکن دیگری'));assert(!profile.includes('DreaM'));
 t.saveGameProgress();const cooldown=t.APP.enemyDefeated['drop-all'];t.APP.enemyDefeated={};t.loadGameProgress();assert.equal(t.APP.enemyDefeated['drop-all'],cooldown);
 console.log('PASS: one-tile buildings and wall clearance, '+spaces+' valid layout spaces, four enemy types, all six safe spawn choices and reachable level5 within 5min, guaranteed resources/optional drops, reward idempotency, defeat and exactly-once returning troops, narrator two-tap advance, other-player profile and persisted cooldown. Enemies:',t.enemies.length);
+
+// Malformed older saved coordinates must not bypass the three-cell spawn rule.
+const first=t.enemies[0],second=t.enemies[1];
+t.APP.savedEnemyPositions=[{id:first.id,q:first.q,r:first.r},{id:second.id,q:first.q,r:first.r}];
+t.applySavedEnemyPositions();assert(t.mapDistance(first,second)>=3);
+for(const enemy of t.enemies) {
+ assert(t.enemySpaceFree(enemy.q,enemy.r,enemy.id),'enemy spacing violated after restore');
+ for(const castle of t.APP.map.castles) assert(t.mapDistance(enemy,castle)>=3,'enemy too close to castle');
+}
+t.ensureStarterEnemy();for(const e of t.enemies.filter(e=>e.id.startsWith('starter-level-'))) assert(t.enemySpaceFree(e.q,e.r,e.id));
+console.log('PASS: saved-coordinate migration and initial targets obey minimum three-cell spacing from castles and other NPCs.');

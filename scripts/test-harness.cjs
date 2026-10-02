@@ -1,0 +1,18 @@
+// آزمون راه‌اندازی، رابط، تأیید عملیات و قرارداد اتحاد با DOM شبیه‌سازی‌شده
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+class Node{
+ constructor(){this.clientWidth=390;this.clientHeight=650;this.dataset={};this.style={setProperty(){}};this.listeners={};this.children=[];this.hidden=false;this.value='1';this.classList={s:new Set(),add(...x){x.forEach(v=>this.s.add(v))},remove(...x){x.forEach(v=>this.s.delete(v))},contains(x){return this.s.has(x)},toggle(x,b){const active=b??!this.s.has(x);active?this.s.add(x):this.s.delete(x);return active;}};}
+ addEventListener(k,f){(this.listeners[k]??=[]).push(f)}
+ insertAdjacentHTML(position,html){this.innerHTML=(this.innerHTML||"")+html;}
+ remove(){} appendChild(x){this.children.push(x);return x}append(...x){this.children.push(...x)}replaceChildren(...x){this.children=x}setAttribute(k,v){this[k]=v}getAttribute(k){return this[k]||null}closest(){return null}focus(){}setPointerCapture(){}releasePointerCapture(){}
+ querySelector(){return new Node()}querySelectorAll(){return []}getBoundingClientRect(){return {left:0,top:0,width:390,height:650,right:390,bottom:650}}
+ getContext(){return new Proxy({createRadialGradient(){return {addColorStop(){}}}}, {get(o,k){return k in o?o[k]:(()=>{})}})}
+}
+const nodes=new Map();const document={getElementById(id){if(!nodes.has(id))nodes.set(id,new Node());return nodes.get(id)},querySelector(){return new Node()},querySelectorAll(){return []},createElement(){return new Node()},createElementNS(){return new Node()},addEventListener(){},body:new Node()};
+class Img extends Node{constructor(){super();this.complete=false;this.naturalWidth=0;this.naturalHeight=0;}}
+const local=new Map(),frames=[];let now=Date.UTC(2026,9,2);
+class Clock extends Date {constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}}
+const context={document,console,Date:Clock,Math,Map,Set,Uint8Array,Float32Array,Object,Array,Number,String,Promise,Image:Img,ResizeObserver:class{observe(){}},navigator:{deviceMemory:8},window:{devicePixelRatio:1,addEventListener(){},matchMedia(){return {matches:false}}},performance:{now:()=>now},localStorage:{setItem(k,v){local.set(k,v)},getItem(k){return local.get(k)||null},removeItem(k){local.delete(k)}},setTimeout(){return 1},setInterval(){return 1},clearTimeout(){},requestAnimationFrame(fn){frames.push(fn);return frames.length},cancelAnimationFrame(){}};
+
+vm.createContext(context);let src=fs.readFileSync('assets/js/game.js','utf8');src=src.slice(0,src.indexOf('  createCells();\n  loadAssets();'))+`globalThis.t={setupWorldOverlays,APP,state,SEASON,TROOPS,INVENTORY,MISSION_DATA,BUILD_NAMES,BUILD_MOD,BUILD_BASE,TRAINING_KEYS,createCells,buildingById,buildingCost,buildingDuration,buildingRequirement,productionRateAt,growthRewardAmount,tickCollectors,collectResource,startBuildingTask,tickBuildingTask,claimMission,missionReady,missionProgress,startArmyTask,tickArmy,simulateCombat,terrainAt,enemyArmy,enemyRequirement,enemyResources,enemyUnlocked,validDeployment,reserveSelectedTroops,readyUnitStock,startMarch,updateMarches,createWorldMap,nearestEnemy,enemies,ENEMY_TYPES,mapDistance,castleFootprint,mapMinZoom,marchDirection,showArmyTutorial,saveGameProgress,loadGameProgress,openInventory,showGameDialog,openDeployment,openEnemySearch,attackEnemy,resolveEnemyBattle,marchCapacity,productionMultiplier,totalArmyPower,troopStats,troopUnlocked,openResearch,startResearch};})();`;vm.runInContext(src,context);context.t.createCells();context.t.setupWorldOverlays();
+module.exports={t:context.t,nodes,context,setNow(value){now=value;},getNow(){return now;}};

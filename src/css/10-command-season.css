@@ -1,0 +1,44 @@
+/* The command strip has its own compact identity; the rest of the game stays RTL. */
+body .command-hud{height:118px;min-height:118px;padding:8px 10px;gap:10px;background:linear-gradient(120deg,#24353e,#15242e 80%);border-bottom:1px solid #b5a27f55;border-radius:0 0 18px 18px;align-items:center}
+body .command-hud .hud-portrait{width:74px;min-width:74px;flex-basis:74px;height:96px;align-self:center;position:relative;border-radius:12px;overflow:hidden}
+body .command-hud .portrait-button,body .command-hud .portrait-frame{padding:0;border:0;border-radius:12px;overflow:hidden;display:block;background:transparent;width:100%;height:100%}
+body .command-hud .portrait-image{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 25%;border-radius:0;transform:scale(1.025);max-width:none}
+body .command-hud .hud-stamina{position:absolute;bottom:0;left:0;right:0;width:100%;height:15px;border-radius:0;background:#0b1729a8;margin:0}
+body .command-hud .hud-main{height:100%;display:grid;grid-template-rows:21px 45px 25px;gap:5px;min-width:0;flex:1}
+.hud-realm-title{font-size:12px;color:#e7d9bb;letter-spacing:.3px;display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:700}
+.hud-realm-title span{font-size:9px;color:#a9b8bb;white-space:nowrap}
+body .command-hud .hud-resources{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;height:auto;min-height:0;padding:0;background:none;border:0;overflow:visible;position:relative}
+body .command-hud .hud-resource{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px;height:45px;background:#ffffff05;border:1px solid #acbbc017;border-radius:8px;min-width:0}
+body .command-hud .hud-resource img{height:23px;width:23px;object-fit:contain;filter:none}
+body .command-hud .hud-resource strong{font-size:11px;color:#e6ebea;line-height:1.2}
+body .command-hud .hud-gold{position:absolute;right:0;top:51px;height:25px;min-width:0;padding:0 7px;border-radius:7px;background:#b8954821;border:1px solid #ad975136;font-size:10px}
+body .command-hud .hud-gold img{width:17px;height:17px}
+body .command-hud .hud-bottom{height:25px;min-height:0;display:flex;padding-right:64px;gap:6px;justify-content:flex-start}
+body .command-hud .hud-vip,body .command-hud .hud-store{height:25px;padding:0 6px;font-size:9px;border-radius:6px;background:#ffffff06;color:#cbd4d2;border:1px solid #ffffff12}
+body .command-hud .hud-power{flex:1;min-width:0;background:none;border:0;font-size:10px;justify-content:center;height:25px;padding:0;color:#b6c6c6}
+body .world-mode #missionStatus{display:none!important}
+body .inventory-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+body .inventory-item{min-width:0;padding:8px 4px}
+body .inventory-item img{max-width:100%;object-fit:contain}
+body .game-dialog-card{max-height:86dvh;overflow:auto;width:min(520px,94vw);background:linear-gradient(155deg,#293b46,#14242e);border:1px solid #9facb536;border-radius:20px}
+.deployment-head{display:flex;align-items:center;justify-content:space-between;padding:10px 0;color:#cfbd96;gap:8px}
+.deployment-units{max-height:50dvh;overflow:auto;display:grid;gap:9px;padding:3px}
+.deploy-unit{display:grid;grid-template-columns:52px minmax(0,1fr) 46px;gap:10px;align-items:center;border:1px solid #ffffff13;border-radius:12px;padding:8px;background:#ffffff04}
+.deploy-unit>img{width:52px;height:65px;object-fit:cover;object-position:50% 20%;border-radius:8px}
+.deploy-unit strong{display:block;font-size:12px;color:#e2dfd3}.deploy-unit small{font-size:10px;color:#a6b7bf}.deploy-unit output{font-size:13px;text-align:center;color:#d4bf94;direction:ltr}
+.deploy-unit input{width:100%;accent-color:#b7a075;margin:8px 0 2px;touch-action:pan-y}
+.deployment-summary{padding:12px 4px;font-size:12px;line-height:1.8;color:#d3c4a8}
+.enemy-search-types{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding-top:10px}
+.enemy-search-types button{padding:10px;border:1px solid #ffffff19;border-radius:12px;background:#ffffff04;color:#cbd4d6;display:flex;align-items:center;flex-direction:column;gap:7px}
+.enemy-search-types button.is-selected{border-color:#c4ac78;background:#bfa26b15}
+.enemy-search-types img{width:78px;height:78px;object-fit:contain}.enemy-search-types strong{font-size:11px}
+.enemy-search-level{display:flex;align-items:center;gap:12px;margin:18px 0;color:#d2c4aa}.enemy-search-level input{flex:1;min-width:0;accent-color:#b7a075}.enemy-search-level output{width:24px}
+.enemy-item-rewards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:8px 0}
+.enemy-item-rewards>span{display:flex;align-items:center;flex-direction:column;padding:6px;background:#ffffff05;border:1px solid #ffffff0f;border-radius:8px;text-align:center;gap:3px}.enemy-item-rewards img{width:28px;height:28px;object-fit:contain}.enemy-item-rewards small{font-size:9px}.enemy-item-rewards b{font-size:10px;color:#c5b18c}
+body .enemy-sheet{background:linear-gradient(150deg,#293b46f5,#15242ff5);border-color:#b7a37960;max-height:70dvh;overflow:auto;backdrop-filter:blur(15px)}
+body .enemy-head img{object-fit:contain;background:transparent}.enemy-attack:disabled{opacity:.45}
+@media(max-width:360px){body .command-hud{padding:7px;gap:7px}body .command-hud .hud-portrait{width:62px;min-width:62px;flex-basis:62px}.hud-realm-title span{font-size:8px}.deploy-unit{grid-template-columns:42px minmax(0,1fr) 35px;gap:7px}.deploy-unit>img{width:42px;height:57px}}
+body .inventory-item-name{font-size:10px;line-height:1.55;min-height:30px;white-space:normal;text-align:center}
+body .inventory-item-meta{font-size:8px;gap:2px;flex-wrap:wrap}
+body .inventory-item-meta strong{font-size:10px;font-variant-numeric:tabular-nums}
+body .command-hud .portrait-frame::before,body .command-hud .portrait-frame::after{display:none}

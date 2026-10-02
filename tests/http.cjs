@@ -10,7 +10,7 @@ const { createGameServer } = require('../scripts/serve.cjs');
     assert.equal(home.status, 200);
     const html = await home.text();
     assert(html.includes('continueEntry'));
-    for (const name of ['assets/js/game.js', 'assets/css/game.css', 'assets/items/food.webp', 'assets/animations/army.gif']) {
+    for (const name of ['assets/js/game.js', 'assets/css/game.css', 'assets/items/food.webp', 'assets/animations/army-directions.webp']) {
       const asset = await fetch(`${base}/${name}`);
       assert.equal(asset.status, 200, name);
       assert((await asset.arrayBuffer()).byteLength > 0);

@@ -72,6 +72,7 @@
     if (dialog && !dialog.hidden) {closeGameDialog();return true;}
     if (APP.openPage === "training" && trainingOverlay) {trainingOverlay=null;renderTrainingPage();return true;}
     if (APP.openPage === "healing" && healingOverlay) {healingOverlay=null;renderHealingPage();return true;}
+    const enemy=document.getElementById("enemySheet");if(enemy?.id==="enemySheet"){enemy.remove();return true;}
     const march=document.getElementById("marchPanel");
     if (march?.classList.contains("is-expanded")) {march.classList.remove("is-expanded");return true;}
     if (state.moveBuildingId) {stopMovingBuilding();return true;}

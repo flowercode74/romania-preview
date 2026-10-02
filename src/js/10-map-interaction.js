@@ -30,7 +30,7 @@
       z = APP.map.camera.zoom;
     return [...APP.map.castles].reverse().find(c => {
       const [x, y] = mapToScreen(c.q, c.r),
-        size = 36 * z;
+        size = 17 * z;
       return sx > x - size * .4 && sx < x + size * .4 && sy > y - size * .7 && sy < y + size * .25;
     }) || null;
   }
@@ -106,12 +106,17 @@
     renderMapActions();
   }
   // چهار صف لشکر، استقرار، عضوگیری و بازگشت
-  function startMarch(type) {
+  function startMarch(type,selection=null) {
     if (APP.tutorial.active) return;
     const target = APP.selectedMapCastle;
     if (!target || target.own || target.q === 400 && target.r === 400) return;
     if (type === "reinforce" && !APP.marches.some(m => m.id === target.campId && m.type === "camp" && m.phase === "waiting" && m.returnAt > Date.now())) return showBuildNotice("این کمپ دیگر برای عضوگیری فعال نیست.");
     if (APP.marches.length >= WORLD.marchSlots) return showBuildNotice("هر چهار صف لشکر فعال‌اند؛ منتظر بازگشت یک لشکر بمانید.");
+    if(!selection){openDeployment(type,target);return false;}
+    if(!validDeployment(selection))return showBuildNotice("تعداد نیروهای انتخاب‌شده معتبر نیست.");
+    const liveEnemy=target.enemyId?enemies.find(e=>e.id===target.enemyId):null;
+    if(target.enemyId&&(!liveEnemy||liveEnemy.q!==target.q||liveEnemy.r!==target.r||liveEnemy.level!==target.enemyLevel||liveEnemy.type!==target.enemyType))return showBuildNotice("موقعیت سرگردان عوض شده؛ دوباره آن را انتخاب کنید.");
+    if(target.enemyId&&(!enemyUnlocked(target.enemyType,target.enemyLevel)||(APP.enemyDefeated[target.enemyId]||0)>Date.now()||APP.stamina<5||APP.marches.some(m=>m.enemyId===target.enemyId&&!m.battleResolved)))return showBuildNotice("این حمله دیگر قابل انجام نیست.");
     const now = Date.now();
     const origin = {
       ...APP.home
@@ -143,14 +148,12 @@
       travelMs,
       returnAt: 0
     };
-    if (target.enemyId) {
-      if (APP.army.troops < target.troops) return;
-      if (APP.stamina < 5) return showBuildNotice("استقامت کافی نیست.");
-      APP.stamina -= 5;
-      march.unitCounts = reserveTroops(target.troops);
-      march.combatPower = Object.entries(march.unitCounts).reduce((sum, [id, count]) => sum + troopStats(id).power * count, 0) * (1 + APP.research.level * .01);
-      APP.army.troops -= target.troops;
-    }
+    march.unitCounts=reserveSelectedTroops(selection);
+    if(!march.unitCounts)return false;
+    march.troops=Object.values(march.unitCounts).reduce((a,b)=>a+b,0);
+    march.combatPower=Object.entries(march.unitCounts).reduce((n,[id,count])=>n+troopStats(id).power*count,0);
+    if(target.enemyId)APP.stamina-=5;
+    document.getElementById("enemySheet")?.remove();
     APP.marches.push(march);
     updatePower();
     saveGameProgress();
@@ -159,6 +162,7 @@
     setWorldMode(true, false);
     renderMarchRoutes();
     renderMarchQueue();
+    return true;
   }
   function updateMarches() {
     const now = Date.now();
@@ -167,12 +171,7 @@
       if (m.type !== "reinforce" && m.phase === "outbound" && now >= m.arriveAt) {
         m.phase = "waiting";
         m.returnAt = m.arriveAt + (m.type === "camp" ? WORLD.campDuration : 2000);
-        if (m.enemyId) resolveEnemyBattle(m);else if (m.type === "attack" && APP.army.troops >= 50) {
-          APP.army.troops -= 50;
-          APP.army.wounded += 50;
-          APP.kills += 10;
-          APP.peakKills = Math.max(APP.peakKills, APP.kills);
-        }
+        if (m.enemyId) resolveEnemyBattle(m);else if (m.type === "attack") { m.result="مقصد دفاع ثبت‌شده ندارد"; }
       }
     });
     // رسیدن عضو جدید قبل از بررسی انقضای کمپ پردازش می‌شود؛ ترتیب صف اثر منطقی ندارد.
@@ -182,6 +181,7 @@
       const camp = APP.marches.find(c => c.id === m.campId && c.type === "camp" && c.phase === "waiting" && c.returnAt >= m.arriveAt);
       if (camp) {
         camp.members = (camp.members || 1) + (m.members || 1);
+        camp.unitCounts ||= {};for(const [id,n] of Object.entries(m.unitCounts||{}))camp.unitCounts[id]=(camp.unitCounts[id]||0)+n;camp.troops=(camp.troops||0)+(m.troops||0);camp.combatPower=(camp.combatPower||0)+(m.combatPower||0);
         camp.returnAt = m.arriveAt + WORLD.campDuration;
         merged.add(m.id);
       } else {
@@ -195,12 +195,7 @@
       if (m.phase === "outbound" && now >= m.arriveAt) {
         m.phase = "waiting";
         m.returnAt = m.arriveAt + (m.type === "camp" ? WORLD.campDuration : 2000);
-        if (m.enemyId) resolveEnemyBattle(m);else if (m.type === "attack" && APP.army.troops >= 50) {
-          APP.army.troops -= 50;
-          APP.army.wounded += 50;
-          APP.kills += 10;
-          APP.peakKills = Math.max(APP.peakKills, APP.kills);
-        }
+        if (m.enemyId) resolveEnemyBattle(m);else if (m.type === "attack") { m.result="مقصد دفاع ثبت‌شده ندارد"; }
       }
       if (m.phase === "waiting" && now >= m.returnAt) {
         m.phase = "returning";
@@ -208,7 +203,7 @@
         m.arriveAt = m.startedAt + (m.travelMs || 15000);
       }
       if (m.phase === "returning" && now >= m.arriveAt) {
-        if (m.enemyId && !m.troopsRestored) {
+        if ((m.unitCounts || m.enemyId) && !m.troopsRestored) {
           APP.army.troops += Math.max(0, m.troops - (m.lostTroops || 0));
           if (m.unitCounts) {
             APP.army.units ||= {
@@ -219,7 +214,7 @@
             let losses = m.lostTroops || 0;
             for (const [id, count] of Object.entries(migrateUnitStock(m.unitCounts))) {
               if (!TROOPS[id]) continue;
-              const lost = Math.min(count, losses);
+              const lost = m.casualties ? Math.min(count,m.casualties[id]||0) : Math.min(count, losses);
               losses -= lost;
               APP.army.units[id] = (APP.army.units[id] || 0) + count - lost;
             }
@@ -265,8 +260,11 @@
         line.setAttribute("class", "march-road");
         const g = document.createElementNS(ns, "g");
         g.setAttribute("class", "march-army");
-        const soldier = document.createElementNS(ns, "image");
-        soldier.setAttribute("href", "assets/animations/army.gif");
+        const soldier = document.createElementNS(ns, "svg");
+        const spriteImage=document.createElementNS(ns,"image");
+        spriteImage.setAttribute("href","assets/animations/army-directions.webp");spriteImage.setAttribute("width","1024");spriteImage.setAttribute("height","2048");soldier.appendChild(spriteImage);
+        soldier.setAttribute("overflow","hidden");
+        soldier.setAttribute("viewBox","0 0 256 256");
         soldier.setAttribute("x", "-33");
         soldier.setAttribute("y", "-48");
         soldier.setAttribute("width", "66");
@@ -282,21 +280,19 @@
         node = {
           line,
           g,
-          soldier
+          soldier, spriteImage
         };
         APP.map.marchNodes.set(m.id, node);
       }
-      // تغییر مکرر href می‌تواند GIF را از فریم اول آغاز کند؛ فقط تغییر وضعیت تصویر را عوض می‌کند.
-      const sprite = m.phase === "waiting" && m.type === "camp" ? ASSETS.armyCamp : "assets/animations/army.gif";
-      if (node.sprite !== sprite) {
-        node.soldier.setAttribute("href", sprite);
-        node.sprite = sprite;
-      }
-      const spriteSize = 28 * APP.map.camera.zoom;
-      node.soldier.setAttribute("width", spriteSize);
-      node.soldier.setAttribute("height", spriteSize);
-      node.soldier.setAttribute("x", -spriteSize / 2);
-      node.soldier.setAttribute("y", -spriteSize * .72);
+      const camp=m.phase==="waiting"&&m.type==="camp";
+      const sprite=camp?ASSETS.armyCamp:"assets/animations/army-directions.webp";
+      if(node.sprite!==sprite){node.spriteImage.setAttribute("href",sprite);node.spriteImage.setAttribute("width",camp?256:1024);node.spriteImage.setAttribute("height",camp?256:2048);node.sprite=sprite;}
+      m.directionRow=marchDirection(m,now);
+      const frame=m.phase==="waiting"?0:Math.floor(now/150)%4;
+      node.soldier.setAttribute("viewBox",camp?"0 0 256 256":`${frame*256} ${m.directionRow*256} 256 256`);
+      const spriteSize=18*APP.map.camera.zoom;
+      node.soldier.setAttribute("width",spriteSize);node.soldier.setAttribute("height",spriteSize);
+      node.soldier.setAttribute("x",-spriteSize/2);node.soldier.setAttribute("y",-spriteSize/2);
       const route = m.phase === "returning" ? m.reverseRoute || (m.reverseRoute = [...m.route].reverse()) : m.route;
       if (m.phase === "waiting") {
         node.line.style.display = "none";
@@ -349,7 +345,7 @@
   // لمس نقشه و جلوگیری از انتخاب ناخواسته
   function mapMinZoom() {
     const layer = document.getElementById("worldMapLayer");
-    return Math.max(.12, layer.clientWidth / (800 * APP.map.hexSize * Math.sqrt(3) - 40), layer.clientHeight / (800 * APP.map.hexSize * 1.5 - 40));
+    return Math.max(.55, layer.clientWidth / (800 * APP.map.hexSize * Math.sqrt(3) - 40), layer.clientHeight / (800 * APP.map.hexSize * 1.5 - 40));
   }
   function bindMapInput() {
     const layer = document.getElementById("worldMapLayer");
@@ -481,7 +477,7 @@
 
   // تلپورت تأییدشده خارج از موانع و محدوده رویداد
   function validTeleportTarget(cell) {
-    return cell && Number.isInteger(cell.q) && Number.isInteger(cell.r) && cell.q >= 1 && cell.q <= 800 && cell.r >= 1 && cell.r <= 800 && castleFootprint(cell.q, cell.r).every(p => !insideEventArea(p.q, p.r)) && mapBuildingFits(cell.q, cell.r) && !enemyAtFootprint(cell);
+    return cell && Number.isInteger(cell.q) && Number.isInteger(cell.r) && cell.q >= 1 && cell.q <= 800 && cell.r >= 1 && cell.r <= 800 && Math.hypot(cell.q-WORLD.eventQ,cell.r-WORLD.eventR)>WORLD.neutralRadius+2 && castleFootprint(cell.q, cell.r).every(p => !insideEventArea(p.q, p.r)) && mapBuildingFits(cell.q, cell.r) && !enemyAtFootprint(cell) && enemySpaceFree(cell.q,cell.r);
   }
   async function teleportCastle(cell, itemId) {
     const item = INVENTORY.find(i => i.id === itemId);
@@ -576,7 +572,7 @@
     const rect = document.getElementById("worldMapLayer").getBoundingClientRect();
     return APP.marches.find(m => m.type === "camp" && m.phase === "waiting" && (() => {
       const [x, y] = mapToScreen(m.target.q, m.target.r);
-      return Math.hypot(clientX - rect.left - x, clientY - rect.top - y) < 38;
+      const world=mapScreenToWorld(clientX,clientY),cell=mapWorldToAxial(world.x,world.y);return cell.q===m.target.q&&cell.r===m.target.r;
     })());
   }
   function openCampActions(m) {
@@ -751,7 +747,7 @@
       const m = APP.marches.find(m => m.id === selection.id);
       if (!m) return hideMapActions();
       const time = document.getElementById("campInlineTime");
-      if (time) time.innerHTML = (m.phase === "waiting" ? timerProgress(m.returnAt - WORLD.campDuration, m.returnAt, "تا بازگشت") : timerProgress(m.startedAt, m.arriveAt, "تا رسیدن")) + "<span>جزئیات تعداد و قدرت نیروها پس از تکمیل سیستم نیرو نمایش داده می‌شود.</span>";
+      if(time)time.innerHTML=(m.phase==="waiting"?timerProgress(m.returnAt-WORLD.campDuration,m.returnAt,"تا بازگشت"):timerProgress(m.startedAt,m.arriveAt,"تا رسیدن"))+`<span>${formatCompact(Math.max(0,(m.troops||0)-(m.lostTroops||0)))} نیروی آماده · توان ${formatCompact(Object.entries(m.unitCounts||{}).reduce((n,[id,count])=>n+(TROOPS[id]?.power||0)*Math.max(0,count-(m.casualties?.[id]||0)),0))}</span>${Object.entries(m.unitCounts||{}).filter(([,count])=>count>0).map(([id,count])=>`<span>${TROOPS[id]?.name||"نیرو"}: ${formatCompact(Math.max(0,count-(m.casualties?.[id]||0)))}</span>`).join("")}`;
     }
   }
   async function recallCamp(id) {
@@ -768,7 +764,7 @@
     }
     const dialog = document.getElementById("gameDialog");
     document.getElementById("gameDialogTitle").textContent = title;
-    document.getElementById("gameDialogContent").innerHTML = html;
+    const content=document.getElementById("gameDialogContent");content.onclick=null;content.oninput=null;content.innerHTML=html;
     const buttons = document.getElementById("gameDialogActions");
     buttons.replaceChildren();
     for (const action of actions) {
@@ -901,6 +897,7 @@
     document.getElementById("eventsButton")?.addEventListener("click", () => {
       if (!APP.tutorial.active) openPage("events", '<div class="shield-content"><h2>رویدادها</h2><p>رویداد فعالی ثبت نشده است.</p></div>');
     });
+    document.getElementById("enemySearchButton")?.addEventListener("click",openEnemySearch);
     document.getElementById("mapSearchButton")?.addEventListener("click", openCoordinateSearch);
     document.getElementById("mapBookmarksButton")?.addEventListener("click", openMapBookmarks);
     document.getElementById("vipButton")?.addEventListener("click", openVip);

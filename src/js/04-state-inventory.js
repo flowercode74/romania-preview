@@ -1,10 +1,10 @@
   // وضعیت مشترک منابع، اتحاد، آموزش و لشکرها
   const APP = {
     resources: {
-      wood: 50000,
-      food: 50000,
-      stone: 50000,
-      iron: 50000,
+      wood: 8000,
+      food: 8000,
+      stone: 8000,
+      iron: 8000,
       gold: 500,
       power: 0
     },
@@ -18,6 +18,7 @@
     missionTab: "tutorial",
     marches: [],
     enemyDefeated: {},
+    enemyProgress: {},
     enemyMoves: {},
     collectors: {},
     battleReports: [],
@@ -372,18 +373,18 @@
   const TUTORIAL_ORDER = ["castle", "hideout", "farm", "lumber", "stone", "iron", "barracks", "hospital", "research", "embassy", "camp", "wall"];
   const TUTORIAL_REWARD = {
     resources: {
-      wood: 45000,
-      food: 45000,
-      stone: 45000,
-      iron: 45000
+      wood: 3000,
+      food: 3000,
+      stone: 3000,
+      iron: 3000
     },
-    label: "۴۵هزار از هر منبع"
+    label: "۳۰۰۰ از هر منبع"
   };
   // تعریف مأموریت‌های آموزش، رشد و روزانه
   const MISSION_DATA = {
     tutorial: [...TUTORIAL_ORDER.map((id, index) => ({
       id: `tutorial-${id}`,
-      title: index ? id === "wall" ? "دیوار قلعه" : BUILDINGS.find(b => b.id === id).name : "قلعه سطح ۲",
+      title: index ? id === "wall" ? "باروی سنگ‌پیمان" : BUILDINGS.find(b => b.id === id).name : "دژ آذروند سطح ۲",
       description: index ? "ساختمان را بسازید" : "قلعه را ارتقا دهید",
       target: index ? 1 : 2,
       buildingId: id,
@@ -413,34 +414,34 @@
       const level = i + (id === "castle" ? 3 : 2);
       return {
         id: `growth-${level}-${id}`,
-        title: `${id === "wall" ? "دیوار قلعه" : BUILDINGS.find(b => b.id === id).name} سطح ${level}`,
+        title: `${id === "wall" ? "باروی سنگ‌پیمان" : BUILDINGS.find(b => b.id === id).name} سطح ${level}`,
         description: "ارتقای ساختمان در چرخه رشد",
         target: level,
         buildingId: id,
         reward: {
           resources: {
-            wood: level * 3500,
-            food: level * 3500,
-            stone: level * 3500,
-            iron: level * 3500
+            wood: growthRewardAmount(level),
+            food: growthRewardAmount(level),
+            stone: growthRewardAmount(level),
+            iron: growthRewardAmount(level)
           },
-          label: `${level * 3500} از هر منبع`
+          label: `${growthRewardAmount(level)} از هر منبع`
         }
       };
     })).flat(), ...TUTORIAL_ORDER.slice(1).map(id => ({
       id: `growth-20-${id}`,
-      title: `${id === "wall" ? "دیوار قلعه" : BUILDINGS.find(b => b.id === id).name} سطح ۲۰`,
+      title: `${id === "wall" ? "باروی سنگ‌پیمان" : BUILDINGS.find(b => b.id === id).name} سطح ۲۰`,
       description: "آخرین ارتقا",
       target: 20,
       buildingId: id,
       reward: {
         resources: {
-          wood: 70000,
-          food: 70000,
-          stone: 70000,
-          iron: 70000
+          wood: growthRewardAmount(20),
+          food: growthRewardAmount(20),
+          stone: growthRewardAmount(20),
+          iron: growthRewardAmount(20)
         },
-        label: "۷۰هزار از هر منبع"
+        label: "پاداش تکمیل سطح ۲۰"
       }
     }))],
     daily: [["login", "ورود روزانه", 1, 20, "food-5000"], ["upgrade", "ارتقای یک ساختمان", 1, 70, "wood-5000"], ["heal", "درمان ۵۰ سرباز", 50, 70, "food-5000"], ["train", "ساخت ۱۰۰ سرباز", 100, 70, "iron-5000"], ["production", "آیتم جهش تولید", 1, 70, "stone-5000"], ["build-speed", "۶۰ دقیقه تسریع ساخت", 60, 70, "wood-5000"], ["troop-speed", "۶۰ دقیقه تسریع نیرو", 60, 70, "iron-5000"], ["heal-speed", "۱۰ دقیقه تسریع درمان", 10, 60, "food-5000"]].map(([id, title, target, gold, item]) => ({
@@ -468,3 +469,8 @@
   const VIP_BENEFITS = ["صفحه پروفایل ویژه", "صف نوبت ساخت بیشتر", "تسریع تولید منابع", "پاداش ورود بهتر", "پاداش فعالیت بیشتر", "تسریع ساخت‌وساز", "پاداش مأموریت بیشتر", "تخفیف آیتم‌های کاربردی", "پاداش روزانه ویژه", "تسریع آموزش", "پاداش اتحاد", "جایزه ویژه سطح 12"];
   const VIP_THRESHOLDS = [0, 500, 1200, 2200, 3500, 5200, 7400, 10000, 13200, 17000, 21500, 27000];
 
+
+  // Starter packs are not a recurring income source. Research stays dormant.
+  const STARTER_ITEMS={"wood-5000":1,"food-5000":1,"stone-5000":1,"iron-5000":1,"speed-60":4,"speed-1":2,"troop-speed-1m":2,"troop-speed-60m":3,"heal-speed-1m":1,"march-recall":2,"teleport-target":1,"shield-8h":1};
+  for(const item of INVENTORY) item.count=STARTER_ITEMS[item.id]||0;
+  for(const mission of MISSION_DATA.tutorial) mission.reward={resources:{...mission.reward.resources},items:[{id:mission.id==="tutorial-train"?"troop-speed-5m":mission.id==="tutorial-heal"?"heal-speed-5m":"speed-1",count:1}],label:mission.reward.label};

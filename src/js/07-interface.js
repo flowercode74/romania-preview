@@ -6,6 +6,7 @@
 
   // منوی بالای صفحه و شمارنده‌های وضعیت
   function updateTopHud() {
+    const seasonLabel=document.getElementById("hudSeasonText");if(seasonLabel){const day=Math.max(1,Math.floor((Date.now()-APP.accountCreatedAt)/86400000)+1);seasonLabel.textContent=day<=SEASON.days?`روز ${day} از ${SEASON.days}`:"پایان فصل · تمرین آزاد";}
     Object.entries({
       woodValue: APP.resources.wood,
       foodValue: APP.resources.food,
@@ -132,7 +133,7 @@
       <button class="ui-tab ${category === "shield" ? "is-active" : ""}" data-inventory-tab="shield">شیلد</button>
       <button class="ui-tab ${category === "other" ? "is-active" : ""}" data-inventory-tab="other">سایر</button>
     </div>`;
-    const items = INVENTORY.filter(item => category === "all" || item.category === category || category === "speed" && (item.family || item.id.startsWith("march-speed-")) || category === "other" && item.category === "utility" && !item.family);
+    const items = INVENTORY.filter(item => item.count > 0 && (category === "all" || item.category === category || category === "speed" && (item.family || item.id.startsWith("march-speed-")) || category === "other" && item.category === "utility" && !item.family));
     const grid = `<div class="inventory-grid">${items.map(item => `
       <button class="inventory-item" type="button" data-inventory-item="${item.id}" ${!item.count || item.category === "other" || item.category === "speed" && !APP.worker.task ? "disabled" : ""}>
         <div class="inventory-item-name">${escapeHTML(item.name)}</div>

@@ -6,15 +6,15 @@
     { id: "special", name: "ویژه", symbol: "✦", counters: "bow" }
   ]);
   const TROOP_LINES = [
-    { id: "sword", role: "spear", group: "attack", name: "نیزه‌دار هجومی", attack: 32, defense: 15, health: 110, power: 80, seconds: 18, cost: 35 },
-    { id: "archer", role: "bow", group: "attack", name: "کماندار هجومی", attack: 38, defense: 12, health: 95, power: 90, seconds: 21, cost: 40 },
-    { id: "knight", role: "cavalry", group: "attack", name: "سوارکار هجومی", attack: 46, defense: 22, health: 140, power: 120, seconds: 26, cost: 65 },
-    { id: "beast", role: "special", group: "attack", name: "تبرزن هجومی", attack: 52, defense: 18, health: 125, power: 115, seconds: 25, cost: 60 },
-    { id: "guard", role: "spear", group: "defense", name: "نگهبان نیزه‌دار", attack: 20, defense: 35, health: 165, power: 80, seconds: 18, cost: 35 },
-    { id: "scout", role: "bow", group: "defense", name: "کماندار محافظ", attack: 26, defense: 29, health: 140, power: 90, seconds: 21, cost: 40 },
-    { id: "spear", role: "cavalry", group: "defense", name: "سوارکار زرهی", attack: 30, defense: 44, health: 205, power: 120, seconds: 26, cost: 65 },
-    { id: "heavy", role: "special", group: "defense", name: "نگهبان پتک‌دار", attack: 32, defense: 48, health: 195, power: 115, seconds: 25, cost: 60 }
-  ].map(t => ({ ...t, image: `assets/troops/${t.group}-${t.role}.webp` }));
+    { id: "sword", role: "spear", group: "attack", name: "نیزه‌ور آذرپیمان", attack: 32, defense: 15, health: 110, power: 80, seconds: 18, cost: 35 },
+    { id: "archer", role: "bow", group: "attack", name: "کمان‌ور بادچله", attack: 38, defense: 12, health: 95, power: 90, seconds: 21, cost: 40 },
+    { id: "knight", role: "cavalry", group: "attack", name: "سوار تندرگام", attack: 46, defense: 22, health: 140, power: 120, seconds: 26, cost: 65 },
+    { id: "beast", role: "special", group: "attack", name: "تبرور خاکستر", attack: 52, defense: 18, health: 125, power: 115, seconds: 25, cost: 60 },
+    { id: "guard", role: "spear", group: "defense", name: "نیزه‌بان سنگروند", attack: 20, defense: 35, health: 150, power: 80, seconds: 18, cost: 35 },
+    { id: "scout", role: "bow", group: "defense", name: "کمان‌بان شب‌دیده", attack: 26, defense: 29, health: 120, power: 90, seconds: 21, cost: 40 },
+    { id: "spear", role: "cavalry", group: "defense", name: "سوار پولادگام", attack: 30, defense: 44, health: 180, power: 120, seconds: 26, cost: 65 },
+    { id: "heavy", role: "special", group: "defense", name: "پتک‌بان دژمهر", attack: 32, defense: 48, health: 155, power: 115, seconds: 25, cost: 60 }
+  ].map(t => ({ ...t, seconds:t.seconds*SEASON.trainingSecondsMultiplier, image: `assets/troops/${t.group}-${t.role}.webp` }));
   const TROOPS = Object.fromEntries(TROOP_LINES.map(t => [t.id, { ...t, line: t.id, tier: 1, speed: t.role === "cavalry" ? 240 : t.role === "bow" ? 170 : 150, capacity: t.role === "cavalry" ? 12 : 8 }]));
   const TRAINING_KEYS = Object.freeze(["training", "training2", "training3"]);
   function isTrainingQueue(kind) { return TRAINING_KEYS.includes(kind); }
@@ -178,7 +178,7 @@
   };
   function productionRate(id) {
     const level = buildingById(id)?.level || 0;
-    return level ? Math.round(600 * Math.pow(level, 1.55)) : 0;
+    return level ? productionRateAt(level) : 0;
   }
   function tickCollectors(now = Date.now()) {
     for (const [id, resource] of Object.entries(PRODUCERS)) {
@@ -190,7 +190,7 @@
         };
       const multiplier = productionMultiplier(resource),
         pending = [APP.worker, APP.worker2].find(w => w.task?.id === id && w.endsAt <= now);
-      const finalRate = pending ? Math.round(600 * Math.pow(pending.task.target, 1.55)) : rate;
+      const finalRate = pending ? productionRateAt(pending.task.target) : rate;
       const span = (from, to, speed) => {
         const elapsed = Math.max(0, to - from),
           boosted = Math.max(0, Math.min(to, APP.productionBoostUntil) - from);

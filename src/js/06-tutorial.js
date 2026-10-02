@@ -253,16 +253,21 @@
     APP.tutorial.phase = `army-${kind}`;
     if (kind === "healing" && !APP.army.practiceWounded) {
       APP.army.practiceWounded = true;
-      reserveTroops(10);
-      APP.army.troops = Math.max(0, APP.army.troops - 10);
-      APP.army.wounded += 10;
+      const practice=reserveTroops(Math.min(10,APP.army.troops)),stock=woundedStock();
+      const count=Object.values(practice).reduce((a,b)=>a+b,0);
+      for(const [id,n] of Object.entries(practice))if(n)stock[id]=(stock[id]||0)+n;
+      APP.army.troops = Math.max(0, APP.army.troops - count);
+      APP.army.wounded += count;
     }
     document.getElementById("tutorialTitle").textContent = kind === "training" ? "آموزش صد سرباز" : "درمان ده مجروح تمرین";
-    setNarratorText(kind === "training" ? "در سربازخانه صد نیزه‌دار هجومی آموزش دهید. تعداد نیرو را با اسلایدر انتخاب کنید؛ در زمان انتظار می‌توانید دوربین را حرکت دهید." : "ده سرباز در تمرین دفاعی مجروح شده‌اند. در بیمارستان آن‌ها را درمان کنید.");
+    setNarratorText(kind === "training" ? "در رزمگاه آهن‌پیمان صد نیروی آذرپیمان آموزش دهید. ابتدا روی ساختمان و سپس «ساخت نیرو» بزنید. تعداد نیرو را با اسلایدر انتخاب کنید؛ در زمان انتظار می‌توانید دوربین را حرکت دهید." : "ده سرباز در تمرین دفاعی مجروح شده‌اند. روی دارالشفای سپیدمهر و سپس «درمان» بزنید.");
     state.selectedId = kind === "training" ? "barracks" : "hospital";
     const b = buildingById(state.selectedId);
     focusBuilding(b.id);
-    openFacility(b.id);
+    closePanels();
+    state.missionFocus={id:b.id,action:"special"};
+    showBuildingLabels();
+    hideBuildingActionMenu();
     document.getElementById("tutorialOverlay")?.classList.remove("is-welcome");
     document.getElementById("tutorialOverlay")?.classList.add("is-visible");
     saveGameProgress();

@@ -15,27 +15,27 @@
   // دشمنان سرگردان: موقعیت پایدار، سطح بر اساس فاصله مرکز و کش منطقه‌ای برای رندر سبک.
   const ENEMY_TYPES = [{
     id: "viking",
-    role: "special",
-    name: "وایکینگ",
-    image: "assets/enemies/viking.webp",
+    role: "mixed",
+    name: "سپاه خاکستروند",
+    image: "assets/enemies/ashen-host.webp",
     drop: "random"
   }, {
     id: "archer",
     role: "bow",
-    name: "کماندار سرگردان",
-    image: "assets/enemies/archer.webp",
+    name: "چله‌داران شب‌رون",
+    image: "assets/enemies/nightrune-bows.webp",
     drop: "troop-speed-60"
   }, {
     id: "swordmen",
     role: "spear",
-    name: "شمشیرزن سرگردان",
-    image: "assets/enemies/swordsmen.webp",
+    name: "نیزه‌وران اخگرسنگ",
+    image: "assets/enemies/ember-pikes.webp",
     drop: "speed-60"
   }, {
     id: "cavarly",
     role: "cavalry",
-    name: "سوارنظام سرگردان",
-    image: "assets/enemies/cavalry.webp",
+    name: "سواران آهن‌توفان",
+    image: "assets/enemies/iron-gale.webp",
     drop: "heal-speed-10"
   }];
   const enemies = [],
@@ -64,8 +64,8 @@
         continue;
       }
       for (let attempt = 0; attempt < 300; attempt++) {
-        const q = 35 + Math.floor(Math.random() * 730),
-          r = 35 + Math.floor(Math.random() * 730);
+        const q = Math.max(35,Math.min(765,enemy.q+Math.floor(Math.random()*25)-12)),
+          r = Math.max(35,Math.min(765,enemy.r+Math.floor(Math.random()*25)-12));
         if (terrainAt(q, r).blocked || insideEventArea(q, r) || !connectedGround[q * 801 + r] || !enemySpaceFree(q, r, id) || APP.map.castles.some(c => mapDistance(c, {
           q,
           r
@@ -75,13 +75,9 @@
         Object.assign(enemy, {
           q,
           r,
-          level: enemyLevel(q, r)
+          level: enemy.level
         });
-        APP.enemyMoves[id] = {
-          id,
-          q,
-          r
-        };
+        APP.enemyMoves[id] = {id,q,r,level:enemy.level};
         const bucket = `${Math.floor(q / 32)}:${Math.floor(r / 32)}`;
         if (!enemyBuckets.has(bucket)) enemyBuckets.set(bucket, []);
         enemyBuckets.get(bucket).push(enemy);
@@ -90,7 +86,7 @@
         break;
       }
     }
-    if (changed) saveGameProgress();
+    if (changed) {saveGameProgress();if(APP.currentMode==="map")applyMapCamera();}
   }
   function addEnemy(enemy) {
     if (!enemySpaceFree(enemy.q, enemy.r)) return false;
@@ -120,7 +116,7 @@
     const positions=new Map((APP.savedEnemyPositions||[]).filter(e=>Number.isInteger(e.q)&&Number.isInteger(e.r)&&e.q>=1&&e.q<=800&&e.r>=1&&e.r<=800).map(e=>[e.id,e]));
     for(const enemy of enemies) {
       const pos=positions.get(enemy.id);
-      if(pos) Object.assign(enemy,{q:pos.q,r:pos.r,level:enemyLevel(pos.q,pos.r)});
+      if(pos) Object.assign(enemy,{q:pos.q,r:pos.r,level: Number.isInteger(pos.level)&&pos.level>=1&&pos.level<=25?pos.level:enemy.id.startsWith("starter-")?enemy.level:enemyLevel(pos.q,pos.r)});
     }
     repairEnemySpacing();
   }
@@ -150,7 +146,7 @@
   function enemyAtFootprint(cell) {
     const x = Math.floor(cell.q / 32),
       y = Math.floor(cell.r / 32);
-    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (const e of enemyBuckets.get(`${x + dx}:${y + dy}`) || []) if ((APP.enemyDefeated[e.id] || 0) <= Date.now() && mapDistance(cell, e) < 2) return true;
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (const e of enemyBuckets.get(`${x + dx}:${y + dy}`) || []) if ((APP.enemyDefeated[e.id] || 0) <= Date.now() && mapDistance(cell, e) === 0) return true;
     return false;
   }
   function enemiesInView() {
@@ -166,20 +162,20 @@
     if (APP.map.camera.zoom < MAP_DETAIL_ZOOM) return;
     for (const enemy of enemiesInView()) {
       const [x, y] = mapToScreen(enemy.q, enemy.r),
-        size = 25 * APP.map.camera.zoom,
+        size = 17 * APP.map.camera.zoom,
         type = ENEMY_TYPES[enemy.type],
         image = state.images.get(type.image);
-      if (image?.naturalWidth) ctx.drawImage(image, x - size / 2, y - size * .8, size, size);
+      if (image?.naturalWidth) ctx.drawImage(image, x - size / 2, y - size / 2, size, size);
       drawNameplate(ctx,type.name,enemy.level,x,y-size*.8-18,84);
     }
   }
   function hitEnemy(clientX, clientY) {
     if (APP.map.camera.zoom < MAP_DETAIL_ZOOM) return null;
     const rect = document.getElementById("worldMapLayer").getBoundingClientRect(),
-      size = 25 * APP.map.camera.zoom;
+      size = 17 * APP.map.camera.zoom;
     return enemiesInView().find(e => {
       const [x, y] = mapToScreen(e.q, e.r);
-      return Math.abs(clientX - rect.left - x) < size * .6 && Math.abs(clientY - rect.top - y + size * .3) < size * .65;
+      return Math.abs(clientX - rect.left - x) < size * .6 && Math.abs(clientY - rect.top - y) < size * .65;
     });
   }
   function enemyDropItem(level, typeIndex, random = Math.random) {
@@ -193,20 +189,15 @@
     }[minutes] : `${family}-speed-${minutes}m`;
   }
   function enemyResources(level) {
-    const value = 800 + level * 450;
-    return {
-      wood: value,
-      food: value,
-      stone: value,
-      iron: value
-    };
+    const value=Math.round(400*Math.pow(1.20,Math.max(0,level-1)));
+    return {wood:value,food:value,stone:value,iron:value};
   }
+
   function enemyRequirement(level) {
-    return {
-      troops: 20 * level,
-      power: Math.round(60 * Math.pow(level, 2.1))
-    };
+    const count=Math.round(12*Math.pow(1.31,Math.max(0,level-1)));
+    return {troops:Math.ceil(count*1.6),power:Math.round(count*80*(1+(level-1)*.012))};
   }
+
   function openEnemy(enemy) {
     hideMapActions();
     document.getElementById("enemySheet")?.remove();
@@ -216,85 +207,42 @@
     const box = document.createElement("section");
     box.id = "enemySheet";
     box.className = "enemy-sheet";
-    box.innerHTML = `<button class="enemy-close" aria-label="بستن">×</button><div class="enemy-head"><img src="${type.image}" alt=""><div><h3>${type.name}</h3><span>درجه ${enemy.level} · X:${enemy.q} Y:${enemy.r}</span></div></div><strong>پاداش پیروزی</strong><div class="enemy-rewards">${["wood", "food", "stone", "iron"].map(id => `<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}">${formatCompact(value)} · قطعی</span>`).join("")}</div><p>تسریع ${type.drop === "random" ? "تصادفی" : type.id === "cavarly" ? "درمان" : type.id === "archer" ? "ساخت نیرو" : "ساخت‌وساز"}: ${enemy.level <= 5 ? 1 : enemy.level <= 15 ? 5 : 10} دقیقه با احتمال ۳۵٪ · تسریع حرکت ۱۰٪: ۲۰٪ · تسریع حرکت ۵۰٪: ۵٪</p><small>نیاز پیشنهادی: ${requirement.troops} سرباز و ${formatCompact(requirement.power)} توان لشکر. توان فعلی: ${formatCompact(APP.army.troops * 80)}</small><button class="enemy-attack" type="button">حمله</button>`;
+    box.innerHTML = `<button class="enemy-close" aria-label="بستن">×</button><div class="enemy-head"><img src="${type.image}" alt=""><div><h3>${type.name}</h3><span>درجه ${enemy.level} · X:${enemy.q} Y:${enemy.r}</span></div></div><strong>پاداش پیروزی</strong><div class="enemy-rewards">${["wood", "food", "stone", "iron"].map(id => `<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}">${formatCompact(value)} · قطعی</span>`).join("")}<span><img src="assets/resources/gold.webp" alt="سکه">${5+enemy.level} · قطعی</span></div><div class="enemy-item-rewards">${enemyRewardChips(enemy.level,enemy.type)}</div><p hidden>تسریع ${type.drop === "random" ? "تصادفی" : type.id === "cavarly" ? "درمان" : type.id === "archer" ? "ساخت نیرو" : "ساخت‌وساز"}: ${enemy.level <= 5 ? 1 : enemy.level <= 15 ? 5 : 10} دقیقه با احتمال ۳۵٪ · تسریع حرکت ۱۰٪: ۲۰٪ · تسریع حرکت ۵۰٪: ۵٪</p><small>نیاز پیشنهادی: ${requirement.troops} سرباز و ${formatCompact(requirement.power)} توان لشکر. نیروی آماده: ${formatCompact(APP.army.troops)}</small><button class="enemy-attack" type="button" ${enemyUnlocked(enemy.type,enemy.level)?"":"disabled"}>${enemyUnlocked(enemy.type,enemy.level)?"انتخاب نیرو و حمله":"ابتدا درجه قبلی را شکست دهید"}</button>`;
     box.addEventListener("pointerdown", e => e.stopPropagation());
     box.querySelector(".enemy-close").onclick = () => box.remove();
     box.querySelector(".enemy-attack").onclick = () => attackEnemy(enemy);
     document.getElementById("worldMapLayer").appendChild(box);
   }
-  async function attackEnemy(enemy) {
-    if (APP.tutorial.active) return showBuildNotice("ابتدا آموزش را کامل کنید.");
-    if (APP.stamina < 5) return showBuildNotice("برای حمله ۵ استقامت نیاز است.");
-    const req = enemyRequirement(enemy.level);
-    if (APP.army.troops < req.troops) return showBuildNotice(`حداقل ${req.troops} سرباز آماده نیاز است.`);
-    if (marchCapacity() < req.troops) return showBuildNotice("ظرفیت اردوگاه کافی نیست.");
-    const desired = Math.ceil(req.power / 80);
-    req.troops = Math.min(APP.army.troops, marchCapacity(), Math.max(req.troops, desired));
-    if (req.troops > marchCapacity()) return showBuildNotice("ظرفیت اردوگاه کافی نیست.");
-    if (APP.army.troops < req.troops) return showBuildNotice(`حداقل ${req.troops} سرباز آماده نیاز است؛ در سربازخانه نیرو آموزش دهید.`);
-    if (APP.marches.some(m => m.enemyId === enemy.id && !m.battleResolved)) return showBuildNotice("یک لشکر در مسیر این دشمن است.");
-    if ((APP.enemyDefeated[enemy.id] || 0) > Date.now()) return showBuildNotice("این دشمن قبلاً شکست خورده است.");
-    if (!(await gameConfirm(`اعزام ${req.troops} سرباز برای حمله به ${ENEMY_TYPES[enemy.type].name} درجه ${enemy.level} تأیید می‌شود؟`))) return;
-    if (APP.army.troops < req.troops || APP.marches.some(m => m.enemyId === enemy.id && !m.battleResolved)) return;
-    if (APP.stamina < 5) return;
-    APP.selectedMapCastle = {
-      ...enemy,
-      name: ENEMY_TYPES[enemy.type].name,
-      enemyId: enemy.id,
-      enemyLevel: enemy.level,
-      enemyType: enemy.type,
-      troops: req.troops
-    };
-    startMarch("attack");
-    document.getElementById("enemySheet")?.remove();
+  function attackEnemy(enemy) {
+    if(APP.tutorial.active)return showBuildNotice("ابتدا آموزش را کامل کنید.");
+    if(!enemyUnlocked(enemy.type,enemy.level))return showBuildNotice("ابتدا درجه قبلی همین گروه سرگردان را شکست دهید.");
+    if(APP.stamina<5)return showBuildNotice("برای حمله ۵ استقامت نیاز است.");
+    if((APP.enemyDefeated[enemy.id]||0)>Date.now())return showBuildNotice("این سرگردان قبلاً شکست خورده است.");
+    if(APP.marches.some(m=>m.enemyId===enemy.id&&!m.battleResolved))return showBuildNotice("یک لشکر در مسیر این دشمن است.");
+    APP.selectedMapCastle={...enemy,name:ENEMY_TYPES[enemy.type].name,enemyId:enemy.id,enemyLevel:enemy.level,enemyType:enemy.type};
+    openDeployment("attack",APP.selectedMapCastle);
   }
-  function resolveEnemyBattle(m, random = Math.random) {
-    if (m.battleResolved) return false;
-    m.battleResolved = true;
-    if ((APP.enemyDefeated[m.enemyId] || 0) > m.arriveAt) {
-      m.result = "قبلاً شکست خورده";
-      return false;
-    }
-    const req = enemyRequirement(m.enemyLevel),
-      power = (m.combatPower || m.troops * 80) * armyCounterMultiplier(m.unitCounts, ENEMY_TYPES[m.enemyType]?.role || "spear");
-    if (power < req.power) {
-      m.result = "شکست";
-      m.lostTroops = Math.ceil(m.troops * .2);
-      recordWounded(m);
-      addBattleReport(m, {});
-      showBuildNotice("نبرد با دشمن سرگردان ناموفق بود؛ لشکر در حال بازگشت است.");
-      return false;
-    }
-    m.result = "پیروزی";
-    m.lostTroops = Math.min(m.troops - 1, Math.floor(m.troops * Math.min(.08, req.power / Math.max(1, power) * .04)));
-    recordWounded(m);
-    const resources = enemyResources(m.enemyLevel);
-    for (const [id, value] of Object.entries(resources)) APP.resources[id] += value;
-    recordCollected(Object.values(resources).reduce((total, value) => total + value, 0));
-    APP.enemyDefeated[m.enemyId] = Math.max(Date.now(), m.arriveAt) + 3 * 60000;
-    const granted = [];
-    const add = id => {
-      const item = INVENTORY.find(i => i.id === id);
-      if (item) {
-        item.count++;
-        granted.push(item.name);
-      }
-    };
-    if (random() < .35) add(enemyDropItem(m.enemyLevel, m.enemyType, random));
-    if (random() < .2) add("march-speed-10");
-    if (random() < .05) add("march-speed-50");
-    if (random() < .15) add("march-recall");
-    APP.resources.gold += 5 + m.enemyLevel;
-    addBattleReport(m, resources, granted);
-    APP.unreadItems += granted.length;
-    updateBadges();
-    APP.kills += m.enemyLevel * 10;
-    APP.peakKills = Math.max(APP.peakKills, APP.kills);
-    updateTopHud();
-    showBuildNotice(`پیروزی! ${formatCompact(resources.wood)} از هر منبع${granted.length ? " + " + granted.join("، ") : ""}`);
-    return true;
+
+  function resolveEnemyBattle(m,random=Math.random) {
+    if(m.battleResolved)return false;m.battleResolved=true;
+    if((APP.enemyDefeated[m.enemyId]||0)>m.arriveAt){m.result="قبلاً شکست خورده";return false;}
+    const outcome=simulateCombat(m.unitCounts||{sword:m.troops},m.enemyLevel,m.enemyType);
+    m.casualties=outcome.casualties;m.lostTroops=outcome.wounded;m.battleRounds=outcome.rounds;
+    recordWounded(m);m.result=outcome.victory?"پیروزی":"شکست";
+    if(!outcome.victory){addBattleReport(m,{});showBuildNotice("نبرد ناموفق بود؛ بازماندگان بازمی‌گردند و مجروحان منتظر درمان هستند.");return false;}
+    const resources=enemyResources(m.enemyLevel);for(const [id,n] of Object.entries(resources))APP.resources[id]+=n;
+    recordCollected(Object.values(resources).reduce((a,b)=>a+b,0));
+    APP.enemyDefeated[m.enemyId]=Math.max(Date.now(),m.arriveAt)+15*60000;
+    const faction=ENEMY_TYPES[m.enemyType].id;APP.enemyProgress[faction]=Math.max(APP.enemyProgress[faction]||0,m.enemyLevel);
+    const granted=[];const add=id=>{const item=INVENTORY.find(i=>i.id===id);if(item){item.count++;granted.push({id,count:1});}};
+    if(random()<.35)add(enemyDropItem(m.enemyLevel,m.enemyType,random));
+    if(random()<.2)add("march-speed-10");if(random()<.05)add("march-speed-50");if(random()<.15)add("march-recall");
+    APP.resources.gold+=5+m.enemyLevel;APP.kills+=outcome.enemyCount;APP.peakKills=Math.max(APP.peakKills,APP.kills);
+    APP.unreadItems+=granted.length;addBattleReport(m,resources,granted);updateTopHud();
+    if(APP.currentMode==="map")applyMapCamera();
+    showBuildNotice(`پیروزی! ${formatCompact(resources.wood)} از هر منبع · ${formatCompact(outcome.wounded)} مجروح`);return true;
   }
-  // گزارش واقعی نبرد، یک بار در لحظه نتیجه ثبت و تا صد گزارش نگهداری می‌شود.
+
   function addBattleReport(m, resources, items = []) {
     updatePower();
     const reportId = m.id || `${m.enemyId}-${m.arriveAt}`;
@@ -318,6 +266,7 @@
       },
       defender: {
         name: ENEMY_TYPES[m.enemyType]?.name || "سرگردان",
+        type: ENEMY_TYPES[m.enemyType]?.id,
         level: m.enemyLevel,
         power: enemyRequirement(m.enemyLevel).power,
         image: ENEMY_TYPES[m.enemyType]?.image
@@ -332,7 +281,7 @@
       coin: m.result === "پیروزی" ? 5 + m.enemyLevel : 0,
       title: `${m.result} · ${ENEMY_TYPES[m.enemyType]?.name || "سرگردان"} سطح ${m.enemyLevel}`,
       time: new Date().toLocaleString("fa-IR"),
-      text: `توان لشکر: ${formatCompact(m.combatPower || m.troops * 80)} · مختصات X:${m.target?.q} Y:${m.target?.r} · اعزام: ${m.troops} · بازمانده: ${m.troops - (m.lostTroops || 0)} · مجروح: ${m.lostTroops || 0} · غنیمت: ${Object.entries(resources).map(([id, n]) => `${RESOURCE_META[id].label} ${formatCompact(n)}`).join("، ") || "ندارد"}${items.length ? " · آیتم: " + items.join("، ") : ""}`
+      text: `توان لشکر: ${formatCompact(m.combatPower || m.troops * 80)} · مختصات X:${m.target?.q} Y:${m.target?.r} · اعزام: ${m.troops} · بازمانده: ${m.troops - (m.lostTroops || 0)} · مجروح: ${m.lostTroops || 0} · غنیمت: ${Object.entries(resources).map(([id, n]) => `${RESOURCE_META[id].label} ${formatCompact(n)}`).join("، ") || "ندارد"}${items.length ? " · آیتم: " + items.map(i=>INVENTORY.find(x=>x.id===i.id)?.name||String(i)).join("، ") : ""}`
     });
     APP.battleReports = APP.battleReports.slice(0, 100);
     APP.unreadMail = APP.battleReports.filter(r => !r.read).length;
@@ -346,6 +295,7 @@
     const home = APP.home;
     for (let level = 1; level <= 5; level++) {
       if (enemies.some(e => e.id === `starter-level-${level}`)) continue;
+      if(restoreStarterTarget(`starter-level-${level}`,level,(level-1)%4))continue;
       let placed = false;
       for (let radius = 6; radius <= 30 && !placed; radius++) for (let dx = -radius; dx <= radius && !placed; dx++) for (const dy of [-radius, radius]) {
         const directions=[[dx,dy],[-dx,-dy],[dy,-dx],[-dy,dx],[dx,-dy]];
@@ -372,6 +322,18 @@
         });
         placed = added;
         if (placed) break;
+      }
+    }
+    for(let type=0;type<4;type++)for(let level=1;level<=5;level++){
+      const id=`starter-faction-${type}-${level}`;
+      if(enemies.some(e=>e.id===id))continue;
+      if(restoreStarterTarget(id,level,type))continue;
+      let placed=false;
+      for(let radius=5;radius<=32&&!placed;radius++)for(let dx=-radius;dx<=radius&&!placed;dx++)for(const dy of [-radius,radius]){
+        const q=home.q+dx,r=home.r+dy;
+        if(q<35||r<35||q>765||r>765||terrainAt(q,r).blocked||insideEventArea(q,r)||!connectedGround[q*801+r]||!enemySpaceFree(q,r)||APP.map.castles.some(c=>mapDistance(c,{q,r})<3))continue;
+        const route=findMapRoute(home,{q,r});if(!route||route.length>51)continue;
+        placed=addEnemy({id,q,r,level,type});if(placed)break;
       }
     }
   }
@@ -513,7 +475,7 @@
       row: 3,
       color: "#376f89"
     };
-    if (radius < 3) return {
+    if (q===WORLD.eventQ && r===WORLD.eventR) return {
       kind: "tower",
       blocked: true,
       col: 0,
@@ -618,16 +580,12 @@
     }
   }
   const MAP_DETAIL_ZOOM = 1.45;
-  function castleFootprint(q, r) {
-    return [{
-      q,
-      r
-    }, ...mapNeighbors(q, r)];
-  }
+  function castleFootprint(q,r) { return [{q,r}]; }
+
   function mapBuildingFits(q, r, ignoreId = null) {
     if (!connectedGround) prepareConnectedGround();
     const tiles = castleFootprint(q, r);
-    return tiles.length === 7 && tiles.every(p => connectedGround[p.q * 801 + p.r] && !terrainAt(p.q, p.r).blocked) && !APP.map.castles.some(c => c.id !== ignoreId && castleFootprint(c.q, c.r).some(a => tiles.some(b => a.q === b.q && a.r === b.r)));
+    return tiles.length === 1 && tiles.every(p => connectedGround[p.q * 801 + p.r] && !terrainAt(p.q, p.r).blocked) && !APP.map.castles.some(c => c.id !== ignoreId && mapDistance(c,{q,r})<3);
   }
   function mapHexPath(ctx, x, y, size) {
     ctx.beginPath();

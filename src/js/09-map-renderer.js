@@ -9,13 +9,13 @@
     createEmpireLayout();
     APP.map.castles = [{
       id: "self",
-      name: "قلعه من",
+      name: "دژ آذروند",
       q: APP.home.q,
       r: APP.home.r,
       own: true
     }, {
       id: "test-player",
-      name: "بازیکن آزمایشی",
+      name: "دژ مهراز",
       q: 360,
       r: 405,
       own: false
@@ -43,7 +43,7 @@
     }
     createEnemies();
     updatePerkHud();
-    prepareMapOverview();
+    // Far bitmap overview is disabled; medium and detailed views remain.
     APP.map.camera.zoom = 1.75;
     [APP.map.camera.x, APP.map.camera.y] = mapCenter(APP.home.q, APP.home.r);
   }
@@ -201,7 +201,7 @@
     const r0 = Math.max(1, Math.min(...corners.map(v => v.r)) - 4),
       r1 = Math.min(800, Math.max(...corners.map(v => v.r)) + 4);
     const atlas = terrainAtlas(),
-      detailed = z >= 1.18;
+      detailed = true;
     for (let r = r0; r <= r1; r++) for (let q = q0; q <= q1; q++) {
       const [wx, wy] = mapCenter(q, r),
         x = w / 2 + (wx - APP.map.camera.x) * z,
@@ -215,7 +215,7 @@
       ctx.fillStyle = terrain.color;
       ctx.fill();
       if (detailed && atlas?.naturalWidth) {
-        ctx.globalAlpha = z < 1.45 ? (z - 1.18) / .27 : .94;
+        ctx.globalAlpha = .94;
         drawAtlasTile(ctx, atlas, terrain.col, terrain.row, x - tile, y - tile, tile * 2, tile * 2);
       }
       const empire = empireAt(q, r);
@@ -269,9 +269,9 @@
   function drawCaptureTower(ctx) {
     const [x, y] = mapToScreen(400, 400),
       z = APP.map.camera.zoom,
-      size = 80 * z;
+      size = 17 * z;
     const image = state.images.get(ASSETS.capture);
-    if (image?.naturalWidth) ctx.drawImage(image, x - size / 2, y - size * .75, size, size);
+    if (image?.naturalWidth) ctx.drawImage(image, x - size / 2, y - size / 2, size, size);
     if (z >= MAP_DETAIL_ZOOM) {
       ctx.save();
       ctx.textAlign = "center";
@@ -308,7 +308,7 @@
     const [x, y] = mapToScreen(castle.q, castle.r),
       image = state.images.get(castle.own ? selectedCastleImage() : ASSETS.buildings.castle) || state.images.get(ASSETS.buildings.castle);
     const z = APP.map.camera.zoom,
-      size = 36 * z;
+      size = 17 * z;
     const layer = document.getElementById("worldMapLayer");
     if (x < -size || y < -size || x > layer.clientWidth + size || y > layer.clientHeight + size) return;
     if (image?.complete && image.naturalWidth) {
@@ -318,7 +318,7 @@
       const art = BUILDING_ART.castle;
       const box = art && image.naturalWidth === art.size[0] && image.naturalHeight === art.size[1] ? art.box : [0, 0, image.naturalWidth, image.naturalHeight];
       const sw = box[2] - box[0], sh = box[3] - box[1], height = size * sh / sw;
-      ctx.drawImage(image, box[0], box[1], sw, sh, x - size / 2, y + size * .3 - height, size, height);
+      ctx.drawImage(image, box[0], box[1], sw, sh, x - size / 2, y - height / 2, size, height);
       ctx.restore();
     }
     const level = castle.own ? state.buildings.find(b => b.id === "castle")?.level || 1 : 1;

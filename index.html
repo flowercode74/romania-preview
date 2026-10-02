@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/game.css?v=romania-royal-ui-20261002-1">
+<link rel="stylesheet" href="assets/css/game.css?v=romania-season-combat-20261002-2">
 </head>
 <body>
 <!-- صفحه بارگذاری -->
@@ -39,14 +39,14 @@
 
 <main class="game-shell" aria-label="رومانیا">
   <!-- اطلاعات بازیکن و منابع -->
-<header class="top-bar" aria-label="اطلاعات بازیکن">
+<header class="top-bar command-hud" aria-label="اطلاعات بازیکن">
     <section class="hud-portrait">
       <button class="portrait-button" id="profileButton" type="button" aria-label="پروفایل بازیکن">
         <span class="portrait-frame"><img src="assets/skins/portrait-01.webp" class="portrait-image" alt="پروفایل"><span class="online-dot" aria-hidden="true"></span></span>
       </button>
       <div class="hud-stamina" title="استقامت"><i id="hudStaminaFill"></i><span id="hudStaminaText">100/100</span></div>
     </section>
-    <div class="hud-main">
+    <div class="hud-main"><div class="hud-realm-title">رومانیا <span id="hudSeasonText">روز ۱ از ۵۲</span></div>
       <section class="hud-resources" aria-label="منابع">
         <div class="hud-resource"><img src="assets/resources/wood.webp" alt=""><strong id="woodValue">10k</strong></div>
         <div class="hud-resource"><img src="assets/resources/food.webp" alt=""><strong id="foodValue">10k</strong></div>
@@ -73,8 +73,9 @@
         <canvas id="worldMapCanvas"></canvas>
         <svg id="marchSvg" class="march-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
       </div>
-      <button id="myCastleButton" class="my-castle-button" type="button" aria-label="بازگشت به قلعه من"><img src="assets/buildings/castle.webp" alt=""><span>قلعه من</span></button>
+      <button id="myCastleButton" class="my-castle-button" type="button" aria-label="بازگشت به قلعه من"><img src="assets/buildings/castle.webp" alt=""><span>دژ آذروند</span></button>
       <div class="map-coordinates" aria-live="polite">
+        <button id="enemySearchButton" type="button" aria-label="جستجوی سرگردان">⚔</button>
         <button id="mapSearchButton" type="button" aria-label="جستجوی مختصات">⌕</button>
         <span id="mapCoordinateText">X:400 · Y:400</span>
         <button id="mapBookmarksButton" type="button" aria-label="مختصات نشان‌شده">☆</button>
@@ -129,6 +130,6 @@
 <div id="gameDialog" class="game-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="gameDialogTitle">
   <div class="game-dialog-card"><h2 id="gameDialogTitle"></h2><div id="gameDialogContent"></div><div id="gameDialogActions"></div></div>
 </div>
-<script src="assets/js/game.js?v=romania-royal-ui-20261002-1" defer></script>
+<script src="assets/js/game.js?v=romania-season-combat-20261002-2" defer></script>
 </body>
 </html>

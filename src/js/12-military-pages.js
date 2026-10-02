@@ -16,21 +16,10 @@
     awardTablets(buildingById("castle").level);
     return Math.max(0, APP.research.tabletsEarned - (APP.research.tabletsSpent || 0));
   }
-  function troopUnlocked(id) {
-    const t = TROOPS[id];
-    return !!t && researchLine(t.line).unlocked && researchLine(t.line).tier >= t.tier;
-  }
-  function troopStats(id) {
-    const t = TROOPS[id],
-      r = researchLine(t.line);
-    return {
-      ...t,
-      attack: Math.round(t.attack * (1 + r.attack * .025)),
-      defense: Math.round(t.defense * (1 + r.defense * .025)),
-      health: Math.round(t.health * (1 + r.health * .025)),
-      power: Math.round(t.power * (1 + (r.attack + r.defense + r.health) * .008))
-    };
-  }
+  function troopUnlocked(id) { return !!TROOPS[id]; }
+
+  function troopStats(id) { return {...TROOPS[id]}; }
+
   function woundedStock() {
     APP.army.woundedUnits ||= {};
     const known = Object.values(APP.army.woundedUnits).reduce((a, b) => a + b, 0);
@@ -38,28 +27,23 @@
     return APP.army.woundedUnits;
   }
   function recordWounded(m) {
-    const stock = woundedStock();
-    m.casualties = {};
-    let left = m.lostTroops || 0;
-    for (const [id, n] of Object.entries(migrateUnitStock(m.unitCounts || {
-      sword: m.troops
-    }))) {
-      const take = Math.min(left, n);
-      m.casualties[id] = take;
-      stock[id] = (stock[id] || 0) + take;
-      left -= take;
-    }
-    APP.army.wounded += m.lostTroops || 0;
+    if(m.woundedRecorded)return;m.woundedRecorded=true;
+    const stock=woundedStock(),units=migrateUnitStock(m.unitCounts||{sword:m.troops});
+    if(!m.casualties){m.casualties={};let left=m.lostTroops||0;for(const [id,n] of Object.entries(units)){const take=Math.min(left,n);m.casualties[id]=take;left-=take;}}
+    let total=0;for(const [id,n] of Object.entries(m.casualties)){const take=Math.min(units[id]||0,Math.max(0,Math.floor(n)));stock[id]=(stock[id]||0)+take;total+=take;}
+    m.lostTroops=total;APP.army.wounded+=total;
   }
+
   function buildingDetailsMarkup(b) {
     const rate = PRODUCERS[b.id] ? productionRate(b.id) * productionMultiplier(PRODUCERS[b.id]) : 0;
-    return `<div class="facility-details panel-stat-grid"><div><small>قدرت فعلی</small><strong>${formatCompact(buildingPower(b.level, b.id))}</strong></div><div><small>حداکثر سطح</small><strong>۲۰</strong></div>${rate ? `<div><small>تولید در ساعت با مزیت فعال</small><strong>${formatCompact(rate)}</strong></div><div><small>ذخیره تا هشت ساعت</small><strong>${formatCompact(rate * 8)}</strong></div>` : ""}${b.id === "camp" ? `<div><small>ظرفیت هر لشکر</small><strong>${formatCompact(marchCapacity())}</strong></div>` : ""}${b.id === "hospital" ? `<div><small>مجروحان آماده درمان</small><strong>${formatCompact(APP.army.wounded)}</strong></div>` : ""}</div>${["hospital", "barracks", "research"].includes(b.id) ? `<button class="panel-primary-button" data-open-facility="${b.id}">${{
+    return `<div class="facility-details panel-stat-grid"><div><small>قدرت فعلی</small><strong>${formatCompact(buildingPower(b.level, b.id))}</strong></div><div><small>حداکثر سطح</small><strong>۲۰</strong></div>${rate ? `<div><small>تولید در ساعت با مزیت فعال</small><strong>${formatCompact(rate)}</strong></div><div><small>ذخیره تا هشت ساعت</small><strong>${formatCompact(rate * 8)}</strong></div>` : ""}${b.id === "camp" ? `<div><small>ظرفیت هر لشکر</small><strong>${formatCompact(marchCapacity())}</strong></div>` : ""}${b.id === "hospital" ? `<div><small>مجروحان آماده درمان</small><strong>${formatCompact(APP.army.wounded)}</strong></div>` : ""}</div>${["hospital", "barracks"].includes(b.id) ? `<button class="panel-primary-button" data-open-facility="${b.id}">${{
       hospital: "ورود به درمان",
       barracks: "ورود به ساخت نیرو",
       research: "ورود به پژوهش"
     }[b.id]}</button>` : ""}`;
   }
   function openFacility(id) {
+    if(APP.tutorial.active&&APP.tutorial.phase.startsWith("army-")&&id===tutorialTargetId()){hideTutorialCard();showBuildingLabels();}
     hideBuildingActionMenu();
     ({
       barracks: openTraining,
@@ -169,7 +153,7 @@
     }).map(([name, n]) => `<div><small>${name}</small><strong>${formatCompact(n)}</strong></div>`).join("")}</div><button data-facility="barracks" class="panel-primary-button">بازگشت به سربازخانه</button>`);
     bindMilitaryPage();
   }
-  function openResearch() {
+  function openResearch() { return showBuildNotice("کانون خردسنگ فعلاً غیرفعال است؛ تمام رسته‌ها برای آموزش باز هستند.");
     const line = TROOP_LINES.find(l => l.id === selectedResearchLine),
       r = researchLine(line.id),
       task = APP.research.task;
@@ -184,7 +168,7 @@
     }[id]}</b><strong>${name}</strong><small>${r[id]}/۲۰ · هر سطح ۲٫۵٪</small></button>`).join("")}</div></div>`}${task ? `<div class="military-queue"><strong>${task.line ? TROOP_LINES.find(l => l.id === task.line)?.name : "پژوهش نظامی"} · سطح ${task.target}</strong>${timerProgress(task.startedAt, task.endsAt)}<span id="researchQueueTime">${formatDuration(Math.max(0, task.endsAt - Date.now()))}</span><progress id="researchQueueProgress" max="${Math.max(1, task.endsAt - task.startedAt)}" value="${Math.max(0, Date.now() - task.startedAt)}"></progress><button data-research-instant>اتمام آنی · ${instantGold(task.endsAt - Date.now())} سکه</button><div class="unit-carousel">${INVENTORY.filter(i => i.count && ["research", "universal"].includes(i.family)).map(i => `<button data-research-speed="${i.id}">${i.name} ×${i.count}</button>`).join("")}</div></div>` : ""}`);
     bindMilitaryPage();
   }
-  async function startBranchResearch(line, stat) {
+  async function startBranchResearch(line, stat) { return showBuildNotice("پژوهش فعلاً غیرفعال است.");
     const r = researchLine(line),
       target = r[stat] + 1,
       max = stat === "tier" ? 3 : 20;
@@ -327,7 +311,7 @@
     if (!r) return;
     const survivor = Math.max(0, r.sent - (r.wounded || 0)),
       defender = r.defender || {};
-    openPage("battle", `<header class="battle-heading ${r.result === "پیروزی" ? "is-victory" : "is-defeat"}"><h2>${escapeHTML(r.title)}</h2><time>${escapeHTML(r.time)}</time><span dir="ltr">X:${escapeHTML(r.target?.q ?? "—")} Y:${escapeHTML(r.target?.r ?? "—")}</span></header><div class="battle-versus"><article><img src="${selectedAvatarSkin().portrait}" alt=""><strong>DreaM</strong><span>قدرت ${formatCompact(r.combatPower || 0)}</span><small>اعزام ${formatCompact(r.sent || 0)}</small></article><b>VS</b><article><img src="${safeAssetPath(defender.image, "assets/enemies/viking.webp")}" alt=""><strong>${escapeHTML(defender.name || "سرگردان")}</strong><span>قدرت ${formatCompact(defender.power || 0)}</span><small>سطح ${escapeHTML(defender.level || "—")}</small></article></div><div class="battle-stat-grid"><span>نیروهای اعزامی<strong>${formatCompact(r.sent || 0)}</strong></span><span>مجروح<strong>${formatCompact(r.wounded || 0)}</strong></span><span>بازمانده<strong>${formatCompact(survivor)}</strong></span></div><h3>غنیمت</h3><div class="battle-loot">${Object.entries(r.rewards || {}).filter(([id]) => RESOURCE_META[id]).map(([id, n]) => `<span><img src="${RESOURCE_META[id].image}" alt="">${formatCompact(n)}</span>`).join("")}${r.coin ? `<span>✦ ${formatCompact(r.coin)} سکه</span>` : ""}</div><p>${(Array.isArray(r.items) ? r.items : []).map(escapeHTML).join("، ")}</p><h3>گزارش نیروها</h3><div class="battle-table-wrap"><table class="battle-table"><thead><tr><th>نیرو</th><th>اعزام</th><th>مجروح</th><th>بازمانده</th></tr></thead><tbody>${Object.entries(r.units || {}).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<tr><th>${TROOPS[id].name}</th><td>${n}</td><td>${escapeHTML(r.casualties?.[id] ?? "—")}</td><td>${r.casualties ? Math.max(0, n - (r.casualties[id] || 0)) : "—"}</td></tr>`).join("")}</tbody></table></div><p class="panel-copy">در منطق فعلی نبرد، تلفات به بیمارستان منتقل می‌شوند؛ آمار کشتهٔ جداگانه ثبت نمی‌شود.</p><button id="backReports">بازگشت به گزارش‌ها</button>`);
+    openPage("battle", `<header class="battle-heading ${r.result === "پیروزی" ? "is-victory" : "is-defeat"}"><h2>${escapeHTML(r.title)}</h2><time>${escapeHTML(r.time)}</time><span dir="ltr">X:${escapeHTML(r.target?.q ?? "—")} Y:${escapeHTML(r.target?.r ?? "—")}</span></header><div class="battle-versus"><article><img src="${selectedAvatarSkin().portrait}" alt=""><strong>DreaM</strong><span>قدرت ${formatCompact(r.combatPower || 0)}</span><small>اعزام ${formatCompact(r.sent || 0)}</small></article><b>VS</b><article><img src="${safeAssetPath(defender.image, "assets/enemies/ashen-host.webp")}" alt=""><strong>${escapeHTML(defender.name || "سرگردان")}</strong><span>قدرت ${formatCompact(defender.power || 0)}</span><small>سطح ${escapeHTML(defender.level || "—")}</small></article></div><div class="battle-stat-grid"><span>نیروهای اعزامی<strong>${formatCompact(r.sent || 0)}</strong></span><span>مجروح<strong>${formatCompact(r.wounded || 0)}</strong></span><span>بازمانده<strong>${formatCompact(survivor)}</strong></span></div><h3>غنیمت</h3><div class="battle-loot">${Object.entries(r.rewards || {}).filter(([id]) => RESOURCE_META[id]).map(([id, n]) => `<span><img src="${RESOURCE_META[id].image}" alt="">${formatCompact(n)}</span>`).join("")}${r.coin ? `<span>✦ ${formatCompact(r.coin)} سکه</span>` : ""}</div><div class="battle-loot">${battleItemMarkup(Array.isArray(r.items)?r.items:[])}</div><h3>گزارش نیروها</h3><div class="battle-table-wrap"><table class="battle-table"><thead><tr><th>نیرو</th><th>اعزام</th><th>مجروح</th><th>بازمانده</th></tr></thead><tbody>${Object.entries(r.units || {}).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<tr><th>${TROOPS[id].name}</th><td>${n}</td><td>${escapeHTML(r.casualties?.[id] ?? "—")}</td><td>${r.casualties ? Math.max(0, n - (r.casualties[id] || 0)) : "—"}</td></tr>`).join("")}</tbody></table></div><p class="panel-copy">در منطق فعلی نبرد، تلفات به بیمارستان منتقل می‌شوند؛ آمار کشتهٔ جداگانه ثبت نمی‌شود.</p><button id="backReports">بازگشت به گزارش‌ها</button>`);
     document.getElementById("backReports")?.addEventListener("click", () => openMessages());
   }
   document.addEventListener("click", event => {

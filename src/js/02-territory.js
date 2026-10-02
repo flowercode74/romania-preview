@@ -69,7 +69,7 @@
     return image;
   }
   function loadAssets() {
-    const urls = new Set([ASSETS.courtyardEarth, ASSETS.quietMeadow, ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image)]);
+    const urls = new Set([ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image)]);
     urls.forEach(loadImage);
   }
 
@@ -142,7 +142,7 @@
 
   // محوطه امن داخل دیوار؛ برجک‌ها و نوار دروازه خارج از فضای ساخت قرار دارند.
   const TERRITORY = Object.freeze({
-    wallWidth: 560, wallHeight: 480, exteriorMargin: 32,
+    wallWidth: 560, wallHeight: 480, exteriorMargin: 140,
     gateX: 0, gateY: 210,
     courtyard: Object.freeze([[-122, -142], [122, -142], [236, -36], [194, 112], [0, 170], [-194, 112], [-236, -36]])
   });
@@ -221,32 +221,35 @@
     }
     return true;
   }
-  function drawTerritoryTerrain(target, b) {
-    const atlas=terrainAtlas(),earth=state.images.get(ASSETS.courtyardEarth),meadow=state.images.get(ASSETS.quietMeadow);
-    const raster=APP.preferences?.quality === "performance" ? 2 : 4;
-    const stamp=`terrain-royal-v1:${raster}:${atlas?.naturalWidth || 0}:${earth?.naturalWidth || 0}:${meadow?.naturalWidth || 0}:${b.width}:${b.height}`;
-    if(state.terrainStamp!==stamp || !state.terrainCanvas){
-      const buffer=document.createElement("canvas");buffer.width=Math.ceil(b.width*raster);buffer.height=Math.ceil(b.height*raster);
-      const ctx=buffer.getContext("2d",{alpha:false});
-      ctx.setTransform(buffer.width/b.width,0,0,buffer.height/b.height,-b.minX*buffer.width/b.width,-b.minY*buffer.height/b.height);
-      ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+  function drawTerritoryTerrain(target,b) {
+    const bounds=cameraBounds();b={minX:bounds.minX-24,minY:bounds.minY-24,width:bounds.maxX-bounds.minX+48,height:bounds.maxY-bounds.minY+48};
+    const atlas=terrainAtlas(),wall=state.images.get(ASSETS.wall);
+    const raster=APP.preferences?.quality==="performance"?1.5:2.5;
+    const stamp=`atlas-foundation-v2:${raster}:${atlas?.naturalWidth||0}:${wall?.naturalWidth||0}:${b.width}:${b.height}`;
+    if(state.terrainStamp!==stamp||!state.terrainCanvas){
+      const make=()=>{const c=document.createElement("canvas");c.width=Math.ceil(b.width*raster);c.height=Math.ceil(b.height*raster);return c;};
+      const transform=ctx=>ctx.setTransform(raster,0,0,raster,-b.minX*raster,-b.minY*raster);
+      const buffer=make(),ctx=buffer.getContext("2d",{alpha:false});transform(ctx);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
       ctx.fillStyle="#737c63";ctx.fillRect(b.minX,b.minY,b.width,b.height);
-      const tilePath=cell=>{ctx.beginPath();hexPoints(cell.x,cell.y).forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();};
-      if(!paintGroundTexture(ctx,meadow,b,180))for(const cell of state.cells){
-        ctx.save();tilePath(cell);ctx.clip();const tile=territoryTerrain(cell);
-        drawAtlasTile(ctx,atlas,tile.col,tile.row,cell.x-20,cell.y-20,40,40);ctx.restore();
+      const soil=make(),earth=soil.getContext("2d");transform(earth);
+      for(const cell of state.cells){
+        for(const [surface,dirt] of [[ctx,false],[earth,true]]){
+          surface.save();surface.beginPath();hexPoints(cell.x,cell.y).map(([x,y])=>[cell.x+(x-cell.x)*1.025,cell.y+(y-cell.y)*1.025]).forEach(([x,y],i)=>i?surface.lineTo(x,y):surface.moveTo(x,y));surface.closePath();surface.clip();
+          const tile=dirt?{col:mapNoise(cell.q+71,cell.r+89)>.5?3:4,row:1}:territoryTerrain(cell);
+          drawAtlasTile(surface,atlas,tile.col,tile.row,cell.x-21,cell.y-21,42,42);surface.restore();
+        }
       }
-      ctx.save();ctx.beginPath();wallFoundationPath().forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
-      ctx.fillStyle="#9c8d74";ctx.shadowColor="#96856c";ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;ctx.clip();
-      if(!paintGroundTexture(ctx,earth,b,144))for(const cell of state.cells){
-        ctx.save();tilePath(cell);ctx.clip();const col=mapNoise(cell.q+71,cell.r+89)>.5?3:4;
-        drawAtlasTile(ctx,atlas,col,1,cell.x-20,cell.y-20,40,40);ctx.restore();
-      }
-      ctx.restore();state.terrainCanvas=buffer;state.terrainStamp=stamp;
+      // The dirt foundation follows the actual wall alpha and courtyard opening,
+      // rather than a visible geometric polygon painted over the forest.
+      const mask=make(),m=mask.getContext("2d");transform(m);m.fillStyle="#fff";m.shadowColor="#fff";m.shadowBlur=22*raster;
+      m.beginPath();courtyardGroundPath().forEach(([x,y],i)=>i?m.lineTo(x,y):m.moveTo(x,y));m.closePath();m.fill();
+      if(wall?.naturalWidth){m.drawImage(wall,-TERRITORY.wallWidth/2,-TERRITORY.wallHeight/2,TERRITORY.wallWidth,TERRITORY.wallHeight);}
+      earth.setTransform(1,0,0,1,0,0);earth.globalCompositeOperation="destination-in";earth.drawImage(mask,0,0);
+      ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(soil,0,0);state.terrainCanvas=buffer;state.terrainStamp=stamp;
     }
     target.drawImage(state.terrainCanvas,b.minX,b.minY,b.width,b.height);
   }
-  // ساختمان‌ها به صورت تصویر مستقل رندر می‌شوند تا کیفیت آن‌ها با وسعت زمین افت نکند.
+
   function setupWorldSprites() {
     // این لایه فقط آیکون جمع‌آوری و پیشرفت کارگر دوم را نگه می‌دارد.
     const layer = document.createElement("div");
@@ -508,7 +511,7 @@
     layer.className = "world-overlay-layer";
     for (const building of [...state.buildings, {
       id: "wall",
-      name: "دیوار قلعه"
+      name: "باروی سنگ‌پیمان"
     }]) {
       const node = document.createElement("div");
       node.className = "world-label";
@@ -1033,7 +1036,7 @@
     if (state.selectedId === "wall") {
       return {
         id: "wall",
-        name: "دیوار قلعه",
+        name: "باروی سنگ‌پیمان",
         level: APP.wallLevel ?? 0,
         width: TERRITORY.wallWidth,
         height: TERRITORY.wallHeight,
@@ -1063,7 +1066,7 @@
   function getSelectedBuildingForId(id) {
     return id === "wall" ? {
       id: "wall",
-      name: "دیوار قلعه",
+      name: "باروی سنگ‌پیمان",
       level: APP.wallLevel ?? 0
     } : null;
   }
@@ -1110,7 +1113,7 @@
     const selected = getSelectedBuilding();
     const special = menu.querySelector('[data-building-action="special"]');
     if (special) {
-      special.hidden = !selected?.level || !["barracks", "hospital", "research"].includes(selected.id);
+      special.hidden = !selected?.level || !["barracks", "hospital"].includes(selected.id);
       const label = special.querySelector("span:last-child");
       if (label) label.textContent = {
         barracks: "ساخت نیرو",
@@ -1122,7 +1125,8 @@
     if (actionLabel && selected) actionLabel.textContent = APP.worker.task?.id === selected.id ? "تسریع" : selected.level === 0 ? "ساخت" : "ارتقا";
     const infoButton = menu.querySelector('[data-building-action="info"]');
     if (infoButton) infoButton.hidden = APP.tutorial.active && !APP.worker.task && !APP.tutorial.phase.startsWith("army-");
-    menu.querySelector('[data-building-action="upgrade"]')?.classList.toggle("tutorial-pulse", APP.tutorial.active && !APP.worker.task);
+    menu.querySelector('[data-building-action="upgrade"]')?.classList.toggle("tutorial-pulse", APP.tutorial.active && !APP.worker.task && !APP.tutorial.phase.startsWith("army-"));
+    special?.classList.toggle("tutorial-pulse", APP.tutorial.active && APP.tutorial.phase.startsWith("army-") && selected?.id===tutorialTargetId());
     menu.classList.add("is-visible");
     positionBuildingActionMenu();
   }

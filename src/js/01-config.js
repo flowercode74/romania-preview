@@ -7,7 +7,7 @@
 
   // تنظیمات قلمرو، دوربین و محدوده ساخت
   const CONFIG = Object.freeze({
-    worldRadius: 10,
+    worldRadius: 17,
     buildRadius: 9,
     terrainDirtRadius: 9,
     buildingAreaMinRow: -5,
@@ -24,47 +24,47 @@
   // تعریف ساختمان‌ها و چیدمان اولیه
   const BUILDINGS = Object.freeze([{
     id: "castle",
-    name: "قلعه",
+    name: "دژ آذروند",
     level: 1,
   }, {
     id: "hospital",
-    name: "بیمارستان",
+    name: "دارالشفای سپیدمهر",
     level: 0,
   }, {
     id: "camp",
-    name: "اردوگاه",
+    name: "اردوی شاهین‌دشت",
     level: 0,
   }, {
     id: "barracks",
-    name: "سربازخانه",
+    name: "رزمگاه آهن‌پیمان",
     level: 0,
   }, {
     id: "research",
-    name: "مرکز تحقیقات",
+    name: "کانون خردسنگ",
     level: 0,
   }, {
     id: "embassy",
-    name: "سفارت",
+    name: "دیوان پیمان‌ور",
     level: 0,
   }, {
     id: "hideout",
-    name: "مخفیگاه",
+    name: "نهان‌خانه سایه‌مهر",
     level: 0,
   }, {
     id: "farm",
-    name: "مزرعه گندم",
+    name: "کشتزار زرین‌خوشه",
     level: 0,
   }, {
     id: "lumber",
-    name: "چوب‌بری",
+    name: "چوبستان ریشه‌بان",
     level: 0,
   }, {
     id: "stone",
-    name: "معدن سنگ",
+    name: "سنگستان گران‌کوه",
     level: 0,
   }, {
     id: "iron",
-    name: "معدن آهن",
+    name: "آهنگاه سرخ‌رگه",
     level: 0,
   }]);
 

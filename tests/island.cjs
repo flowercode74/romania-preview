@@ -37,6 +37,7 @@ assert(t.occupiedTiles(farm,farm.q,farm.r).length===1);assert(!t.proposeMoveBuil
 t.APP.tutorial={active:true,step:12,phase:'focus'};t.APP.tutorialSkipped=false;t.APP.army.totalTrained=100;t.APP.army.totalHealed=10;t.finishTutorial();assert(t.APP.tutorial.active);assert.equal(t.APP.tutorial.phase,'ui-tour');for(let i=1;i<t.UI_TOUR.length;i++)t.showUITour(i);t.showUITour(t.UI_TOUR.length);assert(!t.APP.tutorial.active);assert(t.APP.tutorial.uiComplete);
 let fullscreens=0;document.documentElement={requestFullscreen(){fullscreens++;return Promise.resolve()}};assert(!fs.readFileSync('src/js/11-entry-lifecycle.js','utf8').includes('requestFullscreen'),'fullscreen API must not be called');assert.equal(fullscreens,0);
 (async()=>{
+ t.INVENTORY.find(i=>i.id==='march-speed-50').count=2;
  const now=Date.now(),m={id:'moving-test',type:'attack',name:'تست',origin:{q:366,r:400},target:{q:370,r:400},route:Array.from({length:5},(_,i)=>({q:366+i,r:400})),phase:'outbound',startedAt:now-9000,arriveAt:now+15000,travelMs:24000,returnAt:0};t.APP.marches=[m];t.APP.currentMode='map';
  const before=t.marchPosition(m);t.openMarchSpeed(m.id);const use=nodes.get('gameDialogActions').children[1];const promise=use.listeners.click[0]();nodes.get('gameDialogActions').children[1].listeners.click[0]();await promise;
  const after=t.marchPosition(m);assert(Math.abs(before.x-after.x)<1);assert(m.arriveAt-Date.now()<7600);assert.equal(t.INVENTORY.find(i=>i.id==='march-speed-50').count,1);

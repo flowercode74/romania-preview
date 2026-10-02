@@ -26,7 +26,7 @@
     iron: 1.0
   };
   const BUILD_NAMES = Object.fromEntries(BUILDINGS.map(b => [b.id, b.name]));
-  BUILD_NAMES.wall = "دیوار قلعه";
+  BUILD_NAMES.wall = "باروی سنگ‌پیمان";
   const POWER_WEIGHT = {
     castle: 22,
     wall: 12,
@@ -49,7 +49,7 @@
   // اقتصاد، زمان ساخت و پیش‌نیاز ارتقا
   function buildingCost(building, targetLevel) {
     const factor = BUILD_MOD[building.id] || 1;
-    const scale = Math.pow(Math.max(1, targetLevel), 2.2) * factor;
+    const scale = seasonBuildScale(targetLevel) * factor;
     return Object.fromEntries(Object.entries(BUILD_BASE).map(([k, v]) => [k, Math.round(v * scale)]));
   }
   const TIME_WEIGHT = {
@@ -67,7 +67,7 @@
     iron: .95
   };
   function buildingDuration(level, id = "farm") {
-    return Math.round(Math.max(15000, 45_000 * (TIME_WEIGHT[id] || 1) * Math.pow(1.46, Math.max(0, level - 1))));
+    return Math.round(Math.max(15000, 36_000 * (TIME_WEIGHT[id] || 1) * Math.pow(1.46, Math.max(0, level - 1))));
   }
   function formatDuration(ms) {
     const total = Math.max(0, Math.ceil(ms / 1000));
@@ -83,7 +83,7 @@
   function buildingById(id) {
     return id === "wall" ? {
       id: "wall",
-      name: "دیوار قلعه",
+      name: BUILD_NAMES.wall,
       level: APP.wallLevel ?? 0,
       q: 0,
       r: 0,
@@ -92,36 +92,18 @@
     } : state.buildings.find(b => b.id === id);
   }
   function buildingRequirement(building) {
-    const next = building.level + 1;
-    if (building.level >= 20) return {
-      ok: false,
-      text: "این ساختمان به بالاترین سطح رسیده است."
-    };
-    const castleLevel = state.buildings.find(b => b.id === "castle")?.level || 1;
-    if (building.id !== "castle" && next > castleLevel) return {
-      ok: false,
-      text: `ابتدا قلعه را به سطح ${next} برسانید.`
-    };
-    if (building.id === "castle") {
-      const required = next - 2;
-      const ok = next === 2 || state.buildings.filter(b => b.id !== "castle").every(b => b.level >= required) && APP.wallLevel >= required;
-      const text = `پیش‌نیاز: تمام ساختمان‌ها حداقل سطح ${required} باشند.`;
-      return {
-        ok,
-        text: ok ? "پیش‌نیازهای ارتقای قلعه تکمیل است." : text
-      };
-    }
-    return {
-      ok: true,
-      text: "پیش‌نیازها تکمیل است."
-    };
+    const next=building.level+1;
+    if(next>20) return {ok:false,text:"این ساختمان به بالاترین سطح رسیده است."};
+    const requirements=building.id==="castle" ? (next<=2?{}:{wall:Math.max(1,next-2),barracks:Math.max(1,next-2),camp:Math.max(1,next-3),farm:Math.max(1,next-2),lumber:Math.max(1,next-2),stone:Math.max(1,next-2),iron:Math.max(1,next-2)}) : {castle:next,...(building.id==="hospital"&&next>3?{barracks:next-2}:{})};
+    const missing=Object.entries(requirements).filter(([id,level])=>(buildingById(id)?.level||0)<level);
+    return {ok:!missing.length,text:missing.length?"پیش‌نیاز: "+missing.map(([id,l])=>`${BUILD_NAMES[id]} سطح ${l}`).join("، "):"پیش‌نیازها تکمیل است."};
   }
-  // توان کل نیروهای متعلق به بازیکن، شامل لشکر اعزامی است و با اعزام کاهش کاذب ندارد.
+
   function totalArmyPower() {
     const units = APP.army.units || {},
       known = Object.values(units).reduce((sum, n) => sum + n, 0),
       ready = Object.entries(TROOPS).reduce((sum, [id, t]) => sum + (units[id] || 0) * troopStats(id).power, 0) * Math.min(1, APP.army.troops / Math.max(1, known)) + Math.max(0, APP.army.troops - known) * 80;
-    const deployed = APP.marches.filter(m => m.enemyId && !m.troopsRestored).reduce((sum, m) => sum + (m.combatPower || m.troops * 80) / (1 + APP.research.level * .01) * Math.max(0, m.troops - (m.lostTroops || 0)) / Math.max(1, m.troops), 0);
+    const deployed = APP.marches.filter(m => m.unitCounts && !m.troopsRestored).reduce((sum, m) => sum + (m.combatPower || m.troops * 80) * Math.max(0, m.troops - (m.lostTroops || 0)) / Math.max(1, m.troops), 0);
     const wounded = Object.entries(woundedStock()).reduce((sum, [id, n]) => sum + (TROOPS[id] ? troopStats(id).power * n : 0), 0);
     const healing = Object.entries(APP.army.healing?.units || (APP.army.healing ? {
       [APP.army.healing.type]: APP.army.healing.count
@@ -133,7 +115,7 @@
       const r = researchLine(l.id);
       return sum + (r.attack + r.defense + r.health) * 1200 + (r.tier - 1) * 5000;
     }, 0);
-    APP.resources.power = branchPower + state.buildings.reduce((sum, b) => sum + buildingPower(b.level, b.id), 0) + buildingPower(APP.wallLevel ?? 0, "wall") + totalArmyPower() + APP.research.level * 100000;
+    APP.resources.power = state.buildings.reduce((sum, b) => sum + buildingPower(b.level, b.id), 0) + buildingPower(APP.wallLevel ?? 0, "wall") + totalArmyPower();
     APP.peakPower = Math.max(APP.peakPower, APP.resources.power);
     updateTopHud();
   }
@@ -280,6 +262,8 @@
         territoryLayoutVersion: TERRITORY_LAYOUT_VERSION,
         home: APP.home,
         enemyDefeated: APP.enemyDefeated,
+        enemyProgress: APP.enemyProgress,
+        economyVersion: SEASON.economyVersion,
         collectors: APP.collectors,
         battleReports: APP.battleReports,
         enemyPositions: Object.values(APP.enemyMoves),
@@ -360,6 +344,7 @@
         q: saved.home.q,
         r: saved.home.r
       };
+      if(validObject(saved.enemyProgress)) APP.enemyProgress=Object.fromEntries(Object.entries(saved.enemyProgress).filter(([id,n])=>["viking","archer","swordmen","cavarly"].includes(id)&&Number.isInteger(n)&&n>=0&&n<=25));
       if (validObject(saved.enemyDefeated)) APP.enemyDefeated = Object.fromEntries(Object.entries(saved.enemyDefeated).filter(([id, time]) => typeof id === "string" && Number.isFinite(time) && time > 0));
       if (validObject(saved.collectors)) for (const id of ["farm", "lumber", "stone", "iron"]) if (validObject(saved.collectors[id])) APP.collectors[id] = {
         amount: Number.isFinite(saved.collectors[id].amount) ? Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, saved.collectors[id].amount)) : 0,
@@ -368,6 +353,12 @@
       };
       APP.battleReports = Array.isArray(saved.battleReports) ? saved.battleReports.filter(r => r && r.tab === "attack" && typeof r.text === "string").slice(0, 100) : [];
       APP.unreadMail = APP.battleReports.filter(r => !r.read).length;
+      // Previously earned victories survive introduction of the faction ladders.
+      for(const report of APP.battleReports.filter(r=>r.result==="پیروزی")){
+        const art=String(report.defender?.image||"");
+        const type=ENEMY_TYPES.findIndex((t,i)=>report.defender?.type===t.id||art===t.image||art===`assets/enemies/${["viking","archer","swordsmen","cavalry"][i]}.webp`);
+        const level=report.defender?.level;if(type>=0&&Number.isInteger(level)&&level>=1&&level<=25)APP.enemyProgress[ENEMY_TYPES[type].id]=Math.max(APP.enemyProgress[ENEMY_TYPES[type].id]||0,level);
+      }
       APP.savedEnemyPositions = Array.isArray(saved.enemyPositions) ? saved.enemyPositions : [];
       APP.enemyMoves = Object.fromEntries(APP.savedEnemyPositions.filter(e => e && typeof e.id === "string").map(e => [e.id, e]));
       if (enemiesReady) applySavedEnemyPositions();
@@ -409,6 +400,15 @@
           startedAt: boundedInteger(t.startedAt, Date.now(), 0, Date.now()),
           endsAt: boundedInteger(t.endsAt, Date.now(), 0, Date.now() + 604800000)
         };
+      }
+      if(APP.research.task){
+        const task=APP.research.task;
+        const paid=task.line?Math.round(1500*Math.pow(task.target,1.6)):task.target*10000;
+        for(const resource of ["wood","food","stone","iron"]){
+          // Apply after loading the actual saved balances below.
+          saved.resources ||= {};saved.resources[resource]=(Number.isFinite(saved.resources[resource])?saved.resources[resource]:APP.resources[resource])+paid;
+        }
+        APP.research.task=null;
       }
       APP.spawnEmpire = EMPIRES.some(e => e.id === saved.spawnEmpire) ? saved.spawnEmpire : "free";
       if (validObject(saved.alliance)) APP.alliance = {
@@ -534,7 +534,7 @@
         const building = buildingById(task.id);
         const target = boundedInteger(task.target, 0, 1, 20);
         const endsAt = boundedInteger(saved.worker.endsAt, 0, 0, Number.MAX_SAFE_INTEGER);
-        if (building && target === building.level + 1 && endsAt > 0 && endsAt <= Date.now() + buildingDuration(target, building.id)) APP.worker = {
+        if (building && target === building.level + 1 && endsAt > 0 && endsAt <= Date.now() + Math.max(buildingDuration(target,building.id),45000*(TIME_WEIGHT[building.id]||1)*Math.pow(1.46,target-1))) APP.worker = {
           task: {
             id: building.id,
             name: building.name,
@@ -749,7 +749,7 @@
     return `<div class="territory-status-list">${[APP.worker, ...(APP.secondBuilder ? [APP.worker2] : [])].map((w, i) => `<article class="territory-status-card"><span>کارگر ${i + 1}</span><strong>${w.task ? w.task.name : "آماده ساخت"}</strong>${w.task ? timerProgress(w.task.startedAt, w.endsAt) : ""}</article>`).join("")}</div>${APP.secondBuilder ? "" : '<button data-buy-builder>استخدام کارگر دوم · ۱۰٬۰۰۰ سکه</button>'}`;
   }
   // پژوهش ساده نظامی برای آزمایش اقتصاد؛ هر سطح قدرت تحقیق را افزایش می‌دهد.
-  async function startResearch() {
+  async function startResearch() { return showBuildNotice("پژوهش فعلاً غیرفعال است.");
     const level = APP.research.level + 1,
       cost = level * 10000;
     if (APP.research.task || level > 20 || buildingById("research").level < level) return showBuildNotice("سطح مرکز تحقیقات کافی نیست.");
