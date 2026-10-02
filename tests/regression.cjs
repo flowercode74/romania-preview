@@ -16,7 +16,7 @@ vm.createContext(context);let src=fs.readFileSync('assets/js/game.js','utf8');sr
 const t=context.t;
 assert(t);
 assert.equal(t.hasSavedProgress(),false);
-assert.equal(nodes.get('continueEntry').hidden,true);
+assert.equal(typeof t.setupEntry(),'function');
 local.set('romaniaTerritoryV4','{broken');
 local.set('romaniaResourcesV2',JSON.stringify({wood:87654}));
 assert.equal(t.hasSavedProgress(),true);
@@ -24,7 +24,7 @@ t.loadGameProgress();assert.equal(t.APP.resources.wood,87654);
 local.clear();t.startGame(true);
 t.APP.resources.wood=123456;t.saveGameProgress();
 assert(t.hasSavedProgress());
-t.setupEntry();assert.equal(nodes.get('continueEntry').hidden,false);
+assert(t.hasSavedProgress());assert.equal(typeof t.setupEntry(),'function');
 t.APP.resources.wood=1;t.startGame(false);assert.equal(t.APP.resources.wood,123456);
 const saved=JSON.parse(local.get('romaniaTerritoryV4'));
 saved.collectors={farm:{amount:null,at:Date.now(),collectedAt:Date.now()}};

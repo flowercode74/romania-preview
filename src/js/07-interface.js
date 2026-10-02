@@ -79,6 +79,7 @@
   }
   function openPage(type, contentHTML = "") {
     if (APP.tutorial.active && !APP.worker.task && APP.tutorial.phase !== "ui-tour" && !["missions", "training", "healing"].includes(type)) return;
+    document.getElementById("romaniaWelcome")?.remove();
     rememberGameView(navigationPageKey(type, contentHTML));
     setWorldMode(false, false, false);
     closeAllSurfaces();
@@ -98,8 +99,8 @@
       research: ["مرکز تحقیقات", "◈", "military-page"],
       unit: ["اطلاعات نیرو", "⚔", "military-page"],
       settings: ["تنظیمات", "⚙", "military-page"],
-      troops: ["نیروهای من", "⚔", "military-page"],
-      leaderboard: ["لیدربورد", "♛", "military-page"],
+      troops: ["نیروهای من", "⚔", "military-page troops-page"],
+      leaderboard: ["لیدربورد", "♛", "military-page leaderboard-page"],
       skins: ["اسکین‌ها", "♜", "military-page"],
       battle: ["گزارش نبرد", "⚔", "military-page"]
     };
@@ -108,8 +109,8 @@
     panel.className = `game-panel generic-panel page-panel ${data[2]}`;
     document.getElementById("genericPanelTitle").textContent = data[0];
     const panelIcon = document.getElementById("genericPanelIcon");
-    if (type === "missions") panelIcon.innerHTML = '<img src="assets/icons/quest.webp" alt="">';
-    else panelIcon.textContent = data[1];
+    const headerImage={missions:"assets/icons/quest.webp",shield:"assets/icons/shield.webp",events:"assets/icons/event.webp",items:"assets/icons/bag.webp",messages:"assets/icons/mail.webp",profile:selectedAvatarSkin().portrait,troops:"assets/icons/hero.webp",leaderboard:"assets/icons/event.webp"}[type];
+    if(headerImage)panelIcon.innerHTML=`<img src="${headerImage}" alt="">`;else panelIcon.textContent=data[1];
     content.onclick = null;
     content.oninput = null;
     content.onkeydown = null;
@@ -367,11 +368,11 @@
         count
       }) => {
         const item = INVENTORY.find(x => x.id === id);
-        return `<span class="reward-chip">${item?.image ? `<img src="${item.image}" alt="">` : item?.emoji || "✦"} ×${count}</span>`;
+        return `<span class="reward-chip">${item?.image ? `<img src="${item.image}" alt="">` : item?.emoji || "✦"}${item?.resource ? `<b class="reward-pack-value">${formatCompact(item.value)}</b>` : ""} ×${formatCompact(count)}</span>`;
       }).join("");
       const destination = missionDestination(m);
       const icon = destination.id === "wall" ? ASSETS.wall : ASSETS.buildings[destination.id];
-      return `<article class="mission-card"><img class="mission-building-icon" src="${icon}" alt=""><div class="mission-description"><strong>${m.title}</strong><small>${m.description}</small><small>${formatCompact(progress)} / ${formatCompact(m.target)}</small></div><div class="mission-reward"><div class="reward-strip">${rewards}</div><button type="button" data-claim-mission="${m.id}" ${done || !missionReady(tab, m) ? "disabled" : ""}>${done ? "دریافت شد" : "دریافت"}</button><button type="button" data-go-mission="${m.id}">برو به ماموریت</button></div></article>`;
+      return `<article class="mission-card ${done?"is-claimed":""}">${done?'<span class="mission-claimed-check" aria-label="پاداش دریافت شده">✓</span>':""}<img class="mission-building-icon" src="${icon}" alt=""><div class="mission-description"><strong>${m.title}</strong><small>${m.description}</small><small>${formatCompact(progress)} / ${formatCompact(m.target)}</small></div><div class="mission-reward"><div class="reward-strip">${rewards}</div><button type="button" data-claim-mission="${m.id}" ${done || !missionReady(tab, m) ? "disabled" : ""}>${done ? "دریافت شد" : "دریافت"}</button><button type="button" data-go-mission="${m.id}">برو به ماموریت</button></div></article>`;
     }).join("");
     const availableTabs = APP.tutorial.active || tutorialRewardsPending() ? ["tutorial"] : ["growth", "daily"];
     const tabNames = {

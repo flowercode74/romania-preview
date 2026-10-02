@@ -308,6 +308,8 @@
         stamina: APP.stamina,
         staminaAt: APP.staminaAt,
         shieldUntil: APP.shieldUntil,
+        antiSpyUntil: APP.antiSpyUntil,
+        medals: APP.medals,
         productionBoostUntil: APP.productionBoostUntil,
         army: APP.army,
         accountCreatedAt: APP.accountCreatedAt,
@@ -467,7 +469,7 @@
       if (validObject(saved.tutorial)) {
         APP.tutorial.active = typeof saved.tutorial.active === "boolean" ? saved.tutorial.active : APP.tutorial.active;
         APP.tutorial.step = boundedInteger(saved.tutorial.step, APP.tutorial.step, -1, BUILD_ORDER.length);
-        if (typeof saved.tutorial.phase === "string" && ["welcome", "focus", "selected", "panel", "working", "army-training", "army-healing", "ui-tour", "finished"].includes(saved.tutorial.phase)) APP.tutorial.phase = saved.tutorial.phase;
+        if (typeof saved.tutorial.phase === "string" && ["welcome", "focus", "selected", "panel", "working", "army-training", "army-healing", "ui-tour", "final-camp", "finished"].includes(saved.tutorial.phase)) APP.tutorial.phase = saved.tutorial.phase;
       }
       APP.tutorial.uiIndex = boundedInteger(saved.tutorial?.uiIndex, 0, 0, UI_TOUR.length);
       APP.tutorial.uiComplete = saved.tutorial?.uiComplete === true;
@@ -475,6 +477,8 @@
       APP.stamina = boundedInteger(saved.stamina, APP.stamina, 0, 100);
       APP.staminaAt = boundedInteger(saved.staminaAt, Date.now(), 0, Date.now());
       APP.shieldUntil = boundedInteger(saved.shieldUntil, 0, 0, Number.MAX_SAFE_INTEGER);
+      APP.antiSpyUntil = boundedInteger(saved.antiSpyUntil,0,0,Number.MAX_SAFE_INTEGER);
+      APP.medals = Array.isArray(saved.medals) ? saved.medals.filter(m=>validObject(m)&&typeof m.id==="string").map(m=>({id:m.id.slice(0,80),name:String(m.name||m.id).slice(0,80)})) : [];
       APP.productionBoostUntil = boundedInteger(saved.productionBoostUntil, 0, 0, Number.MAX_SAFE_INTEGER);
       if (validObject(saved.army)) {
         APP.army.totalTrained = boundedInteger(saved.army.totalTrained, 0, 0, 10000000);
@@ -490,6 +494,7 @@
             count: boundedInteger(value.count, 0, 1, 1000000),
             type: legacyTroopId(value.type),
             cost: boundedInteger(value.cost, 0, 0, 100000000),
+            costs: validObject(value.costs) ? Object.fromEntries(["wood","food","stone","iron"].filter(id=>Number.isInteger(value.costs[id])&&value.costs[id]>=0).map(id=>[id,Math.min(100000000,value.costs[id])])) : null,
             units: validObject(value.units) ? migrateUnitStock(value.units) : null,
             startedAt: boundedInteger(value.startedAt, Date.now(), 0, Date.now()),
             duration: boundedInteger(value.duration, 3600000, 1, Number.MAX_SAFE_INTEGER),

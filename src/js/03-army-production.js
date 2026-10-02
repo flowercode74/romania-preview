@@ -89,9 +89,10 @@
     }
     if (!count) return showBuildNotice("نیروی مجروح ندارید.");
     const cost = count * (isTrainingQueue(kind) ? unit.cost : 12);
-    if (APP.resources.food < cost || isTrainingQueue(kind) && APP.resources.iron < cost) return showBuildNotice("منابع کافی نیست.");
-    APP.resources.food -= cost;
-    if (isTrainingQueue(kind)) APP.resources.iron -= cost;else {
+    const costs = isTrainingQueue(kind) ? troopResourceCosts(unit,count) : {food:cost};
+    if(Object.entries(costs).some(([id,n])=>APP.resources[id]<n))return showBuildNotice("منابع کافی نیست.");
+    for(const [id,n] of Object.entries(costs)) APP.resources[id]-=n;
+    if (!isTrainingQueue(kind)) {
       APP.army.wounded -= count;
       for (const [id, n] of Object.entries(units)) APP.army.woundedUnits[id] -= n;
     }
@@ -103,6 +104,7 @@
       type,
       units,
       cost,
+      costs,
       startedAt: Date.now(),
       duration,
       endsAt: Date.now() + duration
@@ -137,6 +139,8 @@
   }
   function tickArmy() {
     ensureMissionDay();
+    const beforeStage = APP.tutorial.phase;
+    let completed = false;
     for (const [kind, field] of [...TRAINING_KEYS.map(k => [k, "trained"]), ["healing", "healed"]]) {
       const task = APP.army[kind];
       if (!task) continue;
@@ -160,14 +164,21 @@
       APP.army.troops += task.count;
       APP.missions[field] += task.count;
       APP.army[kind] = null;
-      if (APP.openPage === armyPage(kind)) isTrainingQueue(kind) ? openTraining() : openHealing();
+      completed = true;
       APP.army[isTrainingQueue(kind) ? "totalTrained" : "totalHealed"] = (APP.army[isTrainingQueue(kind) ? "totalTrained" : "totalHealed"] || 0) + task.count;
-      if (APP.tutorial.active && APP.tutorial.phase === `army-${armyPage(kind)}`) finishTutorial();
+
       updatePower();
       saveGameProgress();
       updateMissionStatus();
       if (APP.openPage === "missions") renderMissions(APP.missionTab);
     }
+    if(completed){
+      if(APP.tutorial.active && beforeStage.startsWith("army-") && tutorialArmyStage()!==beforeStage) finishTutorial();
+      else if(APP.openPage==="training") renderTrainingPage();
+      else if(APP.openPage==="healing") renderHealingPage();
+      saveGameProgress();
+    }
+    updateTrainingActivity();
   }
   // تولید هر ساختمان در مخزن همان ساختمان می‌ماند؛ ظرفیت مخزن معادل هشت ساعت است.
   const PRODUCERS = {
@@ -305,7 +316,7 @@
       task: null,
       endsAt: 0
     };
-    if (APP.tutorial.active) APP.tutorial.phase = "panel";
+    if (APP.tutorial.active && !APP.tutorial.phase.startsWith("army-")) APP.tutorial.phase = "panel";
     updateTopHud();
     updateBuildingProgress();
     renderMarchQueue(true);

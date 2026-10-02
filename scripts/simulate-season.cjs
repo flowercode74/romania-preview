@@ -28,14 +28,14 @@ for(let now=start;now<=start+48*DAY;now+=60000){
   claimAll();
   if(!t.APP.worker.task)chooseBuild();
   const upcoming=['farm','lumber','stone','iron','castle','barracks','wall','camp','hospital','hideout','research','embassy'].map(t.buildingById).filter(b=>b.level<20&&t.buildingRequirement(b).ok).map(b=>t.buildingCost(b,b.level+1));
-  const reserve=Math.max(0,...upcoming.map(c=>Math.max(c.food,c.iron)));
+  const reserve=Object.fromEntries(["wood","food","stone","iron"].map(id=>[id,Math.max(0,...upcoming.map(c=>c[id]))]));
   for(const key of t.TRAINING_KEYS){
    if(t.APP.army[key]||!t.buildingById('barracks').level||trained>=(t.buildingById('castle').level<7?100:120000))continue;
    const id=Object.keys(t.TROOPS)[Math.floor(trained/500)%8],unit=t.TROOPS[id];
-   const n=Math.max(0,Math.min(100*t.buildingById('barracks').level,(t.buildingById('castle').level<7?100:120000)-trained,Math.floor((Math.min(t.APP.resources.food,t.APP.resources.iron)-reserve)/unit.cost)));
+   const n=Math.max(0,Math.min(100*t.buildingById('barracks').level,(t.buildingById('castle').level<7?100:120000)-trained,...Object.entries(t.troopResourceCosts(unit,1)).map(([id,n])=>Math.floor((t.APP.resources[id]-reserve[id])/n))));
    if(!n)continue;
    context.document.getElementById('armyType').value=id;context.document.getElementById('armyCount').value=String(n);t.startArmyTask(key);
-   if(t.APP.army[key]){trained+=n;costSpent.food+=unit.cost*n;costSpent.iron+=unit.cost*n;}
+   if(t.APP.army[key]){trained+=n;for(const [id,c] of Object.entries(t.APP.army[key].costs))costSpent[id]+=c;}
   }
  }
  if((now-start)%DAY===0)records.push({day:Math.round(day),castle:t.buildingById('castle').level,minimum:Math.min(...t.state.buildings.map(b=>b.level),t.APP.wallLevel),trainedCompleted:t.APP.army.totalTrained||0,resources:{...t.APP.resources}});

@@ -162,7 +162,7 @@
     if (APP.map.camera.zoom < MAP_DETAIL_ZOOM) return;
     for (const enemy of enemiesInView()) {
       const [x, y] = mapToScreen(enemy.q, enemy.r),
-        size = 17 * APP.map.camera.zoom,
+        size = 24 * APP.map.camera.zoom,
         type = ENEMY_TYPES[enemy.type],
         image = state.images.get(type.image);
       if (image?.naturalWidth) ctx.drawImage(image, x - size / 2, y - size / 2, size, size);
@@ -172,7 +172,7 @@
   function hitEnemy(clientX, clientY) {
     if (APP.map.camera.zoom < MAP_DETAIL_ZOOM) return null;
     const rect = document.getElementById("worldMapLayer").getBoundingClientRect(),
-      size = 17 * APP.map.camera.zoom;
+      size = 24 * APP.map.camera.zoom;
     return enemiesInView().find(e => {
       const [x, y] = mapToScreen(e.q, e.r);
       return Math.abs(clientX - rect.left - x) < size * .6 && Math.abs(clientY - rect.top - y) < size * .65;
@@ -207,7 +207,7 @@
     const box = document.createElement("section");
     box.id = "enemySheet";
     box.className = "enemy-sheet";
-    box.innerHTML = `<button class="enemy-close" aria-label="بستن">×</button><div class="enemy-head"><img src="${type.image}" alt=""><div><h3>${type.name}</h3><span>درجه ${enemy.level} · X:${enemy.q} Y:${enemy.r}</span></div></div><strong>پاداش پیروزی</strong><div class="enemy-rewards">${["wood", "food", "stone", "iron"].map(id => `<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}">${formatCompact(value)} · قطعی</span>`).join("")}<span><img src="assets/resources/gold.webp" alt="سکه">${5+enemy.level} · قطعی</span></div><div class="enemy-item-rewards">${enemyRewardChips(enemy.level,enemy.type)}</div><p hidden>تسریع ${type.drop === "random" ? "تصادفی" : type.id === "cavarly" ? "درمان" : type.id === "archer" ? "ساخت نیرو" : "ساخت‌وساز"}: ${enemy.level <= 5 ? 1 : enemy.level <= 15 ? 5 : 10} دقیقه با احتمال ۳۵٪ · تسریع حرکت ۱۰٪: ۲۰٪ · تسریع حرکت ۵۰٪: ۵٪</p><small>نیاز پیشنهادی: ${requirement.troops} سرباز و ${formatCompact(requirement.power)} توان لشکر. نیروی آماده: ${formatCompact(APP.army.troops)}</small><button class="enemy-attack" type="button" ${enemyUnlocked(enemy.type,enemy.level)?"":"disabled"}>${enemyUnlocked(enemy.type,enemy.level)?"انتخاب نیرو و حمله":"ابتدا درجه قبلی را شکست دهید"}</button>`;
+    box.innerHTML = `<button class="enemy-close" aria-label="بستن">×</button><div class="enemy-head"><img src="${type.image}" alt=""><div><h3>${type.name}</h3><span>درجه ${enemy.level} · X:${enemy.q} Y:${enemy.r}</span></div></div><strong>پاداش پیروزی</strong><div class="enemy-rewards">${["wood", "food", "stone", "iron"].map(id => `<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}">${formatCompact(value)} · قطعی</span>`).join("")}<span><img src="assets/resources/gold.webp" alt="سکه">${5+enemy.level} · قطعی</span>${enemyRewardChips(enemy.level,enemy.type)}</div><p hidden>تسریع ${type.drop === "random" ? "تصادفی" : type.id === "cavarly" ? "درمان" : type.id === "archer" ? "ساخت نیرو" : "ساخت‌وساز"}: ${enemy.level <= 5 ? 1 : enemy.level <= 15 ? 5 : 10} دقیقه با احتمال ۳۵٪ · تسریع حرکت ۱۰٪: ۲۰٪ · تسریع حرکت ۵۰٪: ۵٪</p><small>نیاز پیشنهادی: ${formatCompact(requirement.troops)} سرباز و ${formatCompact(requirement.power)} توان لشکر. نیروی آماده: ${formatCompact(APP.army.troops)}</small><button class="enemy-attack" type="button" ${enemyUnlocked(enemy.type,enemy.level)?"":"disabled"}>${enemyUnlocked(enemy.type,enemy.level)?"انتخاب نیرو و حمله":"ابتدا درجه قبلی را شکست دهید"}</button>`;
     box.addEventListener("pointerdown", e => e.stopPropagation());
     box.querySelector(".enemy-close").onclick = () => box.remove();
     box.querySelector(".enemy-attack").onclick = () => attackEnemy(enemy);

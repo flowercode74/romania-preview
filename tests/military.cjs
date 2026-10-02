@@ -21,7 +21,7 @@ const t=context.t;t.startGame(true);t.APP.tutorial.active=false;t.createWorldMap
  for(const b of t.state.buildings)assert(t.footprintFits(b,b.q,b.r),b.id);
  const byId=id=>t.state.buildings.find(b=>b.id===id);byId('barracks').level=10;byId('hospital').level=10;byId('research').level=10;byId('castle').level=10;
  for(const k of ['wood','food','stone','iron'])t.APP.resources[k]=10000000;
- document.getElementById('armyType').value='heavy';document.getElementById('armyCount').value='100';const food=t.APP.resources.food;t.startArmyTask('training');assert.equal(t.APP.army.training.type,'heavy');assert.equal(t.APP.resources.food,food-100*t.TROOPS.heavy.cost);t.APP.army.training=null;
+ document.getElementById('armyType').value='heavy';document.getElementById('armyCount').value='100';const food=t.APP.resources.food;t.startArmyTask('training');assert.equal(t.APP.army.training.type,'heavy');assert.equal(t.APP.resources.food,food-100*Math.ceil(t.TROOPS.heavy.cost*.7));t.APP.army.training=null;
  t.awardTablets(20);t.awardTablets(2);t.awardTablets(20);assert.equal(t.availableTablets(),20);
  t.researchLine('archer').unlocked=true;t.APP.research.tabletsSpent=1;assert.equal(t.availableTablets(),19);
  const before=t.troopStats('archer').attack;await t.startBranchResearch('archer','attack');assert.equal(t.APP.research.task,null);assert.equal(t.troopStats('archer').attack,before);
@@ -35,7 +35,7 @@ const t=context.t;t.startGame(true);t.APP.tutorial.active=false;t.createWorldMap
  t.APP.secondBuilder=true;byId('lumber').level=5;t.APP.worker2={task:{id:'lumber',target:6,startedAt:Date.now()},endsAt:Date.now()+100000};t.saveGameProgress();byId('lumber').level=0;t.APP.worker2={task:null,endsAt:0};t.loadGameProgress();assert.equal(t.APP.worker2.task.target,6);assert.equal(byId('lumber').level,5);
  // گزارش از ترکیب نبرد کپی می‌گیرد و تغییر لشکر سابق را تغییر نمی‌دهد.
  const march={id:'mixed-report',enemyId:'mixed-enemy',enemyLevel:1,enemyType:1,troops:20,combatPower:100000,unitCounts:{sword:10,archer:10},origin:{q:50,r:50},target:{q:51,r:50},arriveAt:Date.now()};t.resolveEnemyBattle(march,()=>1);const report=t.APP.battleReports.find(r=>r.id===march.id);assert(report);march.unitCounts.sword=0;assert.equal(report.units.sword,10);assert(report.defender.name);t.openBattleReport(report.id);assert(nodes.get('genericPanelContent').innerHTML.includes('battle-table'));
- for(const [fn,word] of [[t.openTraining,'data-start-army'],[t.openHealing,'heal'],[t.openSettings,'data-setting'],[t.openTroopsOverview,'unit-grid'],[t.openLeaderboard,'data-rank'],[t.openSkins,'data-skin-kind']]){fn();assert(nodes.get('genericPanelContent').innerHTML.includes(word),word);}
+ for(const [fn,word] of [[t.openTraining,'data-start-army'],[t.openHealing,'heal'],[t.openSettings,'data-setting'],[t.openTroopsOverview,'troops-full'],[t.openLeaderboard,'data-rank'],[t.openSkins,'data-skin-kind']]){fn();assert(nodes.get('genericPanelContent').innerHTML.includes(word),word);}
  // Exercise actual cosmetic menu handlers and persistence for all four options.
  const savedQuery=document.querySelector,portrait=new Node();
  document.querySelector=selector=>selector==='.portrait-image'?portrait:savedQuery(selector);

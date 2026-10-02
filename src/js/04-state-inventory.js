@@ -5,7 +5,7 @@
       food: 8000,
       stone: 8000,
       iron: 8000,
-      gold: 500,
+      gold: 1300,
       power: 0
     },
     unreadMail: 0,

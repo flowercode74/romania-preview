@@ -110,6 +110,7 @@
     if (APP.tutorial.active) return;
     const target = APP.selectedMapCastle;
     if (!target || target.own || target.q === 400 && target.r === 400) return;
+    if (type === "spy" && Number(target.antiSpyUntil||0)>Date.now()) return showBuildNotice("پردهٔ ضدجاسوسی این قلعه فعال است.");
     if (type === "reinforce" && !APP.marches.some(m => m.id === target.campId && m.type === "camp" && m.phase === "waiting" && m.returnAt > Date.now())) return showBuildNotice("این کمپ دیگر برای عضوگیری فعال نیست.");
     if (APP.marches.length >= WORLD.marchSlots) return showBuildNotice("هر چهار صف لشکر فعال‌اند؛ منتظر بازگشت یک لشکر بمانید.");
     if(!selection){openDeployment(type,target);return false;}
@@ -252,7 +253,7 @@
     svg.setAttribute("viewBox", `0 0 ${viewport.clientWidth} ${viewport.clientHeight}`);
     const active = new Set();
     const now = Date.now();
-    APP.marches.forEach(m => {
+    APP.marches.filter(m=>marchVisibleTo(m)).forEach(m => {
       active.add(m.id);
       let node = APP.map.marchNodes.get(m.id);
       if (!node) {
@@ -262,6 +263,9 @@
         g.setAttribute("class", "march-army");
         const soldier = document.createElementNS(ns, "svg");
         const spriteImage=document.createElementNS(ns,"image");
+        const defs=document.createElementNS(ns,"defs"),filter=document.createElementNS(ns,"filter"),transfer=document.createElementNS(ns,"feComponentTransfer"),alpha=document.createElementNS(ns,"feFuncA");
+        filter.setAttribute("id",`army-alpha-${m.id}`);alpha.setAttribute("type","gamma");alpha.setAttribute("amplitude","1");alpha.setAttribute("exponent","8");transfer.appendChild(alpha);filter.appendChild(transfer);defs.appendChild(filter);soldier.appendChild(defs);
+        spriteImage.setAttribute("filter",`url(#army-alpha-${m.id})`);
         spriteImage.setAttribute("href","assets/animations/army-directions.webp");spriteImage.setAttribute("width","1024");spriteImage.setAttribute("height","2048");soldier.appendChild(spriteImage);
         soldier.setAttribute("overflow","hidden");
         soldier.setAttribute("viewBox","0 0 256 256");
@@ -286,14 +290,16 @@
       }
       const camp=m.phase==="waiting"&&m.type==="camp";
       const sprite=camp?ASSETS.armyCamp:"assets/animations/army-directions.webp";
+      node.spriteImage.setAttribute("filter",camp?"none":`url(#army-alpha-${m.id})`);
       if(node.sprite!==sprite){node.spriteImage.setAttribute("href",sprite);node.spriteImage.setAttribute("width",camp?256:1024);node.spriteImage.setAttribute("height",camp?256:2048);node.sprite=sprite;}
       m.directionRow=marchDirection(m,now);
       const frame=m.phase==="waiting"?0:Math.floor(now/150)%4;
       node.soldier.setAttribute("viewBox",camp?"0 0 256 256":`${frame*256} ${m.directionRow*256} 256 256`);
-      const spriteSize=18*APP.map.camera.zoom;
+      const spriteSize=30*APP.map.camera.zoom;
       node.soldier.setAttribute("width",spriteSize);node.soldier.setAttribute("height",spriteSize);
       node.soldier.setAttribute("x",-spriteSize/2);node.soldier.setAttribute("y",-spriteSize/2);
       const route = m.phase === "returning" ? m.reverseRoute || (m.reverseRoute = [...m.route].reverse()) : m.route;
+      decorateMarchCombat(node,m,now);
       if (m.phase === "waiting") {
         node.line.style.display = "none";
         const [cx, cy] = mapToScreen(m.target.q, m.target.r);
@@ -895,14 +901,14 @@
     document.getElementById("profileButton")?.addEventListener("click", () => openProfile());
     document.getElementById("shieldButton")?.addEventListener("click", openShield);
     document.getElementById("eventsButton")?.addEventListener("click", () => {
-      if (!APP.tutorial.active) openPage("events", '<div class="shield-content"><h2>رویدادها</h2><p>رویداد فعالی ثبت نشده است.</p></div>');
+      if (!APP.tutorial.active) openEvents();
     });
     document.getElementById("enemySearchButton")?.addEventListener("click",openEnemySearch);
     document.getElementById("mapSearchButton")?.addEventListener("click", openCoordinateSearch);
     document.getElementById("mapBookmarksButton")?.addEventListener("click", openMapBookmarks);
     document.getElementById("vipButton")?.addEventListener("click", openVip);
     document.getElementById("storeButton")?.addEventListener("click", openShop);
-    document.getElementById("myCastleButton")?.addEventListener("click", () => centerMapOn(APP.home.q, APP.home.r));
+    document.getElementById("myCastleButton")?.addEventListener("click", () => {APP.map.camera.zoom=1.75;centerMapOn(APP.home.q, APP.home.r);});
     document.getElementById("marchToggle")?.addEventListener("click", () => {
       APP.map.lastQueueKey = "";
       document.querySelectorAll("[data-march-tab]").forEach(b => b.classList.toggle("is-active", b.dataset.marchTab === "armies"));
@@ -914,7 +920,7 @@
       if (panel?.classList.contains("is-expanded") && !event.target.closest("#marchQueue, #marchToggle")) panel.classList.remove("is-expanded");
     });
     document.getElementById("marchQueue")?.addEventListener("click", event => {
-      if (event.target.closest("[data-buy-builder]")) return buySecondBuilder();
+      
       const tab = event.target.closest("[data-march-tab]");
       if (tab) {
         document.querySelectorAll("[data-march-tab]").forEach(b => b.classList.toggle("is-active", b === tab));

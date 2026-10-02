@@ -1,0 +1,28 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {t,nodes,context,setNow,getNow}=require('../scripts/test-harness.cjs');
+(async()=>{
+ t.BUILD_ORDER.forEach(id=>t.buildingById(id).level=id==='castle'?2:1);
+ t.APP.tutorial={active:true,step:t.BUILD_ORDER.length,phase:'army-training'};t.APP.tutorialSkipped=false;
+ t.showArmyTutorial('training');t.selectBuilding('barracks','building');
+ assert.equal(t.tutorialTargetId(),'barracks');t.syncTutorialProgress();assert.equal(t.APP.tutorial.phase,'army-training');
+ const costs=t.troopResourceCosts('sword',100);assert.deepEqual(Object.keys(costs),['wood','food','stone','iron']);
+ for(const id of Object.keys(costs))t.APP.resources[id]=100000;
+ context.document.getElementById('armyCount').value='100';
+ t.startArmyTask('training');const task=t.APP.army.training;assert(task);assert.equal(task.count,100);
+ for(const id of Object.keys(costs))assert.equal(t.APP.resources[id],100000-costs[id]);
+ setNow(task.endsAt);t.tickArmy();assert.equal(t.APP.army.totalTrained,100);assert.equal(t.tutorialTargetId(),'hospital');
+ t.tickArmy();assert.equal(t.APP.army.totalTrained,100);
+ context.document.getElementById('armyCount').value='10';t.startArmyTask('healing');assert(t.APP.army.healing);
+ setNow(t.APP.army.healing.endsAt);t.tickArmy();assert.equal(t.APP.army.totalHealed,10);assert.equal(t.APP.tutorial.phase,'ui-tour');
+ t.APP.tutorial.uiComplete=true;t.setAccountSession({mode:'guest'});assert(t.accountGateRequired());
+ await t.connectAccount('telegram');assert(t.accountGateRequired(),'missing authentication must not silently connect a guest');
+ context.window.RomaniaAccountAuth={authenticate:async()=>({verified:false,accountId:'unverified'})};await t.connectAccount('phone');assert(t.accountGateRequired());
+ context.window.RomaniaAccountAuth={authenticate:async()=>({verified:true,accountId:'verified-test-account'})};await t.connectAccount('phone');assert.equal(t.accountGateRequired(),false);
+ t.setAccountSession({mode:'guest'});t.showFinalCampTutorial();assert.equal(t.APP.tutorial.phase,'final-camp');t.syncTutorialProgress();assert.equal(t.APP.tutorial.phase,'final-camp');t.setAccountSession({mode:'admin'});t.showFinalCampTutorial();assert.equal(t.tutorialTargetId(),'camp');assert.equal(t.APP.tutorial.phase,'final-camp');
+ t.APP.antiSpyUntil=getNow()+5*3600000;t.APP.medals=[{id:'test-medal',name:'مدال آزمایشی'}];t.saveGameProgress();t.APP.antiSpyUntil=0;t.APP.medals=[];t.loadGameProgress();assert(t.APP.antiSpyUntil>getNow());assert.equal(context.window.RomaniaGame.canScout(),false);assert.equal(context.window.RomaniaGame.canScout({own:true},t.APP.antiSpyUntil+1),true);assert.equal(t.APP.medals[0].id,'test-medal');
+ for(const hours of [5,12,24])assert(t.INVENTORY.find(i=>i.id===`anti-spy-${hours}h`));
+ assert.equal(t.formatCompact(1300),'1.3k');assert.equal(t.formatCompact(120000),'120k');
+ assert.equal(t.marchVisibleTo({type:'attack',targetPlayerId:'enemy'},'other'),false);assert.equal(t.marchVisibleTo({type:'attack',targetPlayerId:'enemy'},'enemy'),true);
+ console.log('PASS: persistent training/healing targets, atomic four-resource debit, exactly-once completion, verified-only guest account gate, final-camp guidance, saved anti-spy and permanent medals, compact numbers and march visibility.');
+})().catch(e=>{console.error(e);process.exitCode=1});

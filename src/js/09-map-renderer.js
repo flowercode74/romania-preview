@@ -177,6 +177,7 @@
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = "#376f89";
     ctx.fillRect(0, 0, w, h);
+    if(z<MAP_DETAIL_ZOOM){drawCartography(ctx,w,h,z);return;}
     if (z < .48 && !mapOverview) {
       ctx.fillStyle = "#6b7952";
       ctx.fillRect(0, 0, w, h);
@@ -201,7 +202,7 @@
     const r0 = Math.max(1, Math.min(...corners.map(v => v.r)) - 4),
       r1 = Math.min(800, Math.max(...corners.map(v => v.r)) + 4);
     const atlas = terrainAtlas(),
-      detailed = true;
+      detailed = z >= MAP_DETAIL_ZOOM;
     for (let r = r0; r <= r1; r++) for (let q = q0; q <= q1; q++) {
       const [wx, wy] = mapCenter(q, r),
         x = w / 2 + (wx - APP.map.camera.x) * z,
@@ -269,7 +270,7 @@
   function drawCaptureTower(ctx) {
     const [x, y] = mapToScreen(400, 400),
       z = APP.map.camera.zoom,
-      size = 17 * z;
+      size = 20 * z;
     const image = state.images.get(ASSETS.capture);
     if (image?.naturalWidth) ctx.drawImage(image, x - size / 2, y - size / 2, size, size);
     if (z >= MAP_DETAIL_ZOOM) {
@@ -308,7 +309,7 @@
     const [x, y] = mapToScreen(castle.q, castle.r),
       image = state.images.get(castle.own ? selectedCastleImage() : ASSETS.buildings.castle) || state.images.get(ASSETS.buildings.castle);
     const z = APP.map.camera.zoom,
-      size = 17 * z;
+      size = (castle.own ? 27 : 23) * z;
     const layer = document.getElementById("worldMapLayer");
     if (x < -size || y < -size || x > layer.clientWidth + size || y > layer.clientHeight + size) return;
     if (image?.complete && image.naturalWidth) {

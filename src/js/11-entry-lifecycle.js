@@ -92,6 +92,9 @@
       card.querySelectorAll("[data-spawn]").forEach(b => b.classList.toggle("is-selected", b === button));
       validate();
     });
+    accept.checked = true;
+    accept.closest("label")?.setAttribute("hidden","");
+    card.querySelector(".spawn-rules")?.setAttribute("hidden","");
     accept.addEventListener("change", validate);
     enter.onclick = () => {
       if (!region || !accept.checked) return;
@@ -210,6 +213,8 @@
       eventStartDay: WORLD.finalEventStartDay,
       eventDays: WORLD.finalEventDays
     }),
+    canViewMarch: marchVisibleTo,
+    canScout(target={own:true},now=Date.now()) {return Number(target.own?APP.antiSpyUntil:target.antiSpyUntil||0)<=now;},
     setAlliance(alliance) {
       if (!alliance) {
         APP.alliance = null;

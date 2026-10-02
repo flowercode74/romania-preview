@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/game.css?v=romania-season-combat-20261002-2">
+<link rel="stylesheet" href="assets/css/game.css?v=romania-glass-tutorial-20261003-1">
 </head>
 <body>
 <!-- صفحه بارگذاری -->
@@ -46,7 +46,7 @@
       </button>
       <div class="hud-stamina" title="استقامت"><i id="hudStaminaFill"></i><span id="hudStaminaText">100/100</span></div>
     </section>
-    <div class="hud-main"><div class="hud-realm-title">رومانیا <span id="hudSeasonText">روز ۱ از ۵۲</span></div>
+    <div class="hud-main"><div class="hud-realm-title"><span id="hudSeasonText">روز ۱ از ۵۲</span><strong>رومانیا</strong></div>
       <section class="hud-resources" aria-label="منابع">
         <div class="hud-resource"><img src="assets/resources/wood.webp" alt=""><strong id="woodValue">10k</strong></div>
         <div class="hud-resource"><img src="assets/resources/food.webp" alt=""><strong id="foodValue">10k</strong></div>
@@ -56,7 +56,7 @@
       </section>
       <section class="hud-bottom" aria-label="امکانات بازیکن">
         <button class="hud-vip" id="vipButton" type="button"><span>VIP 1</span></button>
-        <div class="hud-power"><span class="power-icon">⚔</span><strong id="playerPower">31.6k</strong></div>
+        <div class="hud-power"><span class="power-icon"><img src="assets/resources/power.webp" alt="قدرت"></span><strong id="playerPower">31.6k</strong></div>
         <button class="hud-store" id="storeButton" type="button"><span>فروشگاه</span></button>
       </section>
     </div>
@@ -74,8 +74,8 @@
         <svg id="marchSvg" class="march-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
       </div>
       <button id="myCastleButton" class="my-castle-button" type="button" aria-label="بازگشت به قلعه من"><img src="assets/buildings/castle.webp" alt=""><span>دژ آذروند</span></button>
+      <button id="enemySearchButton" class="enemy-search-button" type="button" aria-label="جستجوی سرگردان"><img src="assets/enemies/ashen-host.webp" alt=""><span>سرگردان‌ها</span></button>
       <div class="map-coordinates" aria-live="polite">
-        <button id="enemySearchButton" type="button" aria-label="جستجوی سرگردان">⚔</button>
         <button id="mapSearchButton" type="button" aria-label="جستجوی مختصات">⌕</button>
         <span id="mapCoordinateText">X:400 · Y:400</span>
         <button id="mapBookmarksButton" type="button" aria-label="مختصات نشان‌شده">☆</button>
@@ -99,11 +99,11 @@
 
   <!-- منوی اصلی با ترتیب چپ به راست و متن فارسی -->
 <nav class="bottom-nav" aria-label="منوی بازی">
-    <button class="nav-item nav-disabled" type="button" data-action="heroes" disabled aria-disabled="true"><span class="nav-icon"><img src="assets/icons/hero.webp" alt=""></span><span>قهرمان‌ها</span></button>
+    <button class="nav-item" type="button" data-action="democracy" disabled aria-disabled="true"><span class="nav-icon"><img src="assets/icons/quest.webp" alt=""></span><span>دموکراسی</span></button>
     <button class="nav-item" type="button" data-action="items"><span class="nav-icon"><img src="assets/icons/bag.webp" alt=""><b id="itemBadge" class="nav-badge">3</b></span><span>آیتم‌ها</span></button>
     <button class="nav-item center" type="button" data-action="map" aria-current="false"><span class="nav-emblem"><img src="assets/icons/world-map.webp" alt=""></span><span id="mapNavLabel">نقشه</span></button>
     <button class="nav-item" type="button" data-action="messages"><span class="nav-icon"><img src="assets/icons/mail.webp" alt=""><b id="mailBadge" class="nav-badge">+13</b></span><span>پیام‌ها</span></button>
-    <button class="nav-item" type="button" data-action="missions"><span class="nav-icon"><img src="assets/icons/quest.webp" alt=""></span><span>ماموریت‌ها</span></button>
+    <button class="nav-item nav-disabled" type="button" data-action="heroes" disabled aria-disabled="true"><span class="nav-icon"><img src="assets/icons/hero.webp" alt=""></span><span>قهرمان‌ها</span></button>
   </nav>
 </main>
 
@@ -130,6 +130,6 @@
 <div id="gameDialog" class="game-dialog" hidden role="dialog" aria-modal="true" aria-labelledby="gameDialogTitle">
   <div class="game-dialog-card"><h2 id="gameDialogTitle"></h2><div id="gameDialogContent"></div><div id="gameDialogActions"></div></div>
 </div>
-<script src="assets/js/game.js?v=romania-season-combat-20261002-2" defer></script>
+<script src="assets/js/game.js?v=romania-glass-tutorial-20261003-1" defer></script>
 </body>
 </html>

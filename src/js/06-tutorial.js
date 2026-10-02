@@ -55,7 +55,7 @@
       overlay = document.createElement("section");
       overlay.id = "tutorialOverlay";
       overlay.className = "tutorial-overlay";
-      overlay.innerHTML = `<div class="tutorial-card"><img class="tutorial-helper" src="assets/characters/advisor.webp" alt="مشاور" onerror="this.style.display='none'"><div class="tutorial-copy"><small>مشاور سلطنتی</small><h2 id="tutorialTitle">خوش آمدید، سرورم!</h2><p id="tutorialText"></p><div class="tutorial-actions"><button id="tutorialNext" type="button">شروع آموزش</button><button id="tutorialSkip" type="button">بازی را بلدم</button></div><div id="tutorialSkipConfirm" class="tutorial-skip-confirm" hidden>تمام مراحل آموزش رد شوند؟<div><button type="button" id="tutorialSkipYes">بله</button><button type="button" id="tutorialSkipNo">خیر</button></div></div></div></div>`;
+      overlay.innerHTML = `<div class="tutorial-card"><img class="tutorial-helper" src="assets/characters/narrator-ariwan.webp" alt="مشاور" onerror="this.style.display='none'"><div class="tutorial-copy"><small>مشاور سلطنتی</small><h2 id="tutorialTitle">خوش آمدید، سرورم!</h2><p id="tutorialText"></p><div class="tutorial-actions"><button id="tutorialNext" type="button">شروع آموزش</button><button id="tutorialSkip" type="button">بازی را بلدم</button></div><div id="tutorialSkipConfirm" class="tutorial-skip-confirm" hidden>تمام مراحل آموزش رد شوند؟<div><button type="button" id="tutorialSkipYes">بله</button><button type="button" id="tutorialSkipNo">خیر</button></div></div></div></div>`;
       document.body.appendChild(overlay);
     }
     document.getElementById("tutorialNext")?.addEventListener("click", advanceNarrator);
@@ -108,7 +108,7 @@
     const overlay = document.getElementById("tutorialOverlay");
     overlay.classList.add("is-visible", "is-welcome");
     document.getElementById("tutorialTitle").textContent = ["بازگشت وارث", "قلعه‌ای در سکوت", "سپیده‌دم فرمانروایی"][scene];
-    setNarratorText((response ? "«" + response + "»\n\n" : "") + scenes[scene][0]);
+    setNarratorText((response ? "شما: «" + response + "»\n\n" : "") + scenes[scene][0]);
     document.getElementById("tutorialNext").hidden = true;
     document.getElementById("tutorialSkip").hidden = true;
     document.getElementById("storyChoices")?.remove();
@@ -184,6 +184,7 @@
     const id = BUILD_ORDER[APP.tutorial.step];
     const b = buildingById(id);
     APP.tutorial.phase = "focus";
+    state.missionFocus = {id,action:"upgrade"};
     state.selectedId = null;
     hideBuildingActionMenu();
     drawWorld();
@@ -196,6 +197,7 @@
     const mission = document.getElementById("missionStatusText");
     if (mission) mission.textContent = `${action} ${b?.name || "ساختمان"}`;
     overlay.classList.add("is-visible");
+    applyTutorialGuidance();
     updateMissionStatus();
   }
   function syncTutorialProgress(forceShow = false) {
@@ -206,7 +208,11 @@
       changed = true;
     }
     if (!APP.worker.task && !hasTrainingTasks() && !APP.army.healing) document.body.classList.remove("tutorial-working");
-    if (APP.tutorial.step >= BUILD_ORDER.length) finishTutorial();else if (APP.worker.task?.id === tutorialTargetId()) {
+    if (APP.tutorial.step >= BUILD_ORDER.length) {
+      if(APP.worker.task?.id==="camp" && buildingById("camp").level<2 && APP.tutorial.uiComplete){hideTutorialCard();return;}
+      const next = tutorialArmyStage();
+      if (forceShow || APP.tutorial.phase !== next) finishTutorial();
+    } else if (APP.worker.task?.id === tutorialTargetId()) {
       APP.tutorial.phase = "working";
       document.body.classList.add("tutorial-working");
       hideTutorialCard();
@@ -214,7 +220,7 @@
     if (changed || forceShow) saveGameProgress();
   }
   // آشنایی با رابط پس از ساخت: هر مرحله یک هدف روشن دارد و پیشرفت آن ذخیره می‌شود.
-  const UI_TOUR = [[".hud-resources", "چهار منبع اصلی", "چوب، گندم، سنگ و آهن برای ساخت و ارتقا مصرف می‌شوند. ساختمان‌های تولیدی آن‌ها را به‌مرور تولید می‌کنند و منابع سقف انبار ندارند."], [".hud-gold", "سکه", "سکه برای اتمام آنی ارتقا، آیتم‌ها و امکاناتی مثل کارگر دوم کاربرد دارد. مأموریت‌های روزانه یکی از راه‌های کسب آن هستند."], [".hud-power", "قدرت قلعه", "قدرت حاصل از سطح ساختمان‌ها اینجا دیده می‌شود. ارتقای قلعه و ساختمان‌های نظامی سهم بیشتری در قدرت دارند."], ["#profileButton", "پروفایل شما", "روی تصویر بازیکن بزنید: اطلاعات حساب، اتحاد، VIP، قدرت، کشتار و استقامت در پروفایل دیده می‌شود.", "profile"], ["#shieldButton", "محافظت از قلعه", "شیلدهای ۸ و ۲۴ ساعته از قلعه محافظت می‌کنند. مدت محافظت را همیشه بررسی کنید.", "shield"], ["#eventsButton", "رویدادها", "از این دکمه رویدادهای بازی را بررسی می‌کنید. برج مرکز جهان برای رویداد پایانی سرور در نظر گرفته شده است.", "events"], ['[data-action="items"]', "آیتم‌های شما", "بسته منابع، تسریع، شیلد و جابجایی در کیف شما هستند. منابع داخل بسته‌ها تنها بعد از استفاده به حساب اضافه می‌شوند.", "items"], ['[data-action="messages"]', "پیام‌ها و گزارش‌ها", "پیام‌های سیستم و گزارش‌های نبرد را در این بخش دنبال کنید.", "messages"], ['[data-action="missions"]', "مأموریت‌ها", "پاداش‌های آموزش را دریافت کنید. پس از دریافت همه آن‌ها، مأموریت‌های رشد و روزانه فعال می‌شوند.", "missions"], ["#marchToggle", "صف کارگر و لشکر", "در پنل وضعیت، پیشرفت کارگر و چهار صف لشکر را می‌بینید. انتخاب یک لشکر، دوربین را به موقعیت فعلی آن می‌برد."], ['[data-action="map"]', "نقشه جهان", "پس از پایان آموزش می‌توانید جهان را بررسی کنید. انتخاب کاشی فقط در نمای نزدیک فعال است؛ از جستجو، نشان‌ها و دکمه قلعه من استفاده کنید."], ["#territoryPerk", "مزیت محل استقرار", "مرز هر امپراطوری مزیت تولید خاصی دارد. در زمین آزاد، زمان حرکت لشکر ۵٪ کمتر است."], ['[data-action="heroes"]', "قهرمان‌ها", "این بخش برای قهرمان‌های آینده بازی در نظر گرفته شده و در نسخه فعلی غیرفعال است."]];
+  const UI_TOUR = [[".hud-resources", "چهار منبع اصلی", "چوب، گندم، سنگ و آهن برای ساخت و ارتقا مصرف می‌شوند. ساختمان‌های تولیدی آن‌ها را به‌مرور تولید می‌کنند و منابع سقف انبار ندارند."], [".hud-gold", "سکه", "سکه برای اتمام آنی ارتقا، آیتم‌ها و امکانات بازی کاربرد دارد. مأموریت‌های روزانه یکی از راه‌های کسب آن هستند."], [".hud-power", "قدرت قلعه", "قدرت حاصل از سطح ساختمان‌ها اینجا دیده می‌شود. ارتقای قلعه و ساختمان‌های نظامی سهم بیشتری در قدرت دارند."], ["#profileButton", "پروفایل شما", "روی تصویر بازیکن بزنید: اطلاعات حساب، اتحاد، VIP، قدرت، کشتار و استقامت در پروفایل دیده می‌شود.", "profile"], ["#shieldButton", "محافظت از قلعه", "شیلدهای ۸ و ۲۴ ساعته از قلعه محافظت می‌کنند. مدت محافظت را همیشه بررسی کنید.", "shield"], ["#eventsButton", "رویدادها", "از این دکمه رویدادهای بازی را بررسی می‌کنید. برج مرکز جهان برای رویداد پایانی سرور در نظر گرفته شده است.", "events"], ['[data-action="items"]', "آیتم‌های شما", "بسته منابع، تسریع، شیلد و جابجایی در کیف شما هستند. منابع داخل بسته‌ها تنها بعد از استفاده به حساب اضافه می‌شوند.", "items"], ['[data-action="messages"]', "پیام‌ها و گزارش‌ها", "پیام‌های سیستم و گزارش‌های نبرد را در این بخش دنبال کنید.", "messages"], ["#missionStatus", "مأموریت‌ها", "پاداش‌های آموزش را دریافت کنید. پس از دریافت همه آن‌ها، مأموریت‌های رشد و روزانه فعال می‌شوند.", "missions"], ["#marchToggle", "صف کارگر و لشکر", "در پنل وضعیت، پیشرفت کارگر و چهار صف لشکر را می‌بینید. انتخاب یک لشکر، دوربین را به موقعیت فعلی آن می‌برد."], ['[data-action="map"]', "نقشه جهان", "پس از پایان آموزش می‌توانید جهان را بررسی کنید. انتخاب کاشی فقط در نمای نزدیک فعال است؛ از جستجو، نشان‌ها و دکمه قلعه من استفاده کنید."], ["#territoryPerk", "مزیت محل استقرار", "مرز هر امپراطوری مزیت تولید خاصی دارد. در زمین آزاد، زمان حرکت لشکر ۵٪ کمتر است."], ['[data-action="heroes"]', "قهرمان‌ها", "این بخش برای قهرمان‌های آینده بازی در نظر گرفته شده و در نسخه فعلی غیرفعال است."]];
   function clearTourFocus() {
     document.querySelectorAll(".tutorial-focus").forEach(n => n.classList.remove("tutorial-focus"));
   }
@@ -251,6 +257,9 @@
   // تمرین اولیه نیرو و درمان پس از ساخت ساختمان‌ها؛ مجروح تمرینی فقط یک بار ایجاد می‌شود.
   function showArmyTutorial(kind) {
     APP.tutorial.phase = `army-${kind}`;
+    document.body.classList.remove("ui-tour");
+    gameNavigation.frames = [];
+    trainingOverlay = null; healingOverlay = null;
     if (kind === "healing" && !APP.army.practiceWounded) {
       APP.army.practiceWounded = true;
       const practice=reserveTroops(Math.min(10,APP.army.troops)),stock=woundedStock();
@@ -270,7 +279,11 @@
     hideBuildingActionMenu();
     document.getElementById("tutorialOverlay")?.classList.remove("is-welcome");
     document.getElementById("tutorialOverlay")?.classList.add("is-visible");
+    applyTutorialGuidance();
     saveGameProgress();
+  }
+  function tutorialArmyStage() {
+    return !APP.tutorialSkipped && (APP.army.totalTrained||0)<100 ? "army-training" : !APP.tutorialSkipped && (APP.army.totalHealed||0)<10 ? "army-healing" : !APP.tutorialSkipped && !APP.tutorial.uiComplete ? "ui-tour" : "finished";
   }
   function finishTutorial() {
     if (!APP.tutorialSkipped && (APP.army.totalTrained || 0) < 100) return showArmyTutorial("training");

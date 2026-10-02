@@ -72,7 +72,7 @@
     if (dialog && !dialog.hidden) {closeGameDialog();return true;}
     if (APP.openPage === "training" && trainingOverlay) {trainingOverlay=null;renderTrainingPage();return true;}
     if (APP.openPage === "healing" && healingOverlay) {healingOverlay=null;renderHealingPage();return true;}
-    const enemy=document.getElementById("enemySheet");if(enemy?.id==="enemySheet"){enemy.remove();return true;}
+    const enemy=document.getElementById("enemySheet");if(enemy?.id==="enemySheet"){enemy.remove();document.getElementById("enemyBackdrop")?.remove();return true;}
     const march=document.getElementById("marchPanel");
     if (march?.classList.contains("is-expanded")) {march.classList.remove("is-expanded");return true;}
     if (state.moveBuildingId) {stopMovingBuilding();return true;}
@@ -104,7 +104,7 @@
       if (!state.gameStarted) return;
       // Re-arm immediately, even when already in the settlement. No exit prompt.
       try {window.history?.pushState({romaniaBackGuard:true}, "");}catch {}
-      navigateGameBack();
+      if (!navigateGameBack()) requestGameExit();
     });
     document.addEventListener("keydown", event => {
       if (event.key !== "Escape" || event.defaultPrevented || !state.gameStarted) return;

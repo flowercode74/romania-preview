@@ -163,7 +163,11 @@
   // قلمرو مستقل از مختصات جهان است و هنگام تلپورت بازسازی نمی‌شود.
   function territoryTerrain(cell) {
     const roll = mapNoise(cell.q + 71, cell.r + 89);
-    return { col: roll > 0.5 ? 3 : 4, row: 4, color: "#657753" };
+    const outside = !insideCourtyard(cell.x,cell.y);
+    if(outside && Math.hypot(cell.x,cell.y)>330 && roll>.985) return {col:Math.floor(roll*3),row:2,color:"#858b78"};
+    if(outside && Math.hypot(cell.x+335,cell.y-130)<43) return {col:2,row:3,color:"#568ca0"};
+    if(outside && Math.hypot(cell.x,cell.y)>310 && roll>.90) return {col:Math.floor(roll*3),row:4,color:"#657753"};
+    return {col:Math.floor(roll*3),row:5,color:"#829064"};
   }
   // Derive the visible courtyard from the wall cutout, rather than exposing grass
   // between the conservative placement polygon and the painted inner wall edge.
@@ -225,7 +229,7 @@
     const bounds=cameraBounds();b={minX:bounds.minX-24,minY:bounds.minY-24,width:bounds.maxX-bounds.minX+48,height:bounds.maxY-bounds.minY+48};
     const atlas=terrainAtlas(),wall=state.images.get(ASSETS.wall);
     const raster=APP.preferences?.quality==="performance"?1.5:2.5;
-    const stamp=`atlas-foundation-v2:${raster}:${atlas?.naturalWidth||0}:${wall?.naturalWidth||0}:${b.width}:${b.height}`;
+    const stamp=`atlas-meadow-v3:${raster}:${atlas?.naturalWidth||0}:${wall?.naturalWidth||0}:${b.width}:${b.height}`;
     if(state.terrainStamp!==stamp||!state.terrainCanvas){
       const make=()=>{const c=document.createElement("canvas");c.width=Math.ceil(b.width*raster);c.height=Math.ceil(b.height*raster);return c;};
       const transform=ctx=>ctx.setTransform(raster,0,0,raster,-b.minX*raster,-b.minY*raster);
@@ -413,6 +417,7 @@
         ctx.beginPath();hexPoints(tile.x, tile.y).forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));ctx.closePath();ctx.stroke();
       }
     }
+    drawTutorialBeacon(ctx,building,box);
     const dpr = state.dpr || 1, zoom = state.camera.zoom;
     const raster = buildingRaster(building, image, box, dpr, zoom);
     const x = Math.round((state.canvas.width / dpr / 2 + (box.x - state.camera.x) * zoom) * dpr);
@@ -493,7 +498,9 @@
     ctx.imageSmoothingQuality = "high";
     const wall = state.images.get(APP.wallLevel === 0 ? ASSETS.ruinedWall : ASSETS.wall);
     if (wall?.complete && wall.naturalWidth) {
+      ctx.save();ctx.shadowColor="rgba(27,34,26,.34)";ctx.shadowBlur=5;ctx.shadowOffsetX=2;ctx.shadowOffsetY=4;
       ctx.drawImage(wall, -TERRITORY.wallWidth / 2, -TERRITORY.wallHeight / 2, TERRITORY.wallWidth, TERRITORY.wallHeight);
+      ctx.restore();
     }
     if (state.selectedId === "wall" || tutorialTargetId() === "wall") {
       ctx.save();
@@ -615,7 +622,7 @@
     node.setAttribute("aria-valuenow", String(Math.round(percent)));
     node.setAttribute("aria-valuemin", "0");
     node.setAttribute("aria-valuemax", "100");
-    node.querySelector(".building-progress-caption").textContent = `${task.name} · ${formatDuration(APP.worker.endsAt - Date.now())}`;
+    node.querySelector(".building-progress-caption").textContent = `${formatDuration(APP.worker.endsAt - Date.now())}`;
     node.querySelector("i b").style.width = `${percent}%`;
     const panelTime = document.getElementById("activeTaskTime");
     if (panelTime) panelTime.textContent = formatDuration(APP.worker.endsAt - Date.now());
@@ -827,7 +834,7 @@
             selectBuilding(hit.id, hit.type);
             recordBuildingInspection();
             if (APP.tutorial.active && !APP.worker.task) {
-              APP.tutorial.phase = "selected";
+              if (!APP.tutorial.phase.startsWith("army-") && APP.tutorial.phase!=="final-camp") APP.tutorial.phase = "selected";
               hideTutorialCard();
               saveGameProgress();
             }
@@ -1198,7 +1205,7 @@
     layer.classList.add("is-open");
     layer.setAttribute("aria-hidden", "false");
     if (APP.tutorial.active && !APP.worker.task && !APP.tutorial.phase.startsWith("army-")) {
-      APP.tutorial.phase = "panel";
+      if (!APP.tutorial.phase.startsWith("army-") && APP.tutorial.phase!=="final-camp") APP.tutorial.phase = "panel";
       saveGameProgress();
       hideTutorialCard();
     }
@@ -1208,7 +1215,7 @@
     const remaining = Math.max(0, APP.worker.endsAt - Date.now());
     const duration = Math.max(1, APP.worker.endsAt - task.startedAt);
     const progress = Math.max(0, Math.min(100, (Date.now() - task.startedAt) / duration * 100));
-    const choices = INVENTORY.filter(item => item.category === "speed" || item.family === "universal").map(item => `<button type="button" data-use-speed="${item.id}" ${item.count < 1 ? "disabled" : ""}>${item.name}<small>×${item.count}</small></button>`).join("");
+    const choices = INVENTORY.filter(item => item.category === "speed" || item.family === "universal").map(item => `<button type="button" data-use-speed="${item.id}" ${item.count < 1 ? "disabled" : ""}><img src="${item.image}" alt=""><span>${item.name}</span><small>×${formatCompact(item.count)}</small></button>`).join("");
     return `<div class="task-progress"><strong>${task.action} ${building.name} به سطح ${task.target}</strong><span id="activeTaskTime">${formatDuration(remaining)}</span><i><b id="activeTaskFill" style="width:${progress}%"></b></i><div class="task-controls"><button type="button" data-open-speed>⚡ تسریع ساخت</button><button type="button" data-instant-active ${APP.resources.gold >= instantGold(remaining) ? "" : "disabled"}>✦ اتمام آنی · ${instantGold(remaining)} سکه</button><button type="button" data-request-cancel>لغو ساخت</button></div><div class="speed-choices" id="speedChoices" hidden><button type="button" data-quick-speed>استفاده سریع</button>${choices}</div><div class="cancel-confirm" id="cancelConfirm" hidden><p>ساخت لغو شود؟ ۷۰٪ منابع مصرف‌شده برمی‌گردد و ۳۰٪ کسر می‌شود.</p><button type="button" data-confirm-cancel>تأیید لغو</button><button type="button" data-dismiss-cancel>انصراف</button></div></div>`;
   }
   function instantGold(ms) {

@@ -20,7 +20,7 @@ const t=context.t;t.startGame(true);t.APP.tutorial.active=false;t.createWorldMap
 (async()=>{
  const barracks=t.state.buildings.find(b=>b.id==='barracks');barracks.level=1;
  for(const u of t.TROOP_LINES)t.researchLine(u.id).unlocked=true;
- for(const k of ['food','iron','gold'])t.APP.resources[k]=1000000;
+ for(const k of ['wood','food','stone','iron','gold'])t.APP.resources[k]=1000000;
  t.setSkinConfirmation(async()=>true);
  assert.equal(t.trainingCapacity(),100);
  for(const role of t.UNIT_ROLES){
@@ -39,7 +39,7 @@ const t=context.t;t.startGame(true);t.APP.tutorial.active=false;t.createWorldMap
  for(const [i,k] of [...t.TRAINING_KEYS].entries()){
   document.getElementById('armyType').value=['sword','archer','guard'][i];document.getElementById('armyCount').value='150';t.startArmyTask(k);assert.equal(t.APP.army[k].count,150);
  }
- assert.equal(t.APP.resources.food,before-150*(35+40+35));
+ assert.equal(t.APP.resources.food,before-150*(25+28+25));
  const task=t.APP.army.training2,cost=t.APP.resources.food;
  t.startArmyTask('training2');assert.equal(t.APP.army.training2,task);assert.equal(t.APP.resources.food,cost);
  // Persist all queues and finish the same offline timestamp exactly once.
@@ -52,7 +52,7 @@ const t=context.t;t.startGame(true);t.APP.tutorial.active=false;t.createWorldMap
  // Cancellation refunds only the selected queue, preserving its neighbors.
  for(const k of t.TRAINING_KEYS){document.getElementById('armyType').value='sword';document.getElementById('armyCount').value='50';t.startArmyTask(k);}
  const q1=t.APP.army.training,q3=t.APP.army.training3,refund=t.APP.resources.food;
- assert(await t.cancelArmyQueue('training2'));assert.equal(t.APP.resources.food,refund+1225);assert.equal(t.APP.army.training,q1);assert.equal(t.APP.army.training3,q3);
+ assert(await t.cancelArmyQueue('training2'));assert.equal(t.APP.resources.food,refund+875);assert.equal(t.APP.army.training,q1);assert.equal(t.APP.army.training3,q3);
  // An unrelated item cannot accelerate troops; a troop item targets one queue.
  const wrong=t.INVENTORY.find(i=>i.family==='heal');wrong.count=3;const end=q1.endsAt;
  await t.speedArmy('training',wrong.id);assert.equal(q1.endsAt,end);assert.equal(wrong.count,3);
@@ -85,7 +85,7 @@ const t=context.t;t.startGame(true);t.APP.tutorial.active=false;t.createWorldMap
  await click({trainingClose:''});await click({trainingPanel:'counters'});assert(content.innerHTML.includes('counter-strong'));assert(content.innerHTML.includes('counter-weak'));
  await click({trainingClose:''});
  content.oninput({target:{id:'armyCount',value:'40'}});assert(document.getElementById('trainingCountOutput').textContent.startsWith('40'));
- t.APP.resources.food=350;t.APP.resources.iron=700;assert.equal(t.trainingLimit(),10);
+ t.APP.resources.food=350;t.APP.resources.iron=700;assert.equal(t.trainingLimit(),14);
  assert.equal(t.trainingDuration(100),Math.round(100*t.TROOPS.guard.seconds*1000/1.04));
  console.log('PASS: eight distinct offense/defense units, counter cycle, equal growing queue capacities, simultaneous queues, offline exactly-once completion, isolated refunds/speed/coins, stale confirmation safety, legacy migration, slider and category/stats/counter interactions.');
 })().catch(e=>{console.error(e);process.exitCode=1});
