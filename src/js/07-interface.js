@@ -39,6 +39,7 @@
 
   // باز و بسته کردن صفحات و تعویض نمای بازی
   function closePanels() {
+    APP.openPage = null;
     const layer = document.getElementById("panelLayer");
     ["buildingPanel", "genericPanel", "inventoryUsePanel", "mapCastlePanel"].forEach(id => document.getElementById(id)?.classList.remove("is-active"));
     layer?.classList.remove("is-open");
@@ -49,8 +50,9 @@
     closePanels();
     hideBuildingActionMenu();
   }
-  function setWorldMode(enabled, center = true) {
+  function setWorldMode(enabled, center = true, recordNavigation = true) {
     if (enabled && APP.tutorial.active) return;
+    if (recordNavigation && APP.currentMode !== (enabled ? "map" : "territory")) { rememberGameView(`world:${enabled ? "map" : "territory"}`); closeAllSurfaces(); }
     hideMapActions();
     if (enabled && state.moveBuildingId) stopMovingBuilding();
     APP.currentMode = enabled ? "map" : "territory";
@@ -76,7 +78,8 @@
   }
   function openPage(type, contentHTML = "") {
     if (APP.tutorial.active && !APP.worker.task && APP.tutorial.phase !== "ui-tour" && !["missions", "training", "healing"].includes(type)) return;
-    setWorldMode(false, false);
+    rememberGameView(navigationPageKey(type, contentHTML));
+    setWorldMode(false, false, false);
     closeAllSurfaces();
     const panel = document.getElementById("genericPanel");
     const content = document.getElementById("genericPanelContent");
@@ -90,7 +93,7 @@
       shop: ["فروشگاه", "◇", "shop-page"],
       vip: ["VIP", "VIP", "vip-modal"],
       training: ["سربازخانه", "⚔", "military-page training-page"],
-      healing: ["بیمارستان", "✚", "military-page"],
+      healing: ["بیمارستان", "✚", "military-page training-page healing-page"],
       research: ["مرکز تحقیقات", "◈", "military-page"],
       unit: ["اطلاعات نیرو", "⚔", "military-page"],
       settings: ["تنظیمات", "⚙", "military-page"],
@@ -152,6 +155,8 @@
     const item = INVENTORY.find(x => x.id === itemId);
     if (!item || item.count <= 0) return;
     if (item.category === "other" || item.category === "speed" && !APP.worker.task) return;
+    rememberGameView(`item:${itemId}`);
+    gameNavigation.itemId = itemId;
     const layer = document.getElementById("panelLayer");
     const generic = document.getElementById("genericPanel");
     const panel = document.getElementById("inventoryUsePanel");
@@ -454,6 +459,7 @@
       empire = alliance && EMPIRES.find(e => e.id === alliance.empireId);
     const header = `<div class="profile-nameplate"><h2>${escapeHTML(p.name || "بازیکن")}</h2><span>${escapeHTML(p.allianceName || "بدون اتحاد")}${alliance?.logo ? `<img class="alliance-crest" src="${escapeHTML(alliance.logo)}" alt="نشان اتحاد">` : ""}${empire ? `<img class="alliance-crest" src="${empire.image}" alt="نشان امپراطوری">` : ""}</span></div>`;
     openPage("profile", `${details ? `<div class="profile-compact"><img src="${avatar}" alt="">${header}</div><div class="profile-lower"><img src="${own ? selectedAvatarSkin().portrait : avatar}" alt=""><div><strong>سن حساب: ${age === null ? "ثبت نشده" : age + " روز"}</strong><span>سطح قلعه: ${p.level || 1}</span><span>مدال‌ها: ${own ? INVENTORY.find(i => i.id === "gold-medal")?.count || 0 : "ثبت نشده"}</span></div></div><div class="profile-records">${[["قدرت", p.power, p.peakPower], ["کشتار", p.kills, p.peakKills]].map(([label, current, peak]) => `<article><small>بیشترین ${label} ثبت‌شده</small><strong>${value(peak)}</strong><span>${label} فعلی: ${value(current)}</span></article>`).join("")}</div><button data-profile-details="back">بازگشت به نمای اصلی</button>` : `<div class="profile-hero"><img class="profile-backdrop" src="assets/ui/profile-background.webp" alt=""><img class="profile-avatar" src="${avatar}" alt="آواتار">${header}</div><div class="profile-details">${[["سرور", p.server ?? 1], ["VIP", p.vip ?? "ثبت نشده"], ["قدرت", value(p.power)], ["کشتار", value(p.kills)], ["اتحاد", p.allianceName || "بدون اتحاد"], ["سطح قلعه", p.level || 1]].map(([name, n]) => `<div><small>${name}</small><strong>${escapeHTML(String(n))}</strong></div>`).join("")}</div>${own ? `<div class="profile-stamina"><span>استقامت ${APP.stamina}/100</span><i><b style="width:${APP.stamina}%"></b></i></div>` : ""}<button data-profile-details="more" class="panel-primary-button">اطلاعات بیشتر</button>`}${own ? `<nav class="profile-bottom"><button data-profile-tab="settings">⚙<span>تنظیمات</span></button><button data-profile-tab="troops">⚔<span>نیروها</span></button><button data-profile-tab="leaderboard">♛<span>لیدربورد</span></button><button data-profile-tab="skins">♜<span>اسکین‌ها</span></button></nav>` : ""}`);
+    gameNavigation.profileView = {player:player ? {...player} : null,details};
     document.getElementById("genericPanelContent").onclick = e => {
       const b = e.target.closest("[data-profile-tab]");
       if (b) return {

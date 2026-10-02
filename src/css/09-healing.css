@@ -1,0 +1,17 @@
+.healing-screen{padding-top:clamp(270px,40vh,430px)}
+.healing-section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.healing-section-heading h3{font-size:15px;margin:0;color:#e6dbbf;font-weight:500}
+.healing-section-heading button{background:#25495977;color:#d7dfe1;border:1px solid #9eb9c044;border-radius:7px;min-height:36px;padding:6px 12px;font-size:11px}
+.healing-unit-cards{display:flex;overflow-x:auto;padding:2px 2px 7px;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:#7c929c transparent;gap:10px}
+.healing-unit-cards button{flex:0 0 100px;scroll-snap-align:start;height:140px}
+.healing-picked{position:absolute;top:6px;right:6px;padding:2px 7px;border-radius:9px;background:#afcab4e8;color:#142c30;font-size:10px;font-weight:700}
+.healing-empty{width:100%;min-height:100px;display:grid;place-content:center;gap:8px;text-align:center;background:#1b344266;border:1px solid #a3b8c52a;border-radius:9px}
+.healing-empty strong{font-size:16px;color:#c0d5c9}.healing-empty span{font-size:12px;color:#b8c9cc}
+.healing-hidden-selection{display:none}
+#healingTotals{font-size:11px;color:#b8cccb;margin:6px 0 0;text-align:center}
+.healing-screen .training-title>span{color:#ced9d2}
+.healing-screen .training-start{background:linear-gradient(135deg,#bdd0bb,#8daa9b);color:#163039;border-color:#c0d7c177}
+.healing-screen .training-task input[type=range]{accent-color:#b0c7b6}
+.healing-screen .training-progress progress::-webkit-progress-value{background:linear-gradient(90deg,#729c8e,#b3c9b2)}
+.healing-screen .training-progress progress::-moz-progress-bar{background:#9fbdab}
+@media(min-width:800px){.healing-screen{padding-top:340px}.healing-unit-cards button{flex-basis:128px;height:154px}}

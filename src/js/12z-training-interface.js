@@ -18,19 +18,19 @@
   function trainingDuration(count, unit = trainingUnit()) {
     return Math.round(count * unit.seconds * 1000 / (1 + Math.max(0, buildingById("barracks").level - 1) * .04));
   }
-  function trainingDialogMarkup(unit, key) {
-    if (!trainingOverlay) return "";
+  function trainingDialogMarkup(unit, key, overlay = trainingOverlay, queueName = "صف " + (trainingSlot + 1), family = "troop") {
+    if (!overlay) return "";
     const role = UNIT_ROLES.find(r => r.id === unit.role), stats = troopStats(unit.id);
     let body = "", title = "";
-    if (trainingOverlay === "stats") {
+    if (overlay === "stats") {
       title = "آمار " + unit.name;
       body = `<div class="training-stats">${[["قدرت", stats.power, 150], ["حمله", stats.attack, 80], ["دفاع", stats.defense, 80], ["سلامتی", stats.health, 300], ["سرعت", stats.speed, 260], ["ظرفیت حمل", stats.capacity, 15]].map(([label, value, max]) => `<article><span>${label}</span><strong>${formatCompact(value)}</strong><i><b style="width:${Math.min(100, value / max * 100)}%"></b></i></article>`).join("")}</div><p class="training-dialog-note">زمان پایه آموزش: ${unit.seconds} ثانیه · غذا و آهن: ${unit.cost} از هر منبع</p>`;
-    } else if (trainingOverlay === "counters") {
+    } else if (overlay === "counters") {
       title = "تقابل رسته‌ها";
       body = `<div class="counter-center"><span>${trainingRoleIcon(role.id)}</span><strong>${role.name}</strong></div><div class="counter-grid">${UNIT_ROLES.filter(r => r.id !== role.id).map(r => {const value = troopCounterMultiplier(role.id, r.id); return `<article class="${value > 1 ? "counter-strong" : value < 1 ? "counter-weak" : "counter-neutral"}"><span>${trainingRoleIcon(r.id)}</span><strong>${r.name}</strong><small>${value > 1 ? "قوی در مقابل · ۲۵٪ برتری" : value < 1 ? "ضعیف در مقابل · ۲۰٪ کاهش" : "تقابل برابر"}</small></article>`;}).join("")}</div><p class="training-dialog-note">کمان بر سوارکار، سوارکار بر نیزه، نیزه بر ویژه و ویژه بر کمان برتری دارد.<br>این تقابل‌ها برای هر دو دسته یکسان‌اند.</p>`;
-    } else if (trainingOverlay === "speed") {
-      title = "تسریع صف " + (trainingSlot + 1);
-      body = `<div class="training-speed-items">${INVENTORY.filter(i => i.count > 0 && ["troop", "universal"].includes(i.family)).map(i => `<button data-training-speed="${i.id}"><img src="${i.image}" alt=""><span>${i.name}</span><small>×${i.count}</small></button>`).join("") || '<p>آیتم تسریع در موجودی ندارید.</p>'}</div>`;
+    } else if (overlay === "speed") {
+      title = "تسریع " + queueName;
+      body = `<div class="training-speed-items">${INVENTORY.filter(i => i.count > 0 && [family, "universal"].includes(i.family)).map(i => `<button data-training-speed="${i.id}"><img src="${i.image}" alt=""><span>${i.name}</span><small>×${i.count}</small></button>`).join("") || '<p>آیتم تسریع در موجودی ندارید.</p>'}</div>`;
     }
     return `<div class="training-dialog-backdrop"><button class="training-dialog-dismiss" data-training-close aria-label="بستن پنجره جزئیات"></button><section class="training-dialog" role="dialog" aria-modal="true" aria-label="${title}"><header><h3>${title}</h3><button data-training-close aria-label="بستن جزئیات">×</button></header>${body}</section></div>`;
   }
@@ -50,8 +50,8 @@
     if (!task || !(await gameConfirm("صف لغو شود؟ ۷۰٪ هزینه بازگردانده می‌شود."))) return false;
     if (APP.army[kind] !== task) return false;
     const cost = task.cost || task.count * TROOPS[task.type].cost;
-    APP.resources.food += Math.floor(cost * .7);
-    if (isTrainingQueue(kind)) APP.resources.iron += Math.floor(cost * .7);
+    APP.resources.food += Math.floor(cost * 7 / 10);
+    if (isTrainingQueue(kind)) APP.resources.iron += Math.floor(cost * 7 / 10);
     APP.army[kind] = null;
     saveGameProgress(); updateTopHud(); updateMissionStatus();
     return true;

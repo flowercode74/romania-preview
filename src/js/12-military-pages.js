@@ -146,12 +146,7 @@
     };
   }
   function openTraining() { renderTrainingPage(); }
-  function openHealing() {
-    const stock = woundedStock();
-    openPage("healing", `<div class="military-summary"><span>مجروحان <b>${formatCompact(APP.army.wounded)}</b></span><span>در صف درمان <b>${formatCompact(APP.army.healing?.count || 0)}</b></span></div>${APP.army.healing ? queueMarkup("healing") : `<button data-heal-all class="select-all">انتخاب همه مجروحان</button><div class="heal-list">${Object.entries(stock).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<article><img src="${TROOPS[id].image}" alt=""><div><strong>${TROOPS[id].name}</strong><span>${formatCompact(n)} مجروح</span><input data-heal-count="${id}" type="number" min="0" max="${n}" value="0" inputmode="numeric"></div></article>`).join("") || '<p class="empty-page">نیروی مجروحی ندارید.</p>'}</div><div class="military-form"><p id="healingTotals">نیروهای موردنظر را انتخاب کنید.</p><button data-start-army="healing" class="panel-primary-button" ${APP.army.wounded ? "" : "disabled"}>شروع درمان</button></div>`}`);
-    bindMilitaryPage();
-    updateHealingTotals();
-  }
+  function openHealing() { renderHealingPage(); }
   function healingSelection() {
     return Object.fromEntries(Array.from(document.querySelectorAll("[data-heal-count]")).map(input => [input.dataset.healCount, Math.max(0, Math.min(Number(input.max) || 0, Math.floor(Number(input.value) || 0)))]));
   }

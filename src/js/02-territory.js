@@ -48,7 +48,7 @@
     image.assetReady = new Promise(resolve => { settle = resolve; });
     image.onload = () => {
       settle(true);
-      const terrain = src === ASSETS.atlas || src === ASSETS.mapAtlas || src === ASSETS.wall || src === ASSETS.ruinedWall;
+      const terrain = src === ASSETS.courtyardEarth || src === ASSETS.quietMeadow || src === ASSETS.atlas || src === ASSETS.mapAtlas || src === ASSETS.wall || src === ASSETS.ruinedWall;
       if (terrain) {
         state.terrainStamp = null;
         state.terrainChunks?.clear();
@@ -69,7 +69,7 @@
     return image;
   }
   function loadAssets() {
-    const urls = new Set([ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image)]);
+    const urls = new Set([ASSETS.courtyardEarth, ASSETS.quietMeadow, ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image)]);
     urls.forEach(loadImage);
   }
 
@@ -209,38 +209,42 @@
   }
   // زمین ثابت یک بار در بافر کم‌حجم رندر می‌شود؛ حرکت و انتخاب آن را دوباره نمی‌سازند.
   // A single bounded raster avoids filtering seams between independently scaled chunks.
+  function paintGroundTexture(ctx, image, bounds, size) {
+    if (!image?.naturalWidth) return false;
+    const x0=Math.floor(bounds.minX/size),x1=Math.ceil(bounds.maxX/size);
+    const y0=Math.floor(bounds.minY/size),y1=Math.ceil(bounds.maxY/size);
+    // Mirrored neighbors share exactly the same edge pixels; no visible tile seams.
+    for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+      ctx.save();ctx.translate(x*size+(Math.abs(x)%2?size:0),y*size+(Math.abs(y)%2?size:0));
+      ctx.scale(Math.abs(x)%2?-1:1,Math.abs(y)%2?-1:1);
+      ctx.drawImage(image,0,0,size,size);ctx.restore();
+    }
+    return true;
+  }
   function drawTerritoryTerrain(target, b) {
-    const atlas = terrainAtlas();
-    const raster = APP.preferences?.quality === "performance" ? 2 : 4;
-    const stamp = `terrain-v9:${raster}:${atlas?.naturalWidth || 0}:${atlas?.src || ""}:${state.images.get(ASSETS.wall)?.naturalWidth || 0}:${b.width}:${b.height}`;
-    if (state.terrainStamp !== stamp || !state.terrainCanvas) {
-      const buffer = document.createElement("canvas");
-      buffer.width = Math.ceil(b.width * raster);
-      buffer.height = Math.ceil(b.height * raster);
-      const ctx = buffer.getContext("2d", { alpha: false });
-      ctx.setTransform(buffer.width / b.width, 0, 0, buffer.height / b.height, -b.minX * buffer.width / b.width, -b.minY * buffer.height / b.height);
-      ctx.fillStyle = "#657753";ctx.fillRect(b.minX, b.minY, b.width, b.height);
-      const tilePath = cell => {
-        ctx.beginPath();hexPoints(cell.x, cell.y).forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));ctx.closePath();
-      };
-      for (const cell of state.cells) {
-        ctx.save();tilePath(cell);ctx.clip();ctx.globalAlpha = 1;
-        const tile = territoryTerrain(cell);
-        drawAtlasTile(ctx, atlas, tile.col, tile.row, cell.x - 20, cell.y - 20, 40, 40);ctx.restore();
+    const atlas=terrainAtlas(),earth=state.images.get(ASSETS.courtyardEarth),meadow=state.images.get(ASSETS.quietMeadow);
+    const raster=APP.preferences?.quality === "performance" ? 2 : 4;
+    const stamp=`terrain-royal-v1:${raster}:${atlas?.naturalWidth || 0}:${earth?.naturalWidth || 0}:${meadow?.naturalWidth || 0}:${b.width}:${b.height}`;
+    if(state.terrainStamp!==stamp || !state.terrainCanvas){
+      const buffer=document.createElement("canvas");buffer.width=Math.ceil(b.width*raster);buffer.height=Math.ceil(b.height*raster);
+      const ctx=buffer.getContext("2d",{alpha:false});
+      ctx.setTransform(buffer.width/b.width,0,0,buffer.height/b.height,-b.minX*buffer.width/b.width,-b.minY*buffer.height/b.height);
+      ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+      ctx.fillStyle="#737c63";ctx.fillRect(b.minX,b.minY,b.width,b.height);
+      const tilePath=cell=>{ctx.beginPath();hexPoints(cell.x,cell.y).forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();};
+      if(!paintGroundTexture(ctx,meadow,b,180))for(const cell of state.cells){
+        ctx.save();tilePath(cell);ctx.clip();const tile=territoryTerrain(cell);
+        drawAtlasTile(ctx,atlas,tile.col,tile.row,cell.x-20,cell.y-20,40,40);ctx.restore();
       }
-      // Paint the complete inner polygon, including partial tiles along the wall.
-      ctx.save();ctx.beginPath();
-      wallFoundationPath().forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));ctx.closePath();ctx.clip();
-      ctx.fillStyle = "#938065";ctx.fillRect(b.minX, b.minY, b.width, b.height);
-      // Reuse the world-map atlas at full detail: the dirt family, no faded overlay.
-      for (const cell of state.cells) {
-        ctx.save();tilePath(cell);ctx.clip();ctx.globalAlpha = 1;
-        const col = mapNoise(cell.q+71,cell.r+89)>.5 ? 3 : 4;
+      ctx.save();ctx.beginPath();wallFoundationPath().forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
+      ctx.fillStyle="#9c8d74";ctx.shadowColor="#96856c";ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;ctx.clip();
+      if(!paintGroundTexture(ctx,earth,b,144))for(const cell of state.cells){
+        ctx.save();tilePath(cell);ctx.clip();const col=mapNoise(cell.q+71,cell.r+89)>.5?3:4;
         drawAtlasTile(ctx,atlas,col,1,cell.x-20,cell.y-20,40,40);ctx.restore();
       }
-      ctx.restore();state.terrainCanvas = buffer;state.terrainStamp = stamp;
+      ctx.restore();state.terrainCanvas=buffer;state.terrainStamp=stamp;
     }
-    target.drawImage(state.terrainCanvas, b.minX, b.minY, b.width, b.height);
+    target.drawImage(state.terrainCanvas,b.minX,b.minY,b.width,b.height);
   }
   // ساختمان‌ها به صورت تصویر مستقل رندر می‌شوند تا کیفیت آن‌ها با وسعت زمین افت نکند.
   function setupWorldSprites() {
@@ -445,7 +449,7 @@
     ctx.strokeStyle="rgba(28,35,25,.5)";ctx.lineWidth=1;
     layout.lines.forEach((text,i)=>{const ty=y+(i-(layout.lines.length-1)/2)*13;ctx.strokeText(text,x+10,ty);ctx.fillText(text,x+10,ty);});
     ctx.shadowBlur=0;ctx.shadowOffsetY=0;const badgeX=x-layout.width/2+8;
-    ctx.beginPath();ctx.arc(badgeX,y,7,0,Math.PI*2);ctx.fillStyle="rgba(35,45,33,.65)";ctx.fill();
+    ctx.beginPath();ctx.arc(badgeX,y,7,0,Math.PI*2);ctx.fillStyle="rgba(31,48,62,.75)";ctx.fill();
     ctx.lineWidth=.7;ctx.strokeStyle="rgba(232,217,175,.72)";ctx.stroke();
     ctx.font="600 8px Vazirmatn, sans-serif";ctx.direction="ltr";ctx.fillStyle="#eee4c8";ctx.fillText(String(level),badgeX,y+.5);
     ctx.restore();return layout;
@@ -1161,6 +1165,8 @@
     const building = getSelectedBuilding();
     if (!building) return;
     if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing && building.id !== tutorialTargetId() && building.id !== state.missionFocus?.id) return;
+    rememberGameView(`building:${building.id}:${mode}`);
+    gameNavigation.buildingMode = mode;
     hideBuildingActionMenu();
     const layer = document.getElementById("panelLayer");
     const panel = document.getElementById("buildingPanel");

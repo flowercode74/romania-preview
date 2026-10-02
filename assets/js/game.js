@@ -75,6 +75,8 @@
 
   // مسیرهای تصاویر و دارایی‌های بازی
   const ASSETS = Object.freeze({
+    courtyardEarth: "assets/terrain/courtyard-earth.webp",
+    quietMeadow: "assets/terrain/quiet-meadow.webp",
     atlas: "assets/terrain/tiles-v2.webp",
     mapAtlas: "assets/terrain/tiles-v2.webp",
     wall: "assets/walls/castle-wall.webp",
@@ -551,7 +553,7 @@
     image.assetReady = new Promise(resolve => { settle = resolve; });
     image.onload = () => {
       settle(true);
-      const terrain = src === ASSETS.atlas || src === ASSETS.mapAtlas || src === ASSETS.wall || src === ASSETS.ruinedWall;
+      const terrain = src === ASSETS.courtyardEarth || src === ASSETS.quietMeadow || src === ASSETS.atlas || src === ASSETS.mapAtlas || src === ASSETS.wall || src === ASSETS.ruinedWall;
       if (terrain) {
         state.terrainStamp = null;
         state.terrainChunks?.clear();
@@ -572,7 +574,7 @@
     return image;
   }
   function loadAssets() {
-    const urls = new Set([ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image)]);
+    const urls = new Set([ASSETS.courtyardEarth, ASSETS.quietMeadow, ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image)]);
     urls.forEach(loadImage);
   }
 
@@ -712,38 +714,42 @@
   }
   // زمین ثابت یک بار در بافر کم‌حجم رندر می‌شود؛ حرکت و انتخاب آن را دوباره نمی‌سازند.
   // A single bounded raster avoids filtering seams between independently scaled chunks.
+  function paintGroundTexture(ctx, image, bounds, size) {
+    if (!image?.naturalWidth) return false;
+    const x0=Math.floor(bounds.minX/size),x1=Math.ceil(bounds.maxX/size);
+    const y0=Math.floor(bounds.minY/size),y1=Math.ceil(bounds.maxY/size);
+    // Mirrored neighbors share exactly the same edge pixels; no visible tile seams.
+    for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
+      ctx.save();ctx.translate(x*size+(Math.abs(x)%2?size:0),y*size+(Math.abs(y)%2?size:0));
+      ctx.scale(Math.abs(x)%2?-1:1,Math.abs(y)%2?-1:1);
+      ctx.drawImage(image,0,0,size,size);ctx.restore();
+    }
+    return true;
+  }
   function drawTerritoryTerrain(target, b) {
-    const atlas = terrainAtlas();
-    const raster = APP.preferences?.quality === "performance" ? 2 : 4;
-    const stamp = `terrain-v9:${raster}:${atlas?.naturalWidth || 0}:${atlas?.src || ""}:${state.images.get(ASSETS.wall)?.naturalWidth || 0}:${b.width}:${b.height}`;
-    if (state.terrainStamp !== stamp || !state.terrainCanvas) {
-      const buffer = document.createElement("canvas");
-      buffer.width = Math.ceil(b.width * raster);
-      buffer.height = Math.ceil(b.height * raster);
-      const ctx = buffer.getContext("2d", { alpha: false });
-      ctx.setTransform(buffer.width / b.width, 0, 0, buffer.height / b.height, -b.minX * buffer.width / b.width, -b.minY * buffer.height / b.height);
-      ctx.fillStyle = "#657753";ctx.fillRect(b.minX, b.minY, b.width, b.height);
-      const tilePath = cell => {
-        ctx.beginPath();hexPoints(cell.x, cell.y).forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));ctx.closePath();
-      };
-      for (const cell of state.cells) {
-        ctx.save();tilePath(cell);ctx.clip();ctx.globalAlpha = 1;
-        const tile = territoryTerrain(cell);
-        drawAtlasTile(ctx, atlas, tile.col, tile.row, cell.x - 20, cell.y - 20, 40, 40);ctx.restore();
+    const atlas=terrainAtlas(),earth=state.images.get(ASSETS.courtyardEarth),meadow=state.images.get(ASSETS.quietMeadow);
+    const raster=APP.preferences?.quality === "performance" ? 2 : 4;
+    const stamp=`terrain-royal-v1:${raster}:${atlas?.naturalWidth || 0}:${earth?.naturalWidth || 0}:${meadow?.naturalWidth || 0}:${b.width}:${b.height}`;
+    if(state.terrainStamp!==stamp || !state.terrainCanvas){
+      const buffer=document.createElement("canvas");buffer.width=Math.ceil(b.width*raster);buffer.height=Math.ceil(b.height*raster);
+      const ctx=buffer.getContext("2d",{alpha:false});
+      ctx.setTransform(buffer.width/b.width,0,0,buffer.height/b.height,-b.minX*buffer.width/b.width,-b.minY*buffer.height/b.height);
+      ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+      ctx.fillStyle="#737c63";ctx.fillRect(b.minX,b.minY,b.width,b.height);
+      const tilePath=cell=>{ctx.beginPath();hexPoints(cell.x,cell.y).forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();};
+      if(!paintGroundTexture(ctx,meadow,b,180))for(const cell of state.cells){
+        ctx.save();tilePath(cell);ctx.clip();const tile=territoryTerrain(cell);
+        drawAtlasTile(ctx,atlas,tile.col,tile.row,cell.x-20,cell.y-20,40,40);ctx.restore();
       }
-      // Paint the complete inner polygon, including partial tiles along the wall.
-      ctx.save();ctx.beginPath();
-      wallFoundationPath().forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));ctx.closePath();ctx.clip();
-      ctx.fillStyle = "#938065";ctx.fillRect(b.minX, b.minY, b.width, b.height);
-      // Reuse the world-map atlas at full detail: the dirt family, no faded overlay.
-      for (const cell of state.cells) {
-        ctx.save();tilePath(cell);ctx.clip();ctx.globalAlpha = 1;
-        const col = mapNoise(cell.q+71,cell.r+89)>.5 ? 3 : 4;
+      ctx.save();ctx.beginPath();wallFoundationPath().forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
+      ctx.fillStyle="#9c8d74";ctx.shadowColor="#96856c";ctx.shadowBlur=8;ctx.fill();ctx.shadowBlur=0;ctx.clip();
+      if(!paintGroundTexture(ctx,earth,b,144))for(const cell of state.cells){
+        ctx.save();tilePath(cell);ctx.clip();const col=mapNoise(cell.q+71,cell.r+89)>.5?3:4;
         drawAtlasTile(ctx,atlas,col,1,cell.x-20,cell.y-20,40,40);ctx.restore();
       }
-      ctx.restore();state.terrainCanvas = buffer;state.terrainStamp = stamp;
+      ctx.restore();state.terrainCanvas=buffer;state.terrainStamp=stamp;
     }
-    target.drawImage(state.terrainCanvas, b.minX, b.minY, b.width, b.height);
+    target.drawImage(state.terrainCanvas,b.minX,b.minY,b.width,b.height);
   }
   // ساختمان‌ها به صورت تصویر مستقل رندر می‌شوند تا کیفیت آن‌ها با وسعت زمین افت نکند.
   function setupWorldSprites() {
@@ -948,7 +954,7 @@
     ctx.strokeStyle="rgba(28,35,25,.5)";ctx.lineWidth=1;
     layout.lines.forEach((text,i)=>{const ty=y+(i-(layout.lines.length-1)/2)*13;ctx.strokeText(text,x+10,ty);ctx.fillText(text,x+10,ty);});
     ctx.shadowBlur=0;ctx.shadowOffsetY=0;const badgeX=x-layout.width/2+8;
-    ctx.beginPath();ctx.arc(badgeX,y,7,0,Math.PI*2);ctx.fillStyle="rgba(35,45,33,.65)";ctx.fill();
+    ctx.beginPath();ctx.arc(badgeX,y,7,0,Math.PI*2);ctx.fillStyle="rgba(31,48,62,.75)";ctx.fill();
     ctx.lineWidth=.7;ctx.strokeStyle="rgba(232,217,175,.72)";ctx.stroke();
     ctx.font="600 8px Vazirmatn, sans-serif";ctx.direction="ltr";ctx.fillStyle="#eee4c8";ctx.fillText(String(level),badgeX,y+.5);
     ctx.restore();return layout;
@@ -1664,6 +1670,8 @@
     const building = getSelectedBuilding();
     if (!building) return;
     if (APP.tutorial.active && !APP.worker.task && !hasTrainingTasks() && !APP.army.healing && building.id !== tutorialTargetId() && building.id !== state.missionFocus?.id) return;
+    rememberGameView(`building:${building.id}:${mode}`);
+    gameNavigation.buildingMode = mode;
     hideBuildingActionMenu();
     const layer = document.getElementById("panelLayer");
     const panel = document.getElementById("buildingPanel");
@@ -3717,6 +3725,7 @@
 
   // باز و بسته کردن صفحات و تعویض نمای بازی
   function closePanels() {
+    APP.openPage = null;
     const layer = document.getElementById("panelLayer");
     ["buildingPanel", "genericPanel", "inventoryUsePanel", "mapCastlePanel"].forEach(id => document.getElementById(id)?.classList.remove("is-active"));
     layer?.classList.remove("is-open");
@@ -3727,8 +3736,9 @@
     closePanels();
     hideBuildingActionMenu();
   }
-  function setWorldMode(enabled, center = true) {
+  function setWorldMode(enabled, center = true, recordNavigation = true) {
     if (enabled && APP.tutorial.active) return;
+    if (recordNavigation && APP.currentMode !== (enabled ? "map" : "territory")) { rememberGameView(`world:${enabled ? "map" : "territory"}`); closeAllSurfaces(); }
     hideMapActions();
     if (enabled && state.moveBuildingId) stopMovingBuilding();
     APP.currentMode = enabled ? "map" : "territory";
@@ -3754,7 +3764,8 @@
   }
   function openPage(type, contentHTML = "") {
     if (APP.tutorial.active && !APP.worker.task && APP.tutorial.phase !== "ui-tour" && !["missions", "training", "healing"].includes(type)) return;
-    setWorldMode(false, false);
+    rememberGameView(navigationPageKey(type, contentHTML));
+    setWorldMode(false, false, false);
     closeAllSurfaces();
     const panel = document.getElementById("genericPanel");
     const content = document.getElementById("genericPanelContent");
@@ -3768,7 +3779,7 @@
       shop: ["فروشگاه", "◇", "shop-page"],
       vip: ["VIP", "VIP", "vip-modal"],
       training: ["سربازخانه", "⚔", "military-page training-page"],
-      healing: ["بیمارستان", "✚", "military-page"],
+      healing: ["بیمارستان", "✚", "military-page training-page healing-page"],
       research: ["مرکز تحقیقات", "◈", "military-page"],
       unit: ["اطلاعات نیرو", "⚔", "military-page"],
       settings: ["تنظیمات", "⚙", "military-page"],
@@ -3830,6 +3841,8 @@
     const item = INVENTORY.find(x => x.id === itemId);
     if (!item || item.count <= 0) return;
     if (item.category === "other" || item.category === "speed" && !APP.worker.task) return;
+    rememberGameView(`item:${itemId}`);
+    gameNavigation.itemId = itemId;
     const layer = document.getElementById("panelLayer");
     const generic = document.getElementById("genericPanel");
     const panel = document.getElementById("inventoryUsePanel");
@@ -4132,6 +4145,7 @@
       empire = alliance && EMPIRES.find(e => e.id === alliance.empireId);
     const header = `<div class="profile-nameplate"><h2>${escapeHTML(p.name || "بازیکن")}</h2><span>${escapeHTML(p.allianceName || "بدون اتحاد")}${alliance?.logo ? `<img class="alliance-crest" src="${escapeHTML(alliance.logo)}" alt="نشان اتحاد">` : ""}${empire ? `<img class="alliance-crest" src="${empire.image}" alt="نشان امپراطوری">` : ""}</span></div>`;
     openPage("profile", `${details ? `<div class="profile-compact"><img src="${avatar}" alt="">${header}</div><div class="profile-lower"><img src="${own ? selectedAvatarSkin().portrait : avatar}" alt=""><div><strong>سن حساب: ${age === null ? "ثبت نشده" : age + " روز"}</strong><span>سطح قلعه: ${p.level || 1}</span><span>مدال‌ها: ${own ? INVENTORY.find(i => i.id === "gold-medal")?.count || 0 : "ثبت نشده"}</span></div></div><div class="profile-records">${[["قدرت", p.power, p.peakPower], ["کشتار", p.kills, p.peakKills]].map(([label, current, peak]) => `<article><small>بیشترین ${label} ثبت‌شده</small><strong>${value(peak)}</strong><span>${label} فعلی: ${value(current)}</span></article>`).join("")}</div><button data-profile-details="back">بازگشت به نمای اصلی</button>` : `<div class="profile-hero"><img class="profile-backdrop" src="assets/ui/profile-background.webp" alt=""><img class="profile-avatar" src="${avatar}" alt="آواتار">${header}</div><div class="profile-details">${[["سرور", p.server ?? 1], ["VIP", p.vip ?? "ثبت نشده"], ["قدرت", value(p.power)], ["کشتار", value(p.kills)], ["اتحاد", p.allianceName || "بدون اتحاد"], ["سطح قلعه", p.level || 1]].map(([name, n]) => `<div><small>${name}</small><strong>${escapeHTML(String(n))}</strong></div>`).join("")}</div>${own ? `<div class="profile-stamina"><span>استقامت ${APP.stamina}/100</span><i><b style="width:${APP.stamina}%"></b></i></div>` : ""}<button data-profile-details="more" class="panel-primary-button">اطلاعات بیشتر</button>`}${own ? `<nav class="profile-bottom"><button data-profile-tab="settings">⚙<span>تنظیمات</span></button><button data-profile-tab="troops">⚔<span>نیروها</span></button><button data-profile-tab="leaderboard">♛<span>لیدربورد</span></button><button data-profile-tab="skins">♜<span>اسکین‌ها</span></button></nav>` : ""}`);
+    gameNavigation.profileView = {player:player ? {...player} : null,details};
     document.getElementById("genericPanelContent").onclick = e => {
       const b = e.target.closest("[data-profile-tab]");
       if (b) return {
@@ -6033,7 +6047,7 @@
       passive: false
     });
     document.querySelectorAll("[data-close-panel]").forEach(el => el.addEventListener("click", () => {
-      closeAllSurfaces();
+      navigateGameBack();
       if (APP.tutorial.active && APP.tutorial.phase === "focus") showTutorialStep();
     }));
     document.getElementById("profileButton")?.addEventListener("click", () => openProfile());
@@ -6123,7 +6137,7 @@
         }
       }
       if (event.target.matches(".panel-backdrop")) {
-        closeAllSurfaces();
+        navigateGameBack();
       }
     });
     window.addEventListener("resize", () => {
@@ -6225,6 +6239,7 @@
     ensureStarterEnemy();
     for (const c of Object.values(APP.collectors)) c.loginReady = c.amount >= 1;
     tickCollectors();
+    setupGameNavigation();
     setupTutorial();
     setInterval(tickBuildingTask, 1000);
     setInterval(saveGameProgress, 60000);
@@ -6339,7 +6354,7 @@
       fill = document.getElementById("loadingProgress"),
       percent = document.getElementById("loadingPercent");
     if (!screen) return;
-    const urls = [...new Set(["assets/ui/loading.webp", "assets/ui/player-portrait.webp", "assets/icons/quest.webp", "assets/icons/mail.webp", "assets/icons/world-map.webp", "assets/icons/bag.webp", "assets/icons/hero.webp", ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...TROOP_LINES.map(t => t.image), ...CASTLE_SKINS.map(s => s.image), ...AVATAR_SKINS.flatMap(s => [s.avatar, s.portrait])])];
+    const urls = [...new Set(["assets/ui/loading.webp", "assets/ui/player-portrait.webp", "assets/icons/quest.webp", "assets/icons/mail.webp", "assets/icons/world-map.webp", "assets/icons/bag.webp", "assets/icons/hero.webp", ASSETS.courtyardEarth, ASSETS.quietMeadow, ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...TROOP_LINES.map(t => t.image), ...CASTLE_SKINS.map(s => s.image), ...AVATAR_SKINS.flatMap(s => [s.avatar, s.portrait])])];
     setTimeout(() => {
       createEmpireLayout();
       createWorldMap();
@@ -6569,12 +6584,7 @@
     };
   }
   function openTraining() { renderTrainingPage(); }
-  function openHealing() {
-    const stock = woundedStock();
-    openPage("healing", `<div class="military-summary"><span>مجروحان <b>${formatCompact(APP.army.wounded)}</b></span><span>در صف درمان <b>${formatCompact(APP.army.healing?.count || 0)}</b></span></div>${APP.army.healing ? queueMarkup("healing") : `<button data-heal-all class="select-all">انتخاب همه مجروحان</button><div class="heal-list">${Object.entries(stock).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<article><img src="${TROOPS[id].image}" alt=""><div><strong>${TROOPS[id].name}</strong><span>${formatCompact(n)} مجروح</span><input data-heal-count="${id}" type="number" min="0" max="${n}" value="0" inputmode="numeric"></div></article>`).join("") || '<p class="empty-page">نیروی مجروحی ندارید.</p>'}</div><div class="military-form"><p id="healingTotals">نیروهای موردنظر را انتخاب کنید.</p><button data-start-army="healing" class="panel-primary-button" ${APP.army.wounded ? "" : "disabled"}>شروع درمان</button></div>`}`);
-    bindMilitaryPage();
-    updateHealingTotals();
-  }
+  function openHealing() { renderHealingPage(); }
   function healingSelection() {
     return Object.fromEntries(Array.from(document.querySelectorAll("[data-heal-count]")).map(input => [input.dataset.healCount, Math.max(0, Math.min(Number(input.max) || 0, Math.floor(Number(input.value) || 0)))]));
   }
@@ -6786,19 +6796,19 @@
   function trainingDuration(count, unit = trainingUnit()) {
     return Math.round(count * unit.seconds * 1000 / (1 + Math.max(0, buildingById("barracks").level - 1) * .04));
   }
-  function trainingDialogMarkup(unit, key) {
-    if (!trainingOverlay) return "";
+  function trainingDialogMarkup(unit, key, overlay = trainingOverlay, queueName = "صف " + (trainingSlot + 1), family = "troop") {
+    if (!overlay) return "";
     const role = UNIT_ROLES.find(r => r.id === unit.role), stats = troopStats(unit.id);
     let body = "", title = "";
-    if (trainingOverlay === "stats") {
+    if (overlay === "stats") {
       title = "آمار " + unit.name;
       body = `<div class="training-stats">${[["قدرت", stats.power, 150], ["حمله", stats.attack, 80], ["دفاع", stats.defense, 80], ["سلامتی", stats.health, 300], ["سرعت", stats.speed, 260], ["ظرفیت حمل", stats.capacity, 15]].map(([label, value, max]) => `<article><span>${label}</span><strong>${formatCompact(value)}</strong><i><b style="width:${Math.min(100, value / max * 100)}%"></b></i></article>`).join("")}</div><p class="training-dialog-note">زمان پایه آموزش: ${unit.seconds} ثانیه · غذا و آهن: ${unit.cost} از هر منبع</p>`;
-    } else if (trainingOverlay === "counters") {
+    } else if (overlay === "counters") {
       title = "تقابل رسته‌ها";
       body = `<div class="counter-center"><span>${trainingRoleIcon(role.id)}</span><strong>${role.name}</strong></div><div class="counter-grid">${UNIT_ROLES.filter(r => r.id !== role.id).map(r => {const value = troopCounterMultiplier(role.id, r.id); return `<article class="${value > 1 ? "counter-strong" : value < 1 ? "counter-weak" : "counter-neutral"}"><span>${trainingRoleIcon(r.id)}</span><strong>${r.name}</strong><small>${value > 1 ? "قوی در مقابل · ۲۵٪ برتری" : value < 1 ? "ضعیف در مقابل · ۲۰٪ کاهش" : "تقابل برابر"}</small></article>`;}).join("")}</div><p class="training-dialog-note">کمان بر سوارکار، سوارکار بر نیزه، نیزه بر ویژه و ویژه بر کمان برتری دارد.<br>این تقابل‌ها برای هر دو دسته یکسان‌اند.</p>`;
-    } else if (trainingOverlay === "speed") {
-      title = "تسریع صف " + (trainingSlot + 1);
-      body = `<div class="training-speed-items">${INVENTORY.filter(i => i.count > 0 && ["troop", "universal"].includes(i.family)).map(i => `<button data-training-speed="${i.id}"><img src="${i.image}" alt=""><span>${i.name}</span><small>×${i.count}</small></button>`).join("") || '<p>آیتم تسریع در موجودی ندارید.</p>'}</div>`;
+    } else if (overlay === "speed") {
+      title = "تسریع " + queueName;
+      body = `<div class="training-speed-items">${INVENTORY.filter(i => i.count > 0 && [family, "universal"].includes(i.family)).map(i => `<button data-training-speed="${i.id}"><img src="${i.image}" alt=""><span>${i.name}</span><small>×${i.count}</small></button>`).join("") || '<p>آیتم تسریع در موجودی ندارید.</p>'}</div>`;
     }
     return `<div class="training-dialog-backdrop"><button class="training-dialog-dismiss" data-training-close aria-label="بستن پنجره جزئیات"></button><section class="training-dialog" role="dialog" aria-modal="true" aria-label="${title}"><header><h3>${title}</h3><button data-training-close aria-label="بستن جزئیات">×</button></header>${body}</section></div>`;
   }
@@ -6818,8 +6828,8 @@
     if (!task || !(await gameConfirm("صف لغو شود؟ ۷۰٪ هزینه بازگردانده می‌شود."))) return false;
     if (APP.army[kind] !== task) return false;
     const cost = task.cost || task.count * TROOPS[task.type].cost;
-    APP.resources.food += Math.floor(cost * .7);
-    if (isTrainingQueue(kind)) APP.resources.iron += Math.floor(cost * .7);
+    APP.resources.food += Math.floor(cost * 7 / 10);
+    if (isTrainingQueue(kind)) APP.resources.iron += Math.floor(cost * 7 / 10);
     APP.army[kind] = null;
     saveGameProgress(); updateTopHud(); updateMissionStatus();
     return true;
@@ -6858,6 +6868,209 @@
       else return;
       renderTrainingPage();
     };
+  }
+
+
+/* Source: src/js/12za-healing-interface.js */
+  let healingUnitId = "sword", healingCounts = {}, healingOverlay = null;
+  function healingTotal() { return Object.values(healingCounts).reduce((sum, n) => sum + n, 0); }
+  function healingCountLimit(id = healingUnitId) {
+    const others = healingTotal() - (healingCounts[id] || 0);
+    return Math.max(0, Math.min(woundedStock()[id] || 0, Math.floor(APP.resources.food / 12) - others));
+  }
+  function normalizeHealingCounts() {
+    const stock = woundedStock();
+    let available = Math.max(0, Math.floor(APP.resources.food / 12));
+    for (const id of Object.keys(TROOPS)) {
+      healingCounts[id] = Math.min(available, stock[id] || 0, Math.max(0, Math.floor(healingCounts[id] || 0)));
+      available -= healingCounts[id];
+    }
+  }
+  function selectAllWounded() {
+    healingCounts = {};
+    let available = Math.min(1000000, Math.floor(APP.resources.food / 12));
+    for (const id of Object.keys(TROOPS)) {
+      healingCounts[id] = Math.min(available, woundedStock()[id] || 0);
+      available -= healingCounts[id];
+    }
+  }
+  function healingDuration(count = healingTotal()) {
+    return Math.round(count * 6000 / (1 + Math.max(0, buildingById("hospital").level - 1) * .04));
+  }
+  function renderHealingPage() {
+    const stock = woundedStock(), task = APP.army.healing;
+    normalizeHealingCounts();
+    if (!TROOPS[healingUnitId] || !(stock[healingUnitId] || task?.units?.[healingUnitId])) {
+      healingUnitId = Object.keys(TROOPS).find(id => task?.units?.[id] > 0 || stock[id] > 0) || "sword";
+    }
+    if (APP.tutorial.active && APP.tutorial.phase === "army-healing" && !task && !healingTotal()) healingCounts[healingUnitId] = Math.min(10, healingCountLimit());
+    const unit = TROOPS[healingUnitId], count = healingCounts[healingUnitId] || 0, total = healingTotal();
+    const remain = Math.max(0, (task?.endsAt || 0) - Date.now()), limit = healingCountLimit();
+    openPage("healing", `<section class="training-screen healing-screen"><img class="training-art" src="${unit.image}" alt="${unit.name}"><div class="training-vignette"></div><div class="training-title"><small>بیمارستان · سطح ${buildingById("hospital").level}</small><h2>بازگشت به میدان</h2><span>${formatCompact(APP.army.wounded)} مجروح · ${formatCompact(task?.count || 0)} در حال درمان</span></div><aside class="training-info-buttons"><button data-healing-panel="counters" aria-label="دیدن تقابل رسته‌ها">⇄</button><button data-healing-panel="stats" aria-label="دیدن آمار نیرو">i</button></aside><div class="training-controls healing-controls"><div class="healing-section-heading"><h3>${task ? "صف درمان" : "انتخاب مجروحان"}</h3>${!task ? '<button data-heal-all>انتخاب همه</button>' : ""}</div><div class="training-unit-cards healing-unit-cards">${Object.values(TROOPS).filter(t => stock[t.id] > 0 || task?.units?.[t.id] > 0).map(t => `<button data-healing-unit="${t.id}" class="${unit.id === t.id ? "is-selected" : ""}"><img src="${t.image}" alt=""><span>${t.name}</span><small>${formatCompact(task ? task.units?.[t.id] || 0 : stock[t.id])} ${task ? "در صف" : "مجروح"}</small>${!task && healingCounts[t.id] > 0 ? `<b class="healing-picked">${formatCompact(healingCounts[t.id])}</b>` : ""}</button>`).join("") || '<div class="healing-empty"><strong>همه نیروها آماده‌اند</strong><span>مجروحی برای درمان ندارید.</span></div>'}</div><section class="training-task">${task ? `<div class="training-task-heading"><img src="${unit.image}" alt=""><div><strong>درمان ${formatCompact(task.count)} سرباز</strong><span>پس از پایان، نیروها به موجودی بازمی‌گردند.</span></div><button class="training-cancel" data-healing-cancel aria-label="لغو درمان">×</button></div><div class="training-progress"><progress data-army-progress="healing" max="${task.duration}" value="${Math.max(0, task.duration - remain)}"></progress><span data-army-timer="healing">${formatDuration(remain)}</span></div><div class="training-queue-actions"><button data-healing-panel="speed">تسریع درمان</button><button data-healing-instant data-army-gold="healing">اتمام · ${instantGold(remain)} سکه</button></div>` : `<div class="training-slider-label"><label for="healingCountRange">${unit.name}</label><output id="healingCountOutput" for="healingCountRange">${formatCompact(count)} / ${formatCompact(stock[unit.id] || 0)}</output></div><input id="healingCountRange" type="range" min="0" max="${limit}" value="${count}" step="1" ${!limit ? "disabled" : ""} aria-label="تعداد سرباز مجروح برای درمان"><div class="healing-hidden-selection"><input id="armyCount" type="hidden" value="${total}">${Object.keys(TROOPS).map(id => `<input data-heal-count="${id}" type="hidden" min="0" max="${stock[id] || 0}" value="${healingCounts[id] || 0}">`).join("")}</div><div class="training-costs"><span><img src="${RESOURCE_META.food.image}" alt="غذا"><b id="healingFoodCost">${formatCompact(total * 12)}</b></span><span id="healingDuration">${formatDuration(healingDuration(total))}</span></div><p id="healingTotals">${formatCompact(total)} سرباز انتخاب شده</p><button class="training-start" data-start-army="healing" ${!total || !buildingById("hospital").level ? "disabled" : ""}>آغاز درمان</button>`}</section><p class="training-capacity-note">انتخاب هر نیرو جداگانه حفظ می‌شود · هزینه هر مجروح ۱۲ غذا</p></div>${trainingDialogMarkup(unit, "healing", healingOverlay, "درمان", "heal")}</section>`);
+    bindHealingPage();
+  }
+  function updateHealingSlider() {
+    const total = healingTotal(), stock = woundedStock();
+    document.getElementById("healingCountOutput").textContent = `${formatCompact(healingCounts[healingUnitId] || 0)} / ${formatCompact(stock[healingUnitId] || 0)}`;
+    document.getElementById("healingFoodCost").textContent = formatCompact(total * 12);
+    document.getElementById("healingDuration").textContent = formatDuration(healingDuration(total));
+    document.getElementById("healingTotals").textContent = `${formatCompact(total)} سرباز انتخاب شده`;
+    document.getElementById("armyCount").value = total;
+    document.querySelectorAll("[data-heal-count]").forEach(input => input.value = healingCounts[input.dataset.healCount] || 0);
+    const start = document.querySelector('[data-start-army="healing"]');
+    if (start) start.disabled = !total || !buildingById("hospital").level;
+  }
+  async function cancelHealingQueue() {
+    const task = APP.army.healing;
+    if (!task || !await gameConfirm("درمان لغو شود؟ مجروحان و ۷۰٪ هزینه بازگردانده می‌شوند.")) return false;
+    if (APP.army.healing !== task) return false;
+    const stock = woundedStock();
+    for (const [id, n] of Object.entries(task.units || { [task.type]: task.count })) stock[id] = (stock[id] || 0) + n;
+    APP.army.wounded += task.count;
+    APP.resources.food += Math.floor((task.cost || task.count * 12) * 7 / 10);
+    APP.army.healing = null;healingCounts = {};healingOverlay = null;
+    saveGameProgress();updateTopHud();updateMissionStatus();
+    return true;
+  }
+  function bindHealingPage() {
+    const content = document.getElementById("genericPanelContent");
+    content.oninput = event => {
+      if (event.target.id !== "healingCountRange") return;
+      healingCounts[healingUnitId] = boundedInteger(Number(event.target.value), 0, 0, healingCountLimit());
+      updateHealingSlider();
+    };
+    content.onkeydown = event => {
+      if (event.key === "Escape" && healingOverlay) { event.preventDefault();event.stopPropagation();healingOverlay = null;renderHealingPage(); }
+    };
+    content.onclick = async event => {
+      const d = event.target.closest("button")?.dataset;
+      if (!d) return;
+      if (d.healingUnit && TROOPS[d.healingUnit]) healingUnitId = d.healingUnit;
+      else if (d.healAll !== undefined) selectAllWounded();
+      else if (d.healingPanel) healingOverlay = d.healingPanel;
+      else if (d.trainingClose !== undefined) healingOverlay = null;
+      else if (d.startArmy === "healing") { startArmyTask("healing");if (APP.army.healing) healingCounts = {};return; }
+      else if (d.trainingSpeed) { await speedArmy("healing", d.trainingSpeed);if (APP.openPage === "healing") {healingOverlay = null;renderHealingPage();}return; }
+      else if (d.healingInstant !== undefined) return speedArmy("healing");
+      else if (d.healingCancel !== undefined) {if (await cancelHealingQueue()) renderHealingPage();return;}
+      else return;
+      renderHealingPage();
+    };
+  }
+
+
+/* Source: src/js/12zz-navigation.js */
+  // Browser Back consumes one in-game layer, without leaving the running game.
+  const gameNavigation = { enabled: false, restoring: false, frames: [], bound: false };
+  function navigationPageKey(type, html = "") {
+    if (type === "profile") return `page:profile:${html.includes('profile-compact') ? 'details' : 'main'}`;
+    if (type === "skins") return `page:skins:${html.match(/skin-preview skin-(avatar|castle)/)?.[1] || 'main'}`;
+    return `page:${type}`;
+  }
+  function captureGameView() {
+    const activeId = ["inventoryUsePanel", "buildingPanel", "genericPanel"].find(id => document.getElementById(id)?.classList.contains("is-active"));
+    const panel = activeId ? document.getElementById(activeId) : null;
+    const contentId = {genericPanel:"genericPanelContent",buildingPanel:"buildingPanelContent",inventoryUsePanel:"inventoryUseContent"}[activeId];
+    const content = contentId ? document.getElementById(contentId) : null;
+    const type = activeId === "genericPanel" ? APP.openPage : null;
+    return {
+      key: type ? navigationPageKey(type, content?.innerHTML || "") : activeId === "buildingPanel" ? `building:${state.selectedId}:${gameNavigation.buildingMode || 'upgrade'}` : activeId === "inventoryUsePanel" ? `item:${gameNavigation.itemId}` : `world:${APP.currentMode}`,
+      mode: APP.currentMode, activeId, type, contentId, className: panel?.className,
+      html: content?.innerHTML || "", children: content?.childNodes ? Array.from(content.childNodes) : null,
+      onclick: content?.onclick, oninput: content?.oninput, onkeydown: content?.onkeydown, scrollTop: content?.scrollTop || 0,
+      title: document.getElementById("genericPanelTitle")?.textContent,
+      icon: document.getElementById("genericPanelIcon")?.innerHTML,
+      selectedId: state.selectedId, buildingMode: gameNavigation.buildingMode, itemId: gameNavigation.itemId,
+      training: {group:trainingGroup,role:trainingRole,slot:trainingSlot,count:trainingCount},
+      healing: {unit:healingUnitId,counts:{...healingCounts}},
+      missionTab: APP.missionTab, inventoryTab: APP.inventoryTab, researchLineId: selectedResearchLine,
+      messagesTab: APP.messagesTab, reportTab: APP.reportTab, profileView: gameNavigation.profileView
+    };
+  }
+  function rememberGameView(nextKey) {
+    if (!gameNavigation.enabled || gameNavigation.restoring) return;
+    const frame = captureGameView();
+    if (frame.key === nextKey) return;
+    gameNavigation.frames.push(frame);
+    if (gameNavigation.frames.length > 24) gameNavigation.frames.shift();
+  }
+  function restoreGameView(frame) {
+    gameNavigation.restoring = true;
+    try {
+      closeAllSurfaces();
+      setWorldMode(frame.mode === "map", false, false);
+      state.selectedId = frame.selectedId;
+      APP.missionTab = frame.missionTab;APP.inventoryTab=frame.inventoryTab;selectedResearchLine=frame.researchLineId;
+      if (frame.type === "training") {
+        trainingGroup=frame.training.group;trainingRole=frame.training.role;trainingSlot=frame.training.slot;trainingCount=frame.training.count;trainingOverlay=null;
+        renderTrainingPage();
+      } else if (frame.type === "healing") {
+        healingUnitId=frame.healing.unit;healingCounts={...frame.healing.counts};healingOverlay=null;renderHealingPage();
+      } else if (frame.activeId === "buildingPanel") openBuildingPanel(frame.buildingMode || "upgrade");
+      else if (frame.activeId === "inventoryUsePanel") openInventoryUse(frame.itemId);
+      else if (frame.activeId === "genericPanel") {
+        const panel=document.getElementById(frame.activeId),content=document.getElementById(frame.contentId);
+        panel.className=frame.className;panel.classList.add("is-active");
+        if (frame.children) content.replaceChildren(...frame.children);else content.innerHTML=frame.html;
+        content.onclick=frame.onclick;content.oninput=frame.oninput;content.onkeydown=frame.onkeydown;content.scrollTop=frame.scrollTop;
+        document.getElementById("genericPanelTitle").textContent=frame.title;
+        document.getElementById("genericPanelIcon").innerHTML=frame.icon;
+        document.getElementById("panelLayer").classList.add("is-open");document.getElementById("panelLayer").setAttribute("aria-hidden","false");APP.openPage=frame.type;
+        // Refresh mutable inventories and rewards while retaining the previous tab.
+        if (frame.type === "items") openInventory(APP.inventoryTab || "all");
+        if (frame.type === "missions") renderMissions(frame.missionTab);
+        if (frame.type === "profile" && frame.profileView) openProfile(frame.profileView.player,frame.profileView.details);
+        if (frame.type === "messages") openMessages(frame.messagesTab,frame.reportTab);
+        if (frame.type === "settings") openSettings();
+        if (frame.type === "research") openResearch();
+        if (frame.type === "troops") openTroopsOverview();
+        if (frame.type === "vip") openVip();
+        if (frame.type === "shield") openShield();
+      }
+    } finally { gameNavigation.restoring=false; }
+  }
+  function navigateGameBack() {
+    const dialog=document.getElementById("gameDialog");
+    if (dialog && !dialog.hidden) {closeGameDialog();return true;}
+    if (APP.openPage === "training" && trainingOverlay) {trainingOverlay=null;renderTrainingPage();return true;}
+    if (APP.openPage === "healing" && healingOverlay) {healingOverlay=null;renderHealingPage();return true;}
+    const march=document.getElementById("marchPanel");
+    if (march?.classList.contains("is-expanded")) {march.classList.remove("is-expanded");return true;}
+    if (state.moveBuildingId) {stopMovingBuilding();return true;}
+    if (APP.currentMode === "map" && APP.map.selection) {hideMapActions();return true;}
+    if (state.actionMenu?.classList.contains("is-visible")) {hideBuildingActionMenu();return true;}
+    const frame=gameNavigation.frames.pop();
+    if (frame) {restoreGameView(frame);return true;}
+    const open=document.getElementById("panelLayer")?.classList.contains("is-open");
+    closeAllSurfaces();
+    if (APP.currentMode === "map") {setWorldMode(false,false,false);return true;}
+    if (open) return true;
+    return false;
+  }
+  function armGameBackGuard() {
+    const history=window.history;
+    if (!history?.pushState || !history?.replaceState) return;
+    try {
+      if (history.state?.romaniaBackGuard) return;
+      history.replaceState({...history.state,romaniaGameRoot:true}, "");
+      history.pushState({romaniaBackGuard:true}, "");
+    } catch (error) {console.warn("Romania: browser history unavailable",error);}
+  }
+  function setupGameNavigation() {
+    gameNavigation.enabled=true;gameNavigation.frames=[];
+    armGameBackGuard();
+    if (gameNavigation.bound) return;
+    gameNavigation.bound=true;
+    window.addEventListener("popstate", () => {
+      if (!state.gameStarted) return;
+      // Re-arm immediately, even when already in the settlement. No exit prompt.
+      try {window.history?.pushState({romaniaBackGuard:true}, "");}catch {}
+      navigateGameBack();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Escape" || event.defaultPrevented || !state.gameStarted) return;
+      if (navigateGameBack()) event.preventDefault();
+    });
   }
 
 

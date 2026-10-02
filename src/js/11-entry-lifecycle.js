@@ -47,6 +47,7 @@
     ensureStarterEnemy();
     for (const c of Object.values(APP.collectors)) c.loginReady = c.amount >= 1;
     tickCollectors();
+    setupGameNavigation();
     setupTutorial();
     setInterval(tickBuildingTask, 1000);
     setInterval(saveGameProgress, 60000);
@@ -161,7 +162,7 @@
       fill = document.getElementById("loadingProgress"),
       percent = document.getElementById("loadingPercent");
     if (!screen) return;
-    const urls = [...new Set(["assets/ui/loading.webp", "assets/ui/player-portrait.webp", "assets/icons/quest.webp", "assets/icons/mail.webp", "assets/icons/world-map.webp", "assets/icons/bag.webp", "assets/icons/hero.webp", ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...TROOP_LINES.map(t => t.image), ...CASTLE_SKINS.map(s => s.image), ...AVATAR_SKINS.flatMap(s => [s.avatar, s.portrait])])];
+    const urls = [...new Set(["assets/ui/loading.webp", "assets/ui/player-portrait.webp", "assets/icons/quest.webp", "assets/icons/mail.webp", "assets/icons/world-map.webp", "assets/icons/bag.webp", "assets/icons/hero.webp", ASSETS.courtyardEarth, ASSETS.quietMeadow, ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...TROOP_LINES.map(t => t.image), ...CASTLE_SKINS.map(s => s.image), ...AVATAR_SKINS.flatMap(s => [s.avatar, s.portrait])])];
     setTimeout(() => {
       createEmpireLayout();
       createWorldMap();

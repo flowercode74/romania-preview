@@ -70,6 +70,8 @@
 
   // مسیرهای تصاویر و دارایی‌های بازی
   const ASSETS = Object.freeze({
+    courtyardEarth: "assets/terrain/courtyard-earth.webp",
+    quietMeadow: "assets/terrain/quiet-meadow.webp",
     atlas: "assets/terrain/tiles-v2.webp",
     mapAtlas: "assets/terrain/tiles-v2.webp",
     wall: "assets/walls/castle-wall.webp",

@@ -893,7 +893,7 @@
       passive: false
     });
     document.querySelectorAll("[data-close-panel]").forEach(el => el.addEventListener("click", () => {
-      closeAllSurfaces();
+      navigateGameBack();
       if (APP.tutorial.active && APP.tutorial.phase === "focus") showTutorialStep();
     }));
     document.getElementById("profileButton")?.addEventListener("click", () => openProfile());
@@ -983,7 +983,7 @@
         }
       }
       if (event.target.matches(".panel-backdrop")) {
-        closeAllSurfaces();
+        navigateGameBack();
       }
     });
     window.addEventListener("resize", () => {

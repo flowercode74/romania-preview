@@ -5808,3 +5808,142 @@ body { position: fixed; inset: 0; }
 .training-unit-cards img{height:230%;top:-9%;object-position:50% 0}
 
 .training-roles b{display:flex}.counter-center svg{width:46px;height:46px}.counter-grid svg{width:30px;height:30px}
+
+
+/* Source: src/css/08-royal-interface.css */
+/* Romania royal field palette: quiet slate, warm parchment, restrained brass. */
+:root,html{--void:#0d151c;--void-2:#15212b;--panel:#1b2936f5;--panel-2:#111e29fa;--panel-border:#8cabb332;--gold:#c3a374;--gold-bright:#e4c99d;--gold-deep:#8c714b;--accent:#c3a374;--text:#e8e3d9;--muted:#a4b5bf;--danger:#ce8d87;--success:#9bbfae;--shadow:0 18px 48px #040b1240;--royal-surface:#172530;--royal-raised:#233541;--royal-line:#97b0be2e;--royal-focus:#dcbd8a}
+body{background:var(--void);color:var(--text);font-weight:400}
+button{letter-spacing:0;touch-action:manipulation}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--royal-focus);outline-offset:3px}
+button:disabled{cursor:default}
+.top-bar{background:linear-gradient(115deg,#273947f7,#192833f7 70%);border-color:var(--royal-line);box-shadow:0 4px 18px #08111b22;backdrop-filter:blur(14px)}
+.top-bar,.top-bar .hud-main,.top-bar .hud-resources,.top-bar .hud-bottom{direction:ltr}
+.hud-resource,.hud-gold{background:#0c18232b;border:1px solid #9dafbc1d;border-radius:9px}
+.hud-resource strong,.hud-gold strong,.hud-power strong{color:#e9e4d9;font-variant-numeric:tabular-nums;font-weight:600;text-shadow:none}
+.hud-vip,.hud-store{background:#38506455;border-color:#afc0c52e;color:#e3d1af;border-radius:7px}
+.hud-portrait .portrait-frame,.hud-portrait .portrait-button{border-color:#c6aa79a6;background:#13232e;box-shadow:0 2px 10px #050d1540}
+.hud-stamina-fill,#hudStaminaFill{background:linear-gradient(90deg,#769e91,#adc2a0)}
+.bottom-nav{background:linear-gradient(180deg,#253746f7,#16232efb);border-top:1px solid #a9b9be30;box-shadow:0 -5px 24px #06101b26;padding-block:7px}
+.nav-item{color:#b8c5cc;border-radius:10px;font-weight:500}
+.nav-item:hover,.nav-item.is-active,.nav-item[aria-current=page]{background:#a7bec20b;color:#eddbb6}
+.nav-item:disabled{color:#84939c;opacity:.5}
+.nav-icon img{filter:none}
+.game-shell .bottom-nav .nav-item.center .nav-emblem{border:1px solid #d7b98799;background:radial-gradient(circle at 35% 25%,#466076,#192c3e);box-shadow:0 4px 18px #040e1940,inset 0 0 0 4px #a9c0c30c}
+.nav-badge,.hud-badge{background:#97665d;color:#fff1e7;border-color:#d7b9a35c;box-shadow:none}
+#stage,.territory-frame{background:#6f7963}
+.territory-vignette{opacity:.4}
+.game-shell #missionStatus{background:#1a2e3acc;border-color:#a1b5be40;backdrop-filter:blur(14px);box-shadow:0 5px 18px #07132026,inset 0 1px #ffffff08;border-radius:10px}
+#missionStatus small{color:#b5c1c8}#missionStatusText{color:#ece6d9;font-weight:500}
+.territory-status-card,.map-status-card,.map-coordinates,.march-toggle,.my-castle-button,.map-tools button{background:#1d303edb;border-color:#a9bcc533;color:#e6dfd0;box-shadow:0 3px 12px #08142026;backdrop-filter:blur(12px)}
+.territory-status-card strong,.map-coordinates strong{color:#eedbb7}
+.building-action-icon,.tile-action-buttons button b{background:linear-gradient(145deg,#314858ed,#172a39f2);border-color:#c5ac7f99;box-shadow:0 4px 14px #03112033;color:#e2c796}
+.building-action>span:last-child,.tile-action-buttons button span{background:#1c303deb;border-color:#adbcc33b;color:#e8dfce;font-weight:500}
+.building-action:hover .building-action-icon{background:#3b5363;border-color:#e2c796}
+.collector-button{background:#1c303dc9;border-color:#b8c4b45c;box-shadow:0 3px 12px #09151f30}
+.building-label,.building-name,.map-label{color:#ede7d9;text-shadow:0 1px 3px #17202dd9,0 0 7px #17202d8c;font-weight:500}
+.building-level,.map-level{background:#263a46a6;color:#ead5aa;border-color:#bdc8c333}
+#buildingPanel,#genericPanel,#inventoryUsePanel,.game-dialog-card{background:linear-gradient(150deg,#253744fa,#142330fa);border:1px solid #adc0c13d;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.panel-backdrop{background:#07132085;backdrop-filter:blur(7px)}
+.panel-page-topbar,.panel-title-row{background:linear-gradient(120deg,#31475666,#17293888);border-color:var(--royal-line);padding:14px 18px}
+.panel-page-heading{gap:12px}
+.panel-page-icon,.building-panel-icon{border-color:#b9a37d55;background:#203542;color:#e0c596;border-radius:11px}
+.panel-kicker,.panel-copy,.page-panel-content small,.panel-content small{color:var(--muted)}
+.page-panel h2,.game-panel h3,.building-panel-title,.use-item-head h2{color:#ede1c6;font-weight:600;line-height:1.5}
+.page-close,.panel-close{border:1px solid #b5c5cc36;border-radius:50%;background:#b4c9cb08;color:#c9d6dc;box-shadow:none}
+.page-panel-content,.panel-content,.inventory-use-content{background:linear-gradient(155deg,#20313d66,#11212d33);scrollbar-color:#637b89 #14232d;scrollbar-width:thin;padding:18px}
+body .game-panel :is(.mission-card,.unit-card,.inventory-item,.upgrade-card,.military-form,.research-node,.event-card,.mail-row,.military-summary,.profile-records article,.profile-details>div,.rank-row,.settings-grid button,.leaderboard-cards button){background:#10212c7a;border:1px solid #9ab2bf26;border-radius:11px;box-shadow:0 2px 8px #030d1712}
+body .game-panel :is(.mission-card,.inventory-item,.mail-row,.settings-grid button):hover{border-color:#c8b18a61;background:#29414f80}
+.inventory-item{padding:12px}.inventory-item strong,.inventory-name{color:#e5dfd1;font-weight:500}
+.inventory-item .item-count,.inventory-item small{color:#b9c6cd}
+.ui-tabs,.inventory-tabs,.message-tabs,.report-tabs,.mission-tabs,.profile-bottom,.line-tabs{background:#10212d40;border-color:var(--royal-line);border-radius:10px;padding:4px;gap:5px}
+.ui-tabs button,.inventory-tabs button,.message-tabs button,.report-tabs button,.mission-tabs button,.profile-bottom button,.line-tabs button{background:transparent;color:#b9c7ce;border:1px solid transparent;border-radius:8px;font-weight:500}
+.ui-tabs .is-active,.inventory-tabs .is-active,.message-tabs .is-active,.report-tabs .is-active,.mission-tabs .is-active,.profile-bottom .is-active,.line-tabs .is-selected{background:#c4a87518;color:#ecd7af;border-color:#bea17461;box-shadow:none}
+.panel-primary-button,.use-primary,.game-dialog-actions .is-primary,.tutorial-next,.entry-button.primary,.loading-button.primary,.mission-reward button:not([data-go-mission]){background:linear-gradient(135deg,#c9ae7f,#a58a60);border:1px solid #dfc49588;color:#172631;border-radius:8px;box-shadow:0 3px 12px #060d1c24;font-weight:700;min-height:42px}
+.panel-primary-button:hover,.use-primary:hover{filter:brightness(1.07)}
+.instant-button,.military-actions button,.mission-reward button[data-go-mission],.shield-content button,.vip-daily,.profile-page button[data-profile-details],.military-page>button{background:#344b5d80;border:1px solid #a5bec44a;color:#e4ded0;border-radius:8px;box-shadow:none;min-height:42px}
+.game-dialog{background:#07132090;backdrop-filter:blur(8px)}
+.game-dialog-title{color:#ecddbd}.game-dialog-actions button{background:#2c4353;border-color:#9fb6bd44;color:#dde4e6;border-radius:8px}
+.coordinate-fields input,.military-form input:not([type=range]),.entry-form input,.shop-form input{background:#112331;color:#eee5d4;border:1px solid #92aebc55;border-radius:8px;min-height:42px}
+input[type=range]{accent-color:#c5a778;direction:ltr}
+.panel-stat-grid>div,.build-cost-grid>span,.build-meta,.battle-stat-grid>span,.profile-records article,.profile-details>div,.reward-chip{background:#13273566;border-color:#96b0bc26;border-radius:8px}
+.panel-stat-grid strong,.build-cost-grid b,.military-summary b,.battle-stat-grid strong,.profile-records strong,.vip-level-line strong{color:#ecdfc1}
+.mission-description strong{font-size:14px;color:#e9dfc9;font-weight:600}.mission-description small{line-height:1.85;color:#bac8ce}
+body .game-panel .mission-card{padding:16px;gap:14px}
+.reward-chip{color:#d8e0df;padding:5px 8px}.reward-chip img{filter:none}
+.mission-reward{gap:10px;flex-wrap:wrap}.mission-reward button{min-height:40px;font-size:12px}
+.mission-building-icon{filter:drop-shadow(0 3px 6px #0003)}
+.military-page .research-node.is-unlocked{background:#29473888;border-color:#8fb39c77;color:#dcdfcf}
+.research-branches:before{background:#92a89a55}.research-node small{color:#afbec4}
+.settings-grid{gap:12px}.settings-grid button{min-height:118px}.settings-grid b{color:#cab187;font-weight:400}.settings-grid small{color:#aebfc8}
+.profile-nameplate{background:#142b38b8;border-color:#cfb48433;backdrop-filter:blur(14px)}
+.profile-nameplate h2{color:#f1e3c6;text-shadow:none}.profile-stamina{background:#11253188;border-color:#9ab7bb33}
+.profile-stamina i b,.vip-progress i{background:linear-gradient(90deg,#75978a,#b8bea0)}
+.vip-level{background:#1b303d88;border-color:#94aaba26}.vip-level.is-current{border-color:#cfb48477;background:#a589571c}
+.shop-message{background:#1b303d88;border-color:#99b2bc33;color:#dfe4df}
+.battle-heading.is-victory h2{color:#aecab7}.battle-heading.is-defeat h2{color:#dba39a}
+.battle-table th,.battle-table td{border-color:#8ea8b52a;background:#182e3a33}.battle-table thead th{background:#314957;color:#e5d3ad}
+.battle-versus article{background:#17303d77;border-color:#91aeb735}.battle-loot span{background:#223b4666;border-color:#a5b7b531}
+.march-queue,.tile-action-panel,.castle-inline-menu,.map-tile-info,.camp-info,.bookmark-row{background:#1c303deb;border-color:#a7bac333;color:#e5dfd2;box-shadow:0 7px 24px #04111d30;border-radius:10px}
+.march-row{border-color:#9cb0bc26;background:#0e253033}.march-row strong{color:#e2dccd}.march-row small{color:#aec0c8}.march-row b{color:#d5bd93}
+.tutorial-copy,.tutorial-card,.narrator-card{background:linear-gradient(140deg,#293e4af2,#152b38f7);border:1px solid #c5ad7d5c;box-shadow:0 10px 30px #09162633;color:#e7e2d5;backdrop-filter:blur(14px)}
+.tutorial-copy strong,.tutorial-copy h2,.tutorial-card h2{color:#ecddb9}.tutorial-copy p,.tutorial-card p{color:#ced8db;line-height:1.9}
+.tutorial-skip,.narrator-skip{color:#b5c6cc;border-color:#a1b6c02e;background:#ffffff06}
+.loading-screen,.entry-screen{background:#111f2b}.loading-backdrop{background:radial-gradient(ellipse at 50% 30%,#3d5262,#162634 68%,#0c1925)}
+.loading-card,.entry-card{background:#182e3cbd;border-color:#b9b5a63b;color:#e7dfd0;border-radius:16px;backdrop-filter:blur(16px)}
+.loading-title,.entry-title{color:#ecdfc3}.loading-subtitle,.entry-subtitle{color:#b9c7cc}
+.toast,.build-notice{background:#223c4be8;border-color:#b6bda749;color:#f1e5ce;box-shadow:0 6px 22px #08172533}
+.is-warning,.dialog-error{color:#dba09a}.is-success{color:#abcab7}
+progress{accent-color:#bba075}
+/* Keep the cinematic soldier pages in the same family without dimming their art. */
+#genericPanel.training-page,#genericPanel.healing-page{background:#10202a;border:0;box-shadow:none}
+.training-page .panel-page-topbar,.healing-page .panel-page-topbar{background:linear-gradient(#101f2cea,transparent);border:0}
+.training-page #genericPanelContent,.healing-page #genericPanelContent{background:transparent;padding:0}
+.training-vignette{background:linear-gradient(180deg,#15253222,transparent 24%,#15273577 46%,#102432d9 72%,#102330f5 100%)}
+.training-task{background:#18303ddd;border-color:#b4bba54a;box-shadow:0 10px 24px #07131f28}
+.training-groups,.training-slots button{background:#152c3ccb;border-color:#9eb7be38}
+.training-slots .is-selected,.training-groups button.is-selected{background:#b29a6a20;border-color:#c8ae7b8c}
+.training-start,.training-queue-actions button:last-child{background:linear-gradient(135deg,#ceb386,#a58b63);color:#182936;border-color:#dcc39580}
+.training-queue-actions button:first-child{background:#3a566b;color:#e7e6df;border-color:#b3c4ce44}
+.training-dialog{background:linear-gradient(145deg,#304959f7,#192f3cfb);border-color:#b6b99a55}
+.training-capacity-note{color:#b8c8cd}
+@media(max-width:420px){.page-panel-content,.panel-content{padding:13px}.panel-page-topbar{padding:11px 13px}.top-bar{box-shadow:0 3px 12px #0a182020}body .game-panel .mission-card{padding:12px;gap:10px}.settings-grid{gap:9px}.settings-grid button{min-height:100px}}
+@media(prefers-reduced-motion:reduce){.mission-focus .building-action-icon,.tutorial-pulse{animation:none!important}button{transition:none!important}}
+/* Cover every legacy panel family, including nested forms and login controls. */
+.military-page:not(.training-page) .page-panel-content,.profile-page .page-panel-content{background:linear-gradient(155deg,#263b48,#172b38)}
+.military-page:not(.training-page) button{background:#2b435580;border-color:#9ab3bd3b;color:#e5dfd1}
+body .military-page:not(.training-page) .panel-primary-button{background:linear-gradient(135deg,#c9ae7f,#a58a60);border-color:#d7ba8488;color:#182936}
+body .military-page:not(.training-page) .is-selected{background:#bea47620;border-color:#cdb17d88;color:#e7d6b3}
+body .military-page:not(.training-page) .research-node.is-unlocked{background:#38574780;border-color:#9fbaa16b}
+.entry-primary,.loading-button,.vip-daily,#vipDailyButton{background:linear-gradient(135deg,#c9ae7f,#a58a60);color:#172631;border-color:#dcc19680;box-shadow:0 3px 12px #0002}
+.entry-secondary{background:#2b43558c;color:#c4d0d7;border-color:#a1b7c044}
+.loading-progress-fill{background:linear-gradient(90deg,#7f9aab,#c2ae86)}
+.loading-vignette{background:linear-gradient(#10233244,transparent 40%,#102330e8)}
+.inventory-tabs .inventory-tab.is-active,.messages-page .ui-tab.is-active,.mission-modal .ui-tab.is-active{background:#bba37720;color:#e7d5b1;border-color:#b8a67b55}
+.inventory-use-panel .use-primary{background:linear-gradient(135deg,#c9ae7f,#a58a60);color:#182936}
+.march-toggle b{background:#416479;color:#e4dfd1}
+.map-search-button,.map-bookmarks-button,.map-march-locator,.territory-perk,.territory-status{background:#223b4acf;border-color:#a1b9bf33;color:#e3dfd2}
+.tile-action-buttons button b,.building-action-icon{color:#e0caa3}
+body .game-panel .mail-row.is-unread{background:#a4895621;border-color:#bda57755}
+.profile-hero:after{background:linear-gradient(transparent 30%,#132938e8)}
+.cancel-button,.queue-cancel,.cancel-confirm{background:#744d4b30;border-color:#be8d8566;color:#d8aaa2}
+
+
+/* Source: src/css/09-healing.css */
+.healing-screen{padding-top:clamp(270px,40vh,430px)}
+.healing-section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.healing-section-heading h3{font-size:15px;margin:0;color:#e6dbbf;font-weight:500}
+.healing-section-heading button{background:#25495977;color:#d7dfe1;border:1px solid #9eb9c044;border-radius:7px;min-height:36px;padding:6px 12px;font-size:11px}
+.healing-unit-cards{display:flex;overflow-x:auto;padding:2px 2px 7px;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:#7c929c transparent;gap:10px}
+.healing-unit-cards button{flex:0 0 100px;scroll-snap-align:start;height:140px}
+.healing-picked{position:absolute;top:6px;right:6px;padding:2px 7px;border-radius:9px;background:#afcab4e8;color:#142c30;font-size:10px;font-weight:700}
+.healing-empty{width:100%;min-height:100px;display:grid;place-content:center;gap:8px;text-align:center;background:#1b344266;border:1px solid #a3b8c52a;border-radius:9px}
+.healing-empty strong{font-size:16px;color:#c0d5c9}.healing-empty span{font-size:12px;color:#b8c9cc}
+.healing-hidden-selection{display:none}
+#healingTotals{font-size:11px;color:#b8cccb;margin:6px 0 0;text-align:center}
+.healing-screen .training-title>span{color:#ced9d2}
+.healing-screen .training-start{background:linear-gradient(135deg,#bdd0bb,#8daa9b);color:#163039;border-color:#c0d7c177}
+.healing-screen .training-task input[type=range]{accent-color:#b0c7b6}
+.healing-screen .training-progress progress::-webkit-progress-value{background:linear-gradient(90deg,#729c8e,#b3c9b2)}
+.healing-screen .training-progress progress::-moz-progress-bar{background:#9fbdab}
+@media(min-width:800px){.healing-screen{padding-top:340px}.healing-unit-cards button{flex-basis:128px;height:154px}}
