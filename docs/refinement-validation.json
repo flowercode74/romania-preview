@@ -1,0 +1,30 @@
+{
+  "version": "refined-20261001-2",
+  "validation": {
+    "test_suites_passed": 9,
+    "asset_reference_check": "pass",
+    "aspect_ratio_and_ground_span": "pass",
+    "hold_drag_and_pan_cancellation": "pass",
+    "placement_and_landing_animation_lifecycle": "pass",
+    "continuous_label_fade_and_stable_membership": "pass",
+    "mission_destinations": "pass",
+    "native_canvas_viewports": [
+      [
+        1000,
+        860
+      ],
+      [
+        390,
+        650
+      ],
+      [
+        1366,
+        640
+      ]
+    ]
+  },
+  "artwork": "Existing WebP building/wall images preserved byte-for-byte from previous delivery.",
+  "rendering": "98% occupied ground span; roof height preserved by image aspect ratio; roofs are allowed above footprint.",
+  "browser_player_test": "Not performed: existing browser access restriction.",
+  "previews": "Native Canvas renders; not browser screenshots."
+}

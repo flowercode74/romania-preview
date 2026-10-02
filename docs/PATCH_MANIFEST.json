@@ -1,0 +1,235 @@
+{
+  "version": "refined-20261001-2",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4567,
+      "sha256": "58cece9ad5f86e38c9bcb79f3df352c452616edc1b5e8a75d9f8d68a9336cad1"
+    },
+    {
+      "path": "art-manifest.json",
+      "bytes": 2967,
+      "sha256": "51313d27b718f469806816c9bac149328210d325b685b974b8d59394063821bc"
+    },
+    {
+      "path": "assets/buildings/army-camp.webp",
+      "bytes": 447672,
+      "sha256": "65a8620cc0221a48ff703d79a7132a06adb85339f67e77f9e91e31b2fd12b891"
+    },
+    {
+      "path": "assets/buildings/barracks.webp",
+      "bytes": 327156,
+      "sha256": "089b3b43b46acbb8934a379d1f05e374e7ec0f58fcd4bfebadad63d0a3e6b5d4"
+    },
+    {
+      "path": "assets/buildings/camp.webp",
+      "bytes": 464370,
+      "sha256": "aa9149d8e10a53f6049226e18bb6fcc78977ec54290e5b15db28aa9ade871212"
+    },
+    {
+      "path": "assets/buildings/castle.webp",
+      "bytes": 428080,
+      "sha256": "fafb7d2b8cdafcd2d88e99ca3784285899de5686a7e5bde08583e90599a1c103"
+    },
+    {
+      "path": "assets/buildings/construction.webp",
+      "bytes": 401538,
+      "sha256": "756679ce4ec35e9093ad2bd4ec3bdba340317265077412ad72d99c21e71b8707"
+    },
+    {
+      "path": "assets/buildings/embassy.webp",
+      "bytes": 438264,
+      "sha256": "0e0804546fefe967b36c270ddec9e07cf218f7bfa24d0af3c5ea0948063b3128"
+    },
+    {
+      "path": "assets/buildings/farm.webp",
+      "bytes": 348000,
+      "sha256": "7a3e1c966d7cb8d8d5c903b6ad2f48d1d9604c081d04df276ad610426933b46c"
+    },
+    {
+      "path": "assets/buildings/hideout.webp",
+      "bytes": 451740,
+      "sha256": "c526617d3d3b88f8cc43dca6964b94c1c41af255a3d72f52b86d5ff0761059e1"
+    },
+    {
+      "path": "assets/buildings/hospital.webp",
+      "bytes": 335760,
+      "sha256": "c67582eb7f191ebe45202ed65ba48d03b4c65da92400750c12a34e3399a0ea81"
+    },
+    {
+      "path": "assets/buildings/iron.webp",
+      "bytes": 467098,
+      "sha256": "c2d4dcb646f0796e139f7ed6e2ac2108bd6caae64d1a814e1ad5ff3dafafa253"
+    },
+    {
+      "path": "assets/buildings/lumber.webp",
+      "bytes": 377436,
+      "sha256": "56fab378ed9e63c86f4ef6a248a07de97c428b9e749846c92ce7c9977d2c59ed"
+    },
+    {
+      "path": "assets/buildings/research.webp",
+      "bytes": 388998,
+      "sha256": "8210180cfab81dcdc511046b5ffc3c29f9ecc14eaebf45eeeacac47f7feaa847"
+    },
+    {
+      "path": "assets/buildings/stone.webp",
+      "bytes": 429946,
+      "sha256": "2fb6ad19af0b5ede86019a7d68193242d3d0090400c6803dc5c8c20beea6f06a"
+    },
+    {
+      "path": "assets/css/game.css",
+      "bytes": 124029,
+      "sha256": "1b413336ab17e8d5b1b94e6b28cd5d7936a4a9b269e142a5bcf30285774c0ce4"
+    },
+    {
+      "path": "assets/icons/bag.webp",
+      "bytes": 1182604,
+      "sha256": "52337ba7fdb87ef954d550edd9451b952b828b7c3ec5c6be4d59d949bd3e8a5d"
+    },
+    {
+      "path": "assets/icons/hero.webp",
+      "bytes": 1161684,
+      "sha256": "7b36d666cc6576964966afdd08e28fd588a5f1a1cd76ac3633ee37d3fbd3ef0e"
+    },
+    {
+      "path": "assets/icons/mail.webp",
+      "bytes": 933598,
+      "sha256": "ba4f2afed727e1700655ecd3a65edcd17ec845eff85ea766e2049b9226b5a9a8"
+    },
+    {
+      "path": "assets/icons/quest.webp",
+      "bytes": 940852,
+      "sha256": "cc4b825708ffd5aba75509a1997a8a281000035a4b0d83cbe885fee047a4e676"
+    },
+    {
+      "path": "assets/icons/world-map.webp",
+      "bytes": 1222804,
+      "sha256": "fef40602ba0b387e407e7de167ef7bd09d0dbf8cab3553852248863864061e4d"
+    },
+    {
+      "path": "assets/js/game.js",
+      "bytes": 312384,
+      "sha256": "c3f539ecfd16618d4728eb2fed5426fca82a4f5ab4375f9554d962df802ab1d9"
+    },
+    {
+      "path": "assets/walls/castle-wall.webp",
+      "bytes": 280438,
+      "sha256": "d9e30616751f0123cd0910cf963e79a0406184dc6d7ccee390f7248536b0f033"
+    },
+    {
+      "path": "assets/walls/ruined-wall.webp",
+      "bytes": 287258,
+      "sha256": "0a07192506a2e7d3d88be6afcafd2a604423218e560c72a77fd9e294cd5e42d3"
+    },
+    {
+      "path": "docs/ART_PROMPTS.md",
+      "bytes": 14233,
+      "sha256": "1c2aa40b31fa34ca26ca4779a7e282df1108b8e0d0c0f56742e842ccfa6d3303"
+    },
+    {
+      "path": "docs/refinement-validation.json",
+      "bytes": 903,
+      "sha256": "e5e68b6afe5bc4e92dff8cdcf5c69c0ca6dbc93a91ec3b4ea8d7747b0f1a6ade"
+    },
+    {
+      "path": "docs/territory-desktop.webp",
+      "bytes": 228638,
+      "sha256": "fb331d403cc9c36377888872bf398e3a40a2fc4d91c37a61b1277e731c27b37c"
+    },
+    {
+      "path": "docs/territory-mobile.webp",
+      "bytes": 93622,
+      "sha256": "dd12e0d5cf0e27d5546d65c62ba6ec4df582e66edc44e0a7c4cdb62625c5e526"
+    },
+    {
+      "path": "docs/territory-preview.webp",
+      "bytes": 271002,
+      "sha256": "da53ffcb334b756b4295720aafae91a9896688c049837cfd64c32e9b37557fa2"
+    },
+    {
+      "path": "index.html",
+      "bytes": 9957,
+      "sha256": "288cd0efe2f61d2eae8c040ebcf1327e0b5a61b0bf1babed03d3cadfbf4629a4"
+    },
+    {
+      "path": "src/css/01-base.css",
+      "bytes": 36718,
+      "sha256": "4206f57b1d203257fa88b8f43a5bbeabf166c2d85ba17c8280bc0d355f62b731"
+    },
+    {
+      "path": "src/css/02-hud-inventory.css",
+      "bytes": 11812,
+      "sha256": "4177c36dd0891213f1907a3d9f75726d4fb7e9c684377cd4435b0752b4862a0b"
+    },
+    {
+      "path": "src/css/03-territory-map.css",
+      "bytes": 29204,
+      "sha256": "765a87a82879250650849357722dd6aa8a0f5d322cd57c50fe2dd71e2e75b56e"
+    },
+    {
+      "path": "src/css/04-interaction-responsive.css",
+      "bytes": 21971,
+      "sha256": "84b870b507325eb829c4e3af1de9c9cf9c355f5905e2459a2a5ccd0d0be71d87"
+    },
+    {
+      "path": "src/css/06-romania-theme.css",
+      "bytes": 16032,
+      "sha256": "343272a0c887431a9c5b68ce42837c72f7baf3a80949949ec79ded4b42960774"
+    },
+    {
+      "path": "src/js/01-config.js",
+      "bytes": 14052,
+      "sha256": "1f702de43f9d51cdfc11fd2f14a85f6167d649e879f9c9643240948745d02562"
+    },
+    {
+      "path": "src/js/02-territory.js",
+      "bytes": 52852,
+      "sha256": "eb3064fe40e01829c3fc6d9dede40b681863ee39e3f58dd41d07dee4ba73fd23"
+    },
+    {
+      "path": "src/js/05-economy-storage.js",
+      "bytes": 41222,
+      "sha256": "3a2549843a1e6ae2f89bdc4269114d2a556c4eae3c021f664f0d2f92ff9ce4c1"
+    },
+    {
+      "path": "src/js/07-interface.js",
+      "bytes": 31863,
+      "sha256": "e48400563ed3d358bbec5cfdb11e7f8f66bf344dbd69e4c671080c3a546519e5"
+    },
+    {
+      "path": "src/js/09-map-renderer.js",
+      "bytes": 13959,
+      "sha256": "d4f25aee4cd4bf4253fce413ce67543f462fbb269e7ef32010c8fb6f334bf527"
+    },
+    {
+      "path": "src/js/10-map-interaction.js",
+      "bytes": 47335,
+      "sha256": "5daa39e40cd2d412157574507d0cf2bda31b7837f902b9837f51b15eec227b1f"
+    },
+    {
+      "path": "src/js/11-entry-lifecycle.js",
+      "bytes": 10489,
+      "sha256": "56b2f1fc9830c75235bf9fc400cd9e56f20bf6f2ba7f46bdd4e8c70dfa2f819a"
+    },
+    {
+      "path": "src/js/13-bootstrap.js",
+      "bytes": 957,
+      "sha256": "c9fd09a5be08f67c6c9ecebeee174f0ab4ff18c44a8056417faa62be28c09e75"
+    },
+    {
+      "path": "tests/economy.cjs",
+      "bytes": 12150,
+      "sha256": "d124bdc9e1e5b3cd259964ec80fa8709cb9173ebdbf81a4a0390e5ed3f492959"
+    },
+    {
+      "path": "tests/island.cjs",
+      "bytes": 8019,
+      "sha256": "46139390efd768e89b9d3a183dd66426a1809c17b1a5eeeec7b0aca37a6970c8"
+    },
+    {
+      "path": "tests/territory.cjs",
+      "bytes": 12696,
+      "sha256": "71b200fd91357100fb950810464c59d2809c8e074491fe33dae0fad114fb08ab"
+    }
+  ]
+}

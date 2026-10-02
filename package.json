@@ -1,0 +1,13 @@
+{
+  "name": "romania-strategy-game",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local Persian browser strategy game",
+  "scripts": {
+    "build": "node scripts/build.cjs",
+    "check": "node scripts/check.cjs",
+    "test": "node scripts/test.cjs",
+    "start": "node scripts/serve.cjs"
+  },
+  "engines": { "node": ">=18" }
+}

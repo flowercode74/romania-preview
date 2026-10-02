@@ -1,0 +1,80 @@
+{
+  "barracks": {
+    "format": "WEBP",
+    "visible_pixels": 671438,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 3
+  },
+  "castle": {
+    "format": "WEBP",
+    "visible_pixels": 855837,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 7
+  },
+  "hospital": {
+    "format": "WEBP",
+    "visible_pixels": 679157,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 4
+  },
+  "embassy": {
+    "format": "WEBP",
+    "visible_pixels": 832044,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 4
+  },
+  "research": {
+    "format": "WEBP",
+    "visible_pixels": 788830,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 4
+  },
+  "camp": {
+    "format": "WEBP",
+    "visible_pixels": 889015,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 1
+  },
+  "hideout": {
+    "format": "WEBP",
+    "visible_pixels": 935195,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 1
+  },
+  "lumber": {
+    "format": "WEBP",
+    "visible_pixels": 714180,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 1
+  },
+  "farm": {
+    "format": "WEBP",
+    "visible_pixels": 628116,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 1
+  },
+  "iron": {
+    "format": "WEBP",
+    "visible_pixels": 802621,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 1
+  },
+  "stone": {
+    "format": "WEBP",
+    "visible_pixels": 784077,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 1
+  },
+  "construction": {
+    "format": "WEBP",
+    "visible_pixels": 769562,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 1
+  },
+  "army-camp": {
+    "format": "WEBP",
+    "visible_pixels": 859290,
+    "pixels_outside_footprint": 0,
+    "occupied_cells": 1
+  }
+}
