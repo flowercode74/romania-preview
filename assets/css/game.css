@@ -5711,3 +5711,9 @@ body .game-panel .mission-card { display:grid;grid-template-columns:62px minmax(
 .game-shell #missionStatus {height:40px;min-height:40px;max-height:40px;}
 .game-shell #missionStatusText {display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;word-break:normal;-webkit-line-clamp:unset;line-clamp:unset;max-height:1.4em;line-height:1.4;}
 .game-shell #missionStatus > span:nth-child(2) {min-width:0;overflow:hidden;}
+
+.territory-frame,
+#stage {
+  overflow: clip;
+  overflow-anchor: none;
+}
