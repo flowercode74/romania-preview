@@ -85,6 +85,25 @@
     buildings: Object.fromEntries(BUILDINGS.map(b => [b.id, `assets/buildings/${b.id}.webp`]))
   });
 
+  const AVATAR_SKINS = Object.freeze([
+    { name: "فرمانروای تاج‌دار", avatar: "assets/skins/avatar-01.webp", portrait: "assets/skins/portrait-01.webp" },
+    { name: "ملکه لاجوردی", avatar: "assets/skins/avatar-02.webp", portrait: "assets/skins/portrait-02.webp" },
+    { name: "سردار آهنین", avatar: "assets/skins/avatar-03.webp", portrait: "assets/skins/portrait-03.webp" },
+    { name: "نگهبان مرزها", avatar: "assets/skins/avatar-04.webp", portrait: "assets/skins/portrait-04.webp" }
+  ]);
+  const CASTLE_SKINS = Object.freeze([
+    { name: "دژ سلطنتی", image: "assets/skins/castle-01.webp" },
+    { name: "ارگ برج‌های بلند", image: "assets/skins/castle-02.webp" },
+    { name: "کاخ فرمانروایی", image: "assets/skins/castle-03.webp" },
+    { name: "قلعه مرزبانی", image: "assets/skins/castle-04.webp" }
+  ]);
+  function selectedAvatarSkin() {
+    return AVATAR_SKINS[APP.skins?.avatar] || AVATAR_SKINS[0];
+  }
+  function selectedCastleImage() {
+    return CASTLE_SKINS[APP.skins?.castle]?.image || CASTLE_SKINS[0].image;
+  }
+
   // تعریف امپراطوری‌ها و محدوده بی‌طرف رویداد؛ ورودی‌ها نیز جزو محدوده ممنوعه تلپورت هستند.
   const WORLD = Object.freeze({
     size: 800,
@@ -553,7 +572,7 @@
     return image;
   }
   function loadAssets() {
-    const urls = new Set([ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings)]);
+    const urls = new Set([ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image)]);
     urls.forEach(loadImage);
   }
 
@@ -833,7 +852,7 @@
 
   function buildingImage(building) {
     const construction = state.images.get(ASSETS.construction);
-    return building.level === 0 && construction?.naturalWidth ? construction : state.images.get(ASSETS.buildings[building.id]);
+    return building.level === 0 && construction?.naturalWidth ? construction : state.images.get(building.id === "castle" ? selectedCastleImage() : ASSETS.buildings[building.id]) || state.images.get(ASSETS.buildings[building.id]);
   }
   function buildingLift(building) {
     if (state.moveBuildingId === building.id) return 9 + Math.sin(Date.now() / 180) * 2;
@@ -870,7 +889,6 @@
     const raster = canvas.getContext("2d");
     raster.imageSmoothingEnabled = true;
     raster.imageSmoothingQuality = "high";
-    if (skin) raster.filter = skin === 1 ? "sepia(.4) saturate(1.5) hue-rotate(320deg)" : "sepia(.4) saturate(1.5) hue-rotate(170deg)";
     raster.drawImage(image, ...box.source, 0, 0, width, height);
     buildingRasterCache.set(building.id, { image, key, canvas });
     return canvas;
@@ -3021,8 +3039,8 @@
         sound: saved.preferences?.sound !== false
       };
       APP.skins = {
-        avatar: boundedInteger(saved.skins?.avatar, 0, 0, 2),
-        castle: boundedInteger(saved.skins?.castle, 0, 0, 2)
+        avatar: boundedInteger(saved.skins?.avatar, 0, 0, AVATAR_SKINS.length - 1),
+        castle: boundedInteger(saved.skins?.castle, 0, 0, CASTLE_SKINS.length - 1)
       };
       APP.accountCreatedAt = boundedInteger(saved.accountCreatedAt, APP.accountCreatedAt, 0, Date.now());
       APP.peakPower = boundedInteger(saved.peakPower, APP.peakPower, 0, Number.MAX_SAFE_INTEGER);
@@ -4125,7 +4143,7 @@
       server: 1,
       stamina: APP.stamina,
       allianceName: APP.alliance?.name || "بدون اتحاد",
-      avatar: APP.skins.avatar === 1 ? "assets/ui/player-portrait.webp" : "assets/ui/avatar-01.webp",
+      avatar: selectedAvatarSkin().avatar,
       accountCreatedAt: APP.accountCreatedAt
     } : player;
     const value = n => Number.isFinite(n) ? formatCompact(n) : "ثبت نشده";
@@ -4134,7 +4152,7 @@
     const alliance = own && APP.alliance,
       empire = alliance && EMPIRES.find(e => e.id === alliance.empireId);
     const header = `<div class="profile-nameplate"><h2>${escapeHTML(p.name || "بازیکن")}</h2><span>${escapeHTML(p.allianceName || "بدون اتحاد")}${alliance?.logo ? `<img class="alliance-crest" src="${escapeHTML(alliance.logo)}" alt="نشان اتحاد">` : ""}${empire ? `<img class="alliance-crest" src="${empire.image}" alt="نشان امپراطوری">` : ""}</span></div>`;
-    openPage("profile", `${details ? `<div class="profile-compact"><img src="${avatar}" alt="">${header}</div><div class="profile-lower"><img src="assets/ui/player-portrait.webp" alt=""><div><strong>سن حساب: ${age === null ? "ثبت نشده" : age + " روز"}</strong><span>سطح قلعه: ${p.level || 1}</span><span>مدال‌ها: ${own ? INVENTORY.find(i => i.id === "gold-medal")?.count || 0 : "ثبت نشده"}</span></div></div><div class="profile-records">${[["قدرت", p.power, p.peakPower], ["کشتار", p.kills, p.peakKills]].map(([label, current, peak]) => `<article><small>بیشترین ${label} ثبت‌شده</small><strong>${value(peak)}</strong><span>${label} فعلی: ${value(current)}</span></article>`).join("")}</div><button data-profile-details="back">بازگشت به نمای اصلی</button>` : `<div class="profile-hero"><img class="profile-backdrop" src="assets/ui/profile-background.webp" alt=""><img class="profile-avatar" src="${avatar}" alt="آواتار">${header}</div><div class="profile-details">${[["سرور", p.server ?? 1], ["VIP", p.vip ?? "ثبت نشده"], ["قدرت", value(p.power)], ["کشتار", value(p.kills)], ["اتحاد", p.allianceName || "بدون اتحاد"], ["سطح قلعه", p.level || 1]].map(([name, n]) => `<div><small>${name}</small><strong>${escapeHTML(String(n))}</strong></div>`).join("")}</div>${own ? `<div class="profile-stamina"><span>استقامت ${APP.stamina}/100</span><i><b style="width:${APP.stamina}%"></b></i></div>` : ""}<button data-profile-details="more" class="panel-primary-button">اطلاعات بیشتر</button>`}${own ? `<nav class="profile-bottom"><button data-profile-tab="settings">⚙<span>تنظیمات</span></button><button data-profile-tab="troops">⚔<span>نیروها</span></button><button data-profile-tab="leaderboard">♛<span>لیدربورد</span></button><button data-profile-tab="skins">♜<span>اسکین‌ها</span></button></nav>` : ""}`);
+    openPage("profile", `${details ? `<div class="profile-compact"><img src="${avatar}" alt="">${header}</div><div class="profile-lower"><img src="${own ? selectedAvatarSkin().portrait : avatar}" alt=""><div><strong>سن حساب: ${age === null ? "ثبت نشده" : age + " روز"}</strong><span>سطح قلعه: ${p.level || 1}</span><span>مدال‌ها: ${own ? INVENTORY.find(i => i.id === "gold-medal")?.count || 0 : "ثبت نشده"}</span></div></div><div class="profile-records">${[["قدرت", p.power, p.peakPower], ["کشتار", p.kills, p.peakKills]].map(([label, current, peak]) => `<article><small>بیشترین ${label} ثبت‌شده</small><strong>${value(peak)}</strong><span>${label} فعلی: ${value(current)}</span></article>`).join("")}</div><button data-profile-details="back">بازگشت به نمای اصلی</button>` : `<div class="profile-hero"><img class="profile-backdrop" src="assets/ui/profile-background.webp" alt=""><img class="profile-avatar" src="${avatar}" alt="آواتار">${header}</div><div class="profile-details">${[["سرور", p.server ?? 1], ["VIP", p.vip ?? "ثبت نشده"], ["قدرت", value(p.power)], ["کشتار", value(p.kills)], ["اتحاد", p.allianceName || "بدون اتحاد"], ["سطح قلعه", p.level || 1]].map(([name, n]) => `<div><small>${name}</small><strong>${escapeHTML(String(n))}</strong></div>`).join("")}</div>${own ? `<div class="profile-stamina"><span>استقامت ${APP.stamina}/100</span><i><b style="width:${APP.stamina}%"></b></i></div>` : ""}<button data-profile-details="more" class="panel-primary-button">اطلاعات بیشتر</button>`}${own ? `<nav class="profile-bottom"><button data-profile-tab="settings">⚙<span>تنظیمات</span></button><button data-profile-tab="troops">⚔<span>نیروها</span></button><button data-profile-tab="leaderboard">♛<span>لیدربورد</span></button><button data-profile-tab="skins">♜<span>اسکین‌ها</span></button></nav>` : ""}`);
     document.getElementById("genericPanelContent").onclick = e => {
       const b = e.target.closest("[data-profile-tab]");
       if (b) return {
@@ -5115,7 +5133,7 @@
   }
   function drawMapCastle(ctx, castle) {
     const [x, y] = mapToScreen(castle.q, castle.r),
-      image = state.images.get("assets/buildings/castle.webp");
+      image = state.images.get(castle.own ? selectedCastleImage() : ASSETS.buildings.castle) || state.images.get(ASSETS.buildings.castle);
     const z = APP.map.camera.zoom,
       size = 36 * z;
     const layer = document.getElementById("worldMapLayer");
@@ -5124,7 +5142,6 @@
       ctx.save();
       ctx.shadowColor = castle.own ? "#f2ce79" : "#20170c";
       ctx.shadowBlur = castle.own ? 14 : 7;
-      if (castle.own && APP.skins?.castle) ctx.filter = APP.skins.castle === 1 ? "sepia(.4) saturate(1.5) hue-rotate(320deg)" : "sepia(.4) saturate(1.5) hue-rotate(170deg)";
       const art = BUILDING_ART.castle;
       const box = art && image.naturalWidth === art.size[0] && image.naturalHeight === art.size[1] ? art.box : [0, 0, image.naturalWidth, image.naturalHeight];
       const sw = box[2] - box[0], sh = box[3] - box[1], height = size * sh / sw;
@@ -6339,7 +6356,7 @@
       fill = document.getElementById("loadingProgress"),
       percent = document.getElementById("loadingPercent");
     if (!screen) return;
-    const urls = [...new Set(["assets/ui/loading.webp", "assets/ui/player-portrait.webp", "assets/icons/quest.webp", "assets/icons/mail.webp", "assets/icons/world-map.webp", "assets/icons/bag.webp", "assets/icons/hero.webp", ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings)])];
+    const urls = [...new Set(["assets/ui/loading.webp", "assets/ui/player-portrait.webp", "assets/icons/quest.webp", "assets/icons/mail.webp", "assets/icons/world-map.webp", "assets/icons/bag.webp", "assets/icons/hero.webp", ASSETS.atlas, ASSETS.mapAtlas, ASSETS.wall, ASSETS.ruinedWall, ASSETS.construction, ASSETS.capture, ASSETS.armyCamp, ...EMPIRES.map(e => e.image), ...Object.values(ASSETS.buildings), ...CASTLE_SKINS.map(s => s.image), ...AVATAR_SKINS.flatMap(s => [s.avatar, s.portrait])])];
     setTimeout(() => {
       createEmpireLayout();
       createWorldMap();
@@ -6642,8 +6659,8 @@
   // انتخاب ظاهر در پرتره بالای صفحه نیز اعمال می‌شود؛ قلعه در هر دو رندر یکسان است.
   function applySkinAppearance() {
     const portrait = document.querySelector(".portrait-image");
-    if (portrait) portrait.src = APP.skins?.avatar === 1 ? "assets/ui/player-portrait.webp" : "assets/ui/avatar-01.webp";
-    if (portrait) portrait.style.filter = APP.skins?.avatar === 2 ? "sepia(.4) saturate(1.4)" : "none";
+    if (portrait) portrait.src = selectedAvatarSkin().portrait;
+    if (portrait) portrait.style.filter = "none";
   }
   let cueAudio = null;
   function playInterfaceCue() {
@@ -6729,9 +6746,12 @@
       avatar: 0,
       castle: 0
     };
-    const images = kind === "castle" ? [ASSETS.buildings.castle, ASSETS.buildings.castle, ASSETS.buildings.castle] : ["assets/ui/avatar-01.webp", "assets/ui/player-portrait.webp", "assets/ui/avatar-01.webp"];
-    const names = kind === "castle" ? ["کلاسیک", "یاقوتی", "لاجوردی"] : ["آواتار سلطنتی", "پرتره فرمانروا", "نشان سلطنتی"];
-    openPage("skins", kind ? `<div class="skin-preview skin-${kind} skin-tone-${preview}"><img src="${images[preview]}" alt="${names[preview]}"><h2>${names[preview]}</h2></div><div class="unit-carousel">${images.map((src, i) => `<button data-preview-skin="${i}" class="unit-card skin-tone-${i} ${preview === i ? "is-selected" : ""}"><img src="${src}" alt=""><strong>${names[i]}</strong></button>`).join("")}</div><button class="panel-primary-button" data-apply-skin>انتخاب این ظاهر</button><button data-skin-back>بازگشت</button>` : `<div class="skin-choices"><button data-skin-kind="avatar"><img src="assets/ui/avatar-01.webp" alt=""><strong>آواتار</strong></button><button data-skin-kind="castle"><img src="${ASSETS.buildings.castle}" alt=""><strong>قلعه</strong></button></div><button data-back-profile>پروفایل</button>`);
+    if (kind !== "castle" && kind !== "avatar") kind = null;
+    const choices = kind === "castle" ? CASTLE_SKINS : AVATAR_SKINS;
+    const images = choices.map(s => s.image || s.avatar);
+    const names = choices.map(s => s.name);
+    preview = boundedInteger(preview, 0, 0, choices.length - 1);
+    openPage("skins", kind ? `<div class="skin-preview skin-${kind} skin-tone-${preview}"><img src="${images[preview]}" alt="${names[preview]}"><h2>${names[preview]}</h2></div><div class="unit-carousel">${images.map((src, i) => `<button data-preview-skin="${i}" class="unit-card skin-tone-${i} ${preview === i ? "is-selected" : ""}"><img src="${src}" alt=""><strong>${names[i]}</strong></button>`).join("")}</div><button class="panel-primary-button" data-apply-skin>انتخاب این ظاهر</button><button data-skin-back>بازگشت</button>` : `<div class="skin-choices"><button data-skin-kind="avatar"><img src="${selectedAvatarSkin().avatar}" alt=""><strong>آواتار</strong></button><button data-skin-kind="castle"><img src="${selectedCastleImage()}" alt=""><strong>قلعه</strong></button></div><button data-back-profile>پروفایل</button>`);
     document.getElementById("genericPanelContent").onclick = async e => {
       const b = e.target.closest("button");
       if (!b) return;
@@ -6740,7 +6760,7 @@
       if (d.previewSkin !== undefined) return openSkins(kind, Number(d.previewSkin));
       if (d.skinBack !== undefined) return openSkins();
       if (d.backProfile !== undefined) return openProfile();
-      if (d.applySkin !== undefined && (await gameConfirm("این ظاهر انتخاب شود؟"))) {
+      if (d.applySkin !== undefined && kind && (await gameConfirm("این ظاهر انتخاب شود؟"))) {
         APP.skins[kind] = preview;
         applySkinAppearance();
         saveGameProgress();
@@ -6756,7 +6776,7 @@
     if (!r) return;
     const survivor = Math.max(0, r.sent - (r.wounded || 0)),
       defender = r.defender || {};
-    openPage("battle", `<header class="battle-heading ${r.result === "پیروزی" ? "is-victory" : "is-defeat"}"><h2>${escapeHTML(r.title)}</h2><time>${escapeHTML(r.time)}</time><span dir="ltr">X:${escapeHTML(r.target?.q ?? "—")} Y:${escapeHTML(r.target?.r ?? "—")}</span></header><div class="battle-versus"><article><img src="assets/ui/avatar-01.webp" alt=""><strong>DreaM</strong><span>قدرت ${formatCompact(r.combatPower || 0)}</span><small>اعزام ${formatCompact(r.sent || 0)}</small></article><b>VS</b><article><img src="${safeAssetPath(defender.image, "assets/enemies/viking.webp")}" alt=""><strong>${escapeHTML(defender.name || "سرگردان")}</strong><span>قدرت ${formatCompact(defender.power || 0)}</span><small>سطح ${escapeHTML(defender.level || "—")}</small></article></div><div class="battle-stat-grid"><span>نیروهای اعزامی<strong>${formatCompact(r.sent || 0)}</strong></span><span>مجروح<strong>${formatCompact(r.wounded || 0)}</strong></span><span>بازمانده<strong>${formatCompact(survivor)}</strong></span></div><h3>غنیمت</h3><div class="battle-loot">${Object.entries(r.rewards || {}).filter(([id]) => RESOURCE_META[id]).map(([id, n]) => `<span><img src="${RESOURCE_META[id].image}" alt="">${formatCompact(n)}</span>`).join("")}${r.coin ? `<span>✦ ${formatCompact(r.coin)} سکه</span>` : ""}</div><p>${(Array.isArray(r.items) ? r.items : []).map(escapeHTML).join("، ")}</p><h3>گزارش نیروها</h3><div class="battle-table-wrap"><table class="battle-table"><thead><tr><th>نیرو</th><th>اعزام</th><th>مجروح</th><th>بازمانده</th></tr></thead><tbody>${Object.entries(r.units || {}).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<tr><th>${TROOPS[id].name}</th><td>${n}</td><td>${escapeHTML(r.casualties?.[id] ?? "—")}</td><td>${r.casualties ? Math.max(0, n - (r.casualties[id] || 0)) : "—"}</td></tr>`).join("")}</tbody></table></div><p class="panel-copy">در منطق فعلی نبرد، تلفات به بیمارستان منتقل می‌شوند؛ آمار کشتهٔ جداگانه ثبت نمی‌شود.</p><button id="backReports">بازگشت به گزارش‌ها</button>`);
+    openPage("battle", `<header class="battle-heading ${r.result === "پیروزی" ? "is-victory" : "is-defeat"}"><h2>${escapeHTML(r.title)}</h2><time>${escapeHTML(r.time)}</time><span dir="ltr">X:${escapeHTML(r.target?.q ?? "—")} Y:${escapeHTML(r.target?.r ?? "—")}</span></header><div class="battle-versus"><article><img src="${selectedAvatarSkin().portrait}" alt=""><strong>DreaM</strong><span>قدرت ${formatCompact(r.combatPower || 0)}</span><small>اعزام ${formatCompact(r.sent || 0)}</small></article><b>VS</b><article><img src="${safeAssetPath(defender.image, "assets/enemies/viking.webp")}" alt=""><strong>${escapeHTML(defender.name || "سرگردان")}</strong><span>قدرت ${formatCompact(defender.power || 0)}</span><small>سطح ${escapeHTML(defender.level || "—")}</small></article></div><div class="battle-stat-grid"><span>نیروهای اعزامی<strong>${formatCompact(r.sent || 0)}</strong></span><span>مجروح<strong>${formatCompact(r.wounded || 0)}</strong></span><span>بازمانده<strong>${formatCompact(survivor)}</strong></span></div><h3>غنیمت</h3><div class="battle-loot">${Object.entries(r.rewards || {}).filter(([id]) => RESOURCE_META[id]).map(([id, n]) => `<span><img src="${RESOURCE_META[id].image}" alt="">${formatCompact(n)}</span>`).join("")}${r.coin ? `<span>✦ ${formatCompact(r.coin)} سکه</span>` : ""}</div><p>${(Array.isArray(r.items) ? r.items : []).map(escapeHTML).join("، ")}</p><h3>گزارش نیروها</h3><div class="battle-table-wrap"><table class="battle-table"><thead><tr><th>نیرو</th><th>اعزام</th><th>مجروح</th><th>بازمانده</th></tr></thead><tbody>${Object.entries(r.units || {}).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<tr><th>${TROOPS[id].name}</th><td>${n}</td><td>${escapeHTML(r.casualties?.[id] ?? "—")}</td><td>${r.casualties ? Math.max(0, n - (r.casualties[id] || 0)) : "—"}</td></tr>`).join("")}</tbody></table></div><p class="panel-copy">در منطق فعلی نبرد، تلفات به بیمارستان منتقل می‌شوند؛ آمار کشتهٔ جداگانه ثبت نمی‌شود.</p><button id="backReports">بازگشت به گزارش‌ها</button>`);
     document.getElementById("backReports")?.addEventListener("click", () => openMessages());
   }
   document.addEventListener("click", event => {

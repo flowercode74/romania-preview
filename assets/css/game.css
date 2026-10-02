@@ -5232,12 +5232,6 @@ body.tutorial-working .bottom-nav .nav-item,body.tutorial-working .portrait-butt
   max-width:100%;
   object-fit:contain;
 }
-.skin-tone-1 img  {
-  filter:sepia(.4) saturate(1.5) hue-rotate(320deg);
-}
-.skin-tone-2 img  {
-  filter:sepia(.4) saturate(1.5) hue-rotate(170deg);
-}
 .profile-page .profile-hero  {
   height:380px;
   position:relative;
