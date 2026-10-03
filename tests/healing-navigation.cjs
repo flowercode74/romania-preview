@@ -26,6 +26,13 @@ const t=context.t;t.startGame(true);t.APP.tutorial.active=false;t.createWorldMap
  assert.equal(context.window.history.state.romaniaBackGuard,true);
  assert.equal((windowEvents.get('popstate')||[]).length,1);
  const back=()=>context.window.history.back();
+ // Fresh facility entry clears stale overlays and scroll; same-page renders retain scroll.
+ const pageContent=document.getElementById("genericPanelContent");
+ t.openTraining();pageContent.scrollTop=120;pageContent.onclick({target:{closest:()=>({dataset:{trainingPanel:"stats"}})}});
+ assert(pageContent.innerHTML.includes("role=\"dialog\""));assert.equal(pageContent.scrollTop,120);
+ t.closePanels();t.openTraining();assert(!pageContent.innerHTML.includes("role=\"dialog\""));assert.equal(pageContent.scrollTop,0);
+ t.openHealing();pageContent.onclick({target:{closest:()=>({dataset:{healingPanel:"stats"}})}});
+ assert(pageContent.innerHTML.includes("role=\"dialog\""));t.closePanels();t.openHealing();assert(!pageContent.innerHTML.includes("role=\"dialog\""));t.closePanels();
  t.gameNavigation.frames=[];
  t.openProfile();t.openSettings();assert.equal(t.APP.openPage,'settings');
  back();assert.equal(t.APP.openPage,'profile');assert(document.getElementById('genericPanelContent').innerHTML.includes('profile-full-hero'));
@@ -57,7 +64,7 @@ const t=context.t;t.startGame(true);t.APP.tutorial.active=false;t.createWorldMap
  const click=async dataset=>{await content.onclick({target:{closest:()=>({dataset})}});hydrate();};
  hydrate();content.oninput({target:{id:'healingCountRange',value:'20'}});assert.equal(t.healingTotal(),20);
  await click({healingUnit:'archer'});content.oninput({target:{id:'healingCountRange',value:'10'}});assert.equal(t.healingTotal(),30);
- await click({healingUnit:'sword'});assert(content.innerHTML.includes('>20 / 50</output>'));
+ await click({healingUnit:'sword'});assert(content.innerHTML.includes('>20 از 50</output>'));
  // Stats and speed pickers consume Back before the healing page itself.
  await click({healingPanel:'stats'});back();assert.equal(t.APP.openPage,'healing');assert(!content.innerHTML.includes('role="dialog"'));
  await click({startArmy:'healing'});assert.equal(t.APP.army.healing.count,30);assert.equal(t.APP.army.healing.units.sword,20);assert.equal(t.APP.army.healing.units.archer,10);assert.equal(t.APP.army.wounded,50);

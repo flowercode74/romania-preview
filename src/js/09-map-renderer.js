@@ -83,7 +83,7 @@
     const label = document.getElementById("mapCoordinateText");
     if (!label) return;
     const at = APP.map.selectedMapCell || mapWorldToAxial(APP.map.camera.x, APP.map.camera.y);
-    label.textContent = `X:${Math.max(1, Math.min(800, at.q))} · Y:${Math.max(1, Math.min(800, at.r))}`;
+    label.textContent = `ستون: ${Math.max(1, Math.min(800, at.q))} · ردیف: ${Math.max(1, Math.min(800, at.r))}`;
     document.querySelector(".map-coordinates")?.classList.toggle("has-selection", !!APP.map.selectedMapCell);
   }
   function applyMapCamera() {

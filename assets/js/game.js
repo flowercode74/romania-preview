@@ -3638,7 +3638,7 @@
     if (changed || forceShow) saveGameProgress();
   }
   // آشنایی با رابط پس از ساخت: هر مرحله یک هدف روشن دارد و پیشرفت آن ذخیره می‌شود.
-  const UI_TOUR = [[".hud-resources", "چهار منبع اصلی", "چوب، گندم، سنگ و آهن برای ساخت و ارتقا مصرف می‌شوند. ساختمان‌های تولیدی آن‌ها را به‌مرور تولید می‌کنند و منابع سقف انبار ندارند."], [".hud-gold", "سکه", "سکه برای اتمام آنی ارتقا، آیتم‌ها و امکانات بازی کاربرد دارد. مأموریت‌های روزانه یکی از راه‌های کسب آن هستند."], [".hud-power", "قدرت قلعه", "قدرت حاصل از سطح ساختمان‌ها اینجا دیده می‌شود. ارتقای قلعه و ساختمان‌های نظامی سهم بیشتری در قدرت دارند."], ["#profileButton", "پروفایل شما", "روی تصویر بازیکن بزنید: اطلاعات حساب، اتحاد، VIP، قدرت، کشتار و استقامت در پروفایل دیده می‌شود.", "profile"], ["#shieldButton", "محافظت از قلعه", "شیلدهای ۸ و ۲۴ ساعته از قلعه محافظت می‌کنند. مدت محافظت را همیشه بررسی کنید.", "shield"], ["#eventsButton", "رویدادها", "از این دکمه رویدادهای بازی را بررسی می‌کنید. برج مرکز جهان برای رویداد پایانی سرور در نظر گرفته شده است.", "events"], ['[data-action="items"]', "آیتم‌های شما", "بسته منابع، تسریع، شیلد و جابجایی در کیف شما هستند. منابع داخل بسته‌ها تنها بعد از استفاده به حساب اضافه می‌شوند.", "items"], ['[data-action="messages"]', "پیام‌ها و گزارش‌ها", "پیام‌های سیستم و گزارش‌های نبرد را در این بخش دنبال کنید.", "messages"], ["#missionStatus", "مأموریت‌ها", "پاداش‌های آموزش را دریافت کنید. پس از دریافت همه آن‌ها، مأموریت‌های رشد و روزانه فعال می‌شوند.", "missions"], ["#marchToggle", "صف کارگر و لشکر", "در پنل وضعیت، پیشرفت کارگر و چهار صف لشکر را می‌بینید. انتخاب یک لشکر، دوربین را به موقعیت فعلی آن می‌برد."], ['[data-action="map"]', "نقشه جهان", "پس از پایان آموزش می‌توانید جهان را بررسی کنید. انتخاب کاشی فقط در نمای نزدیک فعال است؛ از جستجو، نشان‌ها و دکمه قلعه من استفاده کنید."], ["#territoryPerk", "مزیت محل استقرار", "مرز هر امپراطوری مزیت تولید خاصی دارد. در زمین آزاد، زمان حرکت لشکر ۵٪ کمتر است."], ['[data-action="heroes"]', "قهرمان‌ها", "این بخش برای قهرمان‌های آینده بازی در نظر گرفته شده و در نسخه فعلی غیرفعال است."]];
+  const UI_TOUR = [[".hud-resources", "چهار منبع اصلی", "چوب، گندم، سنگ و آهن برای ساخت و ارتقا مصرف می‌شوند. ساختمان‌های تولیدی آن‌ها را به‌مرور تولید می‌کنند و منابع سقف انبار ندارند."], [".hud-gold", "سکه", "سکه برای اتمام آنی ارتقا، آیتم‌ها و امکانات بازی کاربرد دارد. مأموریت‌های روزانه یکی از راه‌های کسب آن هستند."], [".hud-power", "قدرت قلعه", "قدرت حاصل از سطح ساختمان‌ها اینجا دیده می‌شود. ارتقای قلعه و ساختمان‌های نظامی سهم بیشتری در قدرت دارند."], ["#profileButton", "پروفایل شما", "روی تصویر بازیکن بزنید: اطلاعات حساب، اتحاد، ویژه، قدرت، کشتار و استقامت در پروفایل دیده می‌شود.", "profile"], ["#shieldButton", "محافظت از قلعه", "شیلدهای ۸ و ۲۴ ساعته از قلعه محافظت می‌کنند. مدت محافظت را همیشه بررسی کنید.", "shield"], ["#eventsButton", "رویدادها", "از این دکمه رویدادهای بازی را بررسی می‌کنید. برج مرکز جهان برای رویداد پایانی سرور در نظر گرفته شده است.", "events"], ['[data-action="items"]', "آیتم‌های شما", "بسته منابع، تسریع، شیلد و جابجایی در کیف شما هستند. منابع داخل بسته‌ها تنها بعد از استفاده به حساب اضافه می‌شوند.", "items"], ['[data-action="messages"]', "پیام‌ها و گزارش‌ها", "پیام‌های سیستم و گزارش‌های نبرد را در این بخش دنبال کنید.", "messages"], ["#missionStatus", "مأموریت‌ها", "پاداش‌های آموزش را دریافت کنید. پس از دریافت همه آن‌ها، مأموریت‌های رشد و روزانه فعال می‌شوند.", "missions"], ["#marchToggle", "صف کارگر و لشکر", "در پنل وضعیت، پیشرفت کارگر و چهار صف لشکر را می‌بینید. انتخاب یک لشکر، دوربین را به موقعیت فعلی آن می‌برد."], ['[data-action="map"]', "نقشه جهان", "پس از پایان آموزش می‌توانید جهان را بررسی کنید. انتخاب کاشی فقط در نمای نزدیک فعال است؛ از جستجو، نشان‌ها و دکمه قلعه من استفاده کنید."], ["#territoryPerk", "مزیت محل استقرار", "مرز هر امپراطوری مزیت تولید خاصی دارد. در زمین آزاد، زمان حرکت لشکر ۵٪ کمتر است."], ['[data-action="heroes"]', "قهرمان‌ها", "این بخش برای قهرمان‌های آینده بازی در نظر گرفته شده و در نسخه فعلی غیرفعال است."]];
   function clearTourFocus() {
     document.querySelectorAll(".tutorial-focus").forEach(n => n.classList.remove("tutorial-focus"));
   }
@@ -3824,6 +3824,8 @@
   function openPage(type, contentHTML = "") {
     if (APP.tutorial.active && !APP.worker.task && APP.tutorial.phase !== "ui-tour" && !["missions", "training", "healing"].includes(type)) return;
     document.getElementById("romaniaWelcome")?.remove();
+    const previousType=APP.openPage;
+    const previousScroll=document.getElementById("genericPanelContent")?.scrollTop || 0;
     rememberGameView(navigationPageKey(type, contentHTML));
     setWorldMode(false, false, false);
     closeAllSurfaces();
@@ -3837,15 +3839,15 @@
       shield: ["شیلد قلعه", "🛡", "mission-modal"],
       events: ["رویدادها", "✦", "mission-modal"],
       shop: ["فروشگاه", "◇", "shop-page"],
-      vip: ["VIP", "VIP", "vip-modal"],
+      vip: ["فرمانروای ویژه", "ویژه", "vip-modal"],
       training: ["سربازخانه", "⚔", "military-page training-page"],
       healing: ["بیمارستان", "✚", "military-page training-page healing-page"],
       research: ["مرکز تحقیقات", "◈", "military-page"],
       unit: ["اطلاعات نیرو", "⚔", "military-page"],
       settings: ["تنظیمات", "⚙", "military-page"],
       troops: ["نیروهای من", "⚔", "military-page troops-page"],
-      leaderboard: ["لیدربورد", "♛", "military-page leaderboard-page"],
-      skins: ["اسکین‌ها", "♜", "military-page"],
+      leaderboard: ["رتبه‌بندی", "♛", "military-page leaderboard-page"],
+      skins: ["ظاهرها", "♜", "military-page"],
       battle: ["گزارش نبرد", "⚔", "military-page"]
     };
     const data = titles[type];
@@ -3859,6 +3861,7 @@
     content.oninput = null;
     content.onkeydown = null;
     content.innerHTML = contentHTML;
+    content.scrollTop=previousType===type ? previousScroll : 0;
     panel.classList.add("is-active");
     document.getElementById("panelLayer")?.classList.add("is-open");
     document.getElementById("panelLayer")?.setAttribute("aria-hidden", "false");
@@ -4116,7 +4119,7 @@
       }).join("");
       const destination = missionDestination(m);
       const icon = destination.id === "wall" ? ASSETS.wall : ASSETS.buildings[destination.id];
-      return `<article class="mission-card ${done?"is-claimed":""}">${done?'<span class="mission-claimed-check" aria-label="پاداش دریافت شده">✓</span>':""}<img class="mission-building-icon" src="${icon}" alt=""><div class="mission-description"><strong>${m.title}</strong><small>${m.description}</small><small>${formatCompact(progress)} / ${formatCompact(m.target)}</small></div><div class="mission-reward"><div class="reward-strip">${rewards}</div><button type="button" data-claim-mission="${m.id}" ${done || !missionReady(tab, m) ? "disabled" : ""}>${done ? "دریافت شد" : "دریافت"}</button><button type="button" data-go-mission="${m.id}">برو به ماموریت</button></div></article>`;
+      return `<article class="mission-card ${done?"is-claimed":""}">${done?'<span class="mission-claimed-check" aria-label="پاداش دریافت شده">✓</span>':""}<img class="mission-building-icon" src="${icon}" alt=""><div class="mission-description"><strong>${m.title}</strong><small>${m.description}</small><small>${formatCompact(progress)} از ${formatCompact(m.target)}</small></div><div class="mission-reward"><div class="reward-strip">${rewards}</div><button type="button" data-claim-mission="${m.id}" ${done || !missionReady(tab, m) ? "disabled" : ""}>${done ? "دریافت شد" : "دریافت"}</button><button type="button" data-go-mission="${m.id}">برو به ماموریت</button></div></article>`;
     }).join("");
     const availableTabs = APP.tutorial.active || tutorialRewardsPending() ? ["tutorial"] : ["growth", "daily"];
     const tabNames = {
@@ -4133,7 +4136,7 @@
       daily: "daily-quests.webp",
       growth: "growth-quests.webp"
     };
-    content.innerHTML = `<div class="mission-banner"><img src="assets/ui/${banners[tab]}" alt="${tabNames[tab]}"></div>${tabs}<div class="mission-list">${list}</div>${tab === "tutorial" ? `<button class="claim-all-button" data-claim-all ${MISSION_DATA.tutorial.some(m => missionReady("tutorial", m)) ? "" : "disabled"}>دریافت همه پاداش‌های آماده</button>` : ""}`;
+    content.innerHTML = `<div class="mission-banner" data-label="${tabNames[tab]}"><img src="assets/ui/${banners[tab]}" alt="${tabNames[tab]}"></div>${tabs}<div class="mission-list">${list}</div>${tab === "tutorial" ? `<button class="claim-all-button" data-claim-all ${MISSION_DATA.tutorial.some(m => missionReady("tutorial", m)) ? "" : "disabled"}>دریافت همه پاداش‌های آماده</button>` : ""}`;
     content.onclick = event => {
       const go = event.target.closest("[data-go-mission]");
       if (go) { const mission = MISSION_DATA[tab].find(m=>m.id === go.dataset.goMission);if(mission) goToMission(mission);return; }
@@ -4162,15 +4165,15 @@
     const progress = level >= 12 ? 100 : Math.max(0, Math.min(100, (points - previous) / Math.max(1, next - previous) * 100));
     const today = new Date().toISOString().slice(0, 10);
     const claimed = localStorage.getItem("romaniaVipDailyV2") === today;
-    const levels = VIP_BENEFITS.map((benefit, i) => `<article class="vip-level ${i + 1 === level ? "is-current" : ""}"><b>VIP ${i + 1}</b><div><strong>${benefit}</strong><span>مزیت نمایشی سطح ${i + 1}</span></div></article>`).join("");
-    openPage("vip", `<div class="vip-summary"><div class="vip-level-line"><strong>VIP ${level}</strong><span>${formatCompact(points)} / ${formatCompact(next)} پوینت</span></div><div class="vip-progress"><i style="width:${progress}%"></i></div><div class="vip-progress-label">${level >= 12 ? "بالاترین سطح VIP" : `${formatCompact(next - points)} پوینت تا VIP ${level + 1}`}</div><button class="vip-daily" id="vipDailyButton" type="button" ${claimed ? "disabled" : ""}>${claimed ? "VIP روزانه امروز دریافت شد ✓" : "دریافت VIP روزانه"}</button></div><div class="vip-levels">${levels}</div>`);
+    const levels = VIP_BENEFITS.map((benefit, i) => `<article class="vip-level ${i + 1 === level ? "is-current" : ""}"><b>ویژه ${i + 1}</b><div><strong>${benefit}</strong><span>مزیت نمایشی سطح ${i + 1}</span></div></article>`).join("");
+    openPage("vip", `<div class="vip-summary"><div class="vip-level-line"><strong>ویژه ${level}</strong><span>${formatCompact(points)} از ${formatCompact(next)} امتیاز</span></div><div class="vip-progress"><i style="width:${progress}%"></i></div><div class="vip-progress-label">${level >= 12 ? "بالاترین سطح ویژه" : `${formatCompact(next - points)} امتیاز تا ویژه ${level + 1}`}</div><button class="vip-daily" id="vipDailyButton" type="button" ${claimed ? "disabled" : ""}>${claimed ? "پاداش ویژهٔ روزانه امروز دریافت شد ✓" : "دریافت پاداش ویژهٔ روزانه"}</button></div><div class="vip-levels">${levels}</div>`);
     const btn = document.getElementById("vipDailyButton");
     btn?.addEventListener("click", () => {
       if (btn.disabled) return;
       localStorage.setItem("romaniaVipDailyV2", today);
       localStorage.setItem("romaniaVipPointsV2", String(points + 50));
       btn.disabled = true;
-      btn.textContent = "VIP روزانه دریافت شد ✓";
+      btn.textContent = "پاداش ویژهٔ روزانه دریافت شد ✓";
     });
   }
   function openShop() {
@@ -4185,7 +4188,7 @@
       castle: 0
     };
     const p = own ? {
-      name: "DreaM",
+      name: APP.playerName || "فرمانروا",
       power: APP.resources.power,
       kills: APP.kills,
       peakPower: APP.peakPower,
@@ -4204,7 +4207,7 @@
     const alliance = own && APP.alliance,
       empire = alliance && EMPIRES.find(e => e.id === alliance.empireId);
     const header = `<div class="profile-nameplate"><h2>${escapeHTML(p.name || "بازیکن")}</h2><span>${escapeHTML(p.allianceName || "بدون اتحاد")}${alliance?.logo ? `<img class="alliance-crest" src="${escapeHTML(alliance.logo)}" alt="نشان اتحاد">` : ""}${empire ? `<img class="alliance-crest" src="${empire.image}" alt="نشان امپراطوری">` : ""}</span></div>`;
-    openPage("profile", `${details ? `<div class="profile-compact"><img src="${avatar}" alt="">${header}</div><div class="profile-lower"><img src="${own ? selectedAvatarSkin().portrait : avatar}" alt=""><div><strong>سن حساب: ${age === null ? "ثبت نشده" : age + " روز"}</strong><span>سطح قلعه: ${p.level || 1}</span><span>مدال‌ها: ${own ? INVENTORY.find(i => i.id === "gold-medal")?.count || 0 : "ثبت نشده"}</span></div></div><div class="profile-records">${[["قدرت", p.power, p.peakPower], ["کشتار", p.kills, p.peakKills]].map(([label, current, peak]) => `<article><small>بیشترین ${label} ثبت‌شده</small><strong>${value(peak)}</strong><span>${label} فعلی: ${value(current)}</span></article>`).join("")}</div><button data-profile-details="back">بازگشت به نمای اصلی</button>` : `<div class="profile-hero"><img class="profile-backdrop" src="assets/ui/profile-background.webp" alt=""><img class="profile-avatar" src="${avatar}" alt="آواتار">${header}</div><div class="profile-details">${[["سرور", p.server ?? 1], ["VIP", p.vip ?? "ثبت نشده"], ["قدرت", value(p.power)], ["کشتار", value(p.kills)], ["اتحاد", p.allianceName || "بدون اتحاد"], ["سطح قلعه", p.level || 1]].map(([name, n]) => `<div><small>${name}</small><strong>${escapeHTML(String(n))}</strong></div>`).join("")}</div>${own ? `<div class="profile-stamina"><span>استقامت ${APP.stamina}/100</span><i><b style="width:${APP.stamina}%"></b></i></div>` : ""}<button data-profile-details="more" class="panel-primary-button">اطلاعات بیشتر</button>`}${own ? `<nav class="profile-bottom"><button data-profile-tab="settings">⚙<span>تنظیمات</span></button><button data-profile-tab="troops">⚔<span>نیروها</span></button><button data-profile-tab="leaderboard">♛<span>لیدربورد</span></button><button data-profile-tab="skins">♜<span>اسکین‌ها</span></button></nav>` : ""}`);
+    openPage("profile", `${details ? `<div class="profile-compact"><img src="${avatar}" alt="">${header}</div><div class="profile-lower"><img src="${own ? selectedAvatarSkin().portrait : avatar}" alt=""><div><strong>سن حساب: ${age === null ? "ثبت نشده" : age + " روز"}</strong><span>سطح قلعه: ${p.level || 1}</span><span>مدال‌ها: ${own ? INVENTORY.find(i => i.id === "gold-medal")?.count || 0 : "ثبت نشده"}</span></div></div><div class="profile-records">${[["قدرت", p.power, p.peakPower], ["کشتار", p.kills, p.peakKills]].map(([label, current, peak]) => `<article><small>بیشترین ${label} ثبت‌شده</small><strong>${value(peak)}</strong><span>${label} فعلی: ${value(current)}</span></article>`).join("")}</div><button data-profile-details="back">بازگشت به نمای اصلی</button>` : `<div class="profile-hero"><img class="profile-backdrop" src="assets/ui/profile-background.webp" alt=""><img class="profile-avatar" src="${avatar}" alt="آواتار">${header}</div><div class="profile-details">${[["سرور", p.server ?? 1], ["ویژه", p.vip ?? "ثبت نشده"], ["قدرت", value(p.power)], ["کشتار", value(p.kills)], ["اتحاد", p.allianceName || "بدون اتحاد"], ["سطح قلعه", p.level || 1]].map(([name, n]) => `<div><small>${name}</small><strong>${escapeHTML(String(n))}</strong></div>`).join("")}</div>${own ? `<div class="profile-stamina"><span>استقامت ${APP.stamina}/100</span><i><b style="width:${APP.stamina}%"></b></i></div>` : ""}<button data-profile-details="more" class="panel-primary-button">اطلاعات بیشتر</button>`}${own ? `<nav class="profile-bottom"><button data-profile-tab="settings">⚙<span>تنظیمات</span></button><button data-profile-tab="troops">⚔<span>نیروها</span></button><button data-profile-tab="leaderboard">♛<span>رتبه‌بندی</span></button><button data-profile-tab="skins">♜<span>ظاهرها</span></button></nav>` : ""}`);
     gameNavigation.profileView = {player:player ? {...player} : null,details};
     document.getElementById("genericPanelContent").onclick = e => {
       const b = e.target.closest("[data-profile-tab]");
@@ -4397,24 +4400,39 @@
     for (let x = Math.floor(a.q / 32) - 1; x <= Math.floor(b.q / 32) + 1; x++) for (let y = Math.floor(a.r / 32) - 1; y <= Math.floor(b.r / 32) + 1; y++) for (const e of enemyBuckets.get(`${x}:${y}`) || []) if ((APP.enemyDefeated[e.id] || 0) <= Date.now() && !APP.map.castles.some(c => mapDistance(c, e) < 2)) result.push(e);
     return result;
   }
+  function enemyRenderSize(zoom=APP.map.camera.zoom){return APP.map.hexSize*1.24*zoom;}
+  function drawEnemyNameplate(ctx,name,level,x,y){
+    ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='600 9px Vazirmatn, sans-serif';
+    const measured=ctx.measureText(name)?.width||name.length*5,limit=78,font=Math.max(7.5,Math.min(9,9*limit/Math.max(1,measured)));
+    ctx.font=`600 ${font}px Vazirmatn, sans-serif`;ctx.lineJoin='round';ctx.lineWidth=2.5;ctx.strokeStyle='#23140fbb';ctx.fillStyle='#f1c58e';
+    ctx.strokeText(name,x,y);ctx.fillText(name,x,y);
+    // Enemy grade is a quiet subtitle, distinct from the circular castle badge.
+    ctx.font='500 7px Vazirmatn, sans-serif';const rank=`درجه ${level}`;ctx.lineWidth=2;ctx.strokeText(rank,x,y+11);ctx.fillStyle='#ecd4b2';ctx.fillText(rank,x,y+11);
+    ctx.restore();
+  }
   function drawEnemies(ctx) {
     if (APP.map.camera.zoom < MAP_DETAIL_ZOOM) return;
     for (const enemy of enemiesInView()) {
       const [x, y] = mapToScreen(enemy.q, enemy.r),
-        size = 24 * APP.map.camera.zoom,
+        size = enemyRenderSize(),
         type = ENEMY_TYPES[enemy.type],
         image = state.images.get(type.image);
-      if (image?.naturalWidth) ctx.drawImage(image, x - size / 2, y - size / 2, size, size);
-      drawNameplate(ctx,type.name,enemy.level,x,y-size*.8-18,84);
+      if (image?.naturalWidth) {
+        const scale=size/Math.max(image.naturalWidth,image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
+        ctx.drawImage(image,x-w/2,y-h/2,w,h);
+      }
+      drawEnemyNameplate(ctx,type.name,enemy.level,x,y-size/2-24);
     }
   }
   function hitEnemy(clientX, clientY) {
     if (APP.map.camera.zoom < MAP_DETAIL_ZOOM) return null;
     const rect = document.getElementById("worldMapLayer").getBoundingClientRect(),
-      size = 24 * APP.map.camera.zoom;
+      size = APP.map.hexSize * APP.map.camera.zoom;
     return enemiesInView().find(e => {
       const [x, y] = mapToScreen(e.q, e.r);
-      return Math.abs(clientX - rect.left - x) < size * .6 && Math.abs(clientY - rect.top - y) < size * .65;
+      const dx=Math.abs(clientX-rect.left-x),dy=Math.abs(clientY-rect.top-y);
+      return dx<=Math.sqrt(3)*size/2 && dy<=size-dx/Math.sqrt(3);
     });
   }
   function enemyDropItem(level, typeIndex, random = Math.random) {
@@ -4446,7 +4464,7 @@
     const box = document.createElement("section");
     box.id = "enemySheet";
     box.className = "enemy-sheet";
-    box.innerHTML = `<button class="enemy-close" aria-label="بستن">×</button><div class="enemy-head"><img src="${type.image}" alt=""><div><h3>${type.name}</h3><span>درجه ${enemy.level} · X:${enemy.q} Y:${enemy.r}</span></div></div><strong>پاداش پیروزی</strong><div class="enemy-rewards">${["wood", "food", "stone", "iron"].map(id => `<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}">${formatCompact(value)} · قطعی</span>`).join("")}<span><img src="assets/resources/gold.webp" alt="سکه">${5+enemy.level} · قطعی</span>${enemyRewardChips(enemy.level,enemy.type)}</div><p hidden>تسریع ${type.drop === "random" ? "تصادفی" : type.id === "cavarly" ? "درمان" : type.id === "archer" ? "ساخت نیرو" : "ساخت‌وساز"}: ${enemy.level <= 5 ? 1 : enemy.level <= 15 ? 5 : 10} دقیقه با احتمال ۳۵٪ · تسریع حرکت ۱۰٪: ۲۰٪ · تسریع حرکت ۵۰٪: ۵٪</p><small>نیاز پیشنهادی: ${formatCompact(requirement.troops)} سرباز و ${formatCompact(requirement.power)} توان لشکر. نیروی آماده: ${formatCompact(APP.army.troops)}</small><button class="enemy-attack" type="button" ${enemyUnlocked(enemy.type,enemy.level)?"":"disabled"}>${enemyUnlocked(enemy.type,enemy.level)?"انتخاب نیرو و حمله":"ابتدا درجه قبلی را شکست دهید"}</button>`;
+    box.innerHTML = `<button class="enemy-close" aria-label="بستن">×</button><div class="enemy-head"><img src="${type.image}" alt=""><div><h3>${type.name}</h3><span>درجه ${enemy.level} · ستون: ${enemy.q} ردیف: ${enemy.r}</span></div></div><strong>پاداش پیروزی</strong><div class="enemy-rewards">${["wood", "food", "stone", "iron"].map(id => `<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}">${formatCompact(value)} · قطعی</span>`).join("")}<span><img src="assets/resources/gold.webp" alt="سکه">${5+enemy.level} · قطعی</span>${enemyRewardChips(enemy.level,enemy.type)}</div><p hidden>تسریع ${type.drop === "random" ? "تصادفی" : type.id === "cavarly" ? "درمان" : type.id === "archer" ? "ساخت نیرو" : "ساخت‌وساز"}: ${enemy.level <= 5 ? 1 : enemy.level <= 15 ? 5 : 10} دقیقه با احتمال ۳۵٪ · تسریع حرکت ۱۰٪: ۲۰٪ · تسریع حرکت ۵۰٪: ۵٪</p><small>نیاز پیشنهادی: ${formatCompact(requirement.troops)} سرباز و ${formatCompact(requirement.power)} توان لشکر. نیروی آماده: ${formatCompact(APP.army.troops)}</small><button class="enemy-attack" type="button" ${enemyUnlocked(enemy.type,enemy.level)?"":"disabled"}>${enemyUnlocked(enemy.type,enemy.level)?"انتخاب نیرو و حمله":"ابتدا درجه قبلی را شکست دهید"}</button>`;
     box.addEventListener("pointerdown", e => e.stopPropagation());
     box.querySelector(".enemy-close").onclick = () => box.remove();
     box.querySelector(".enemy-attack").onclick = () => attackEnemy(enemy);
@@ -4520,7 +4538,7 @@
       coin: m.result === "پیروزی" ? 5 + m.enemyLevel : 0,
       title: `${m.result} · ${ENEMY_TYPES[m.enemyType]?.name || "سرگردان"} سطح ${m.enemyLevel}`,
       time: new Date().toLocaleString("fa-IR"),
-      text: `توان لشکر: ${formatCompact(m.combatPower || m.troops * 80)} · مختصات X:${m.target?.q} Y:${m.target?.r} · اعزام: ${m.troops} · بازمانده: ${m.troops - (m.lostTroops || 0)} · مجروح: ${m.lostTroops || 0} · غنیمت: ${Object.entries(resources).map(([id, n]) => `${RESOURCE_META[id].label} ${formatCompact(n)}`).join("، ") || "ندارد"}${items.length ? " · آیتم: " + items.map(i=>INVENTORY.find(x=>x.id===i.id)?.name||String(i)).join("، ") : ""}`
+      text: `توان لشکر: ${formatCompact(m.combatPower || m.troops * 80)} · مختصات ستون: ${m.target?.q} ردیف: ${m.target?.r} · اعزام: ${m.troops} · بازمانده: ${m.troops - (m.lostTroops || 0)} · مجروح: ${m.lostTroops || 0} · غنیمت: ${Object.entries(resources).map(([id, n]) => `${RESOURCE_META[id].label} ${formatCompact(n)}`).join("، ") || "ندارد"}${items.length ? " · آیتم: " + items.map(i=>INVENTORY.find(x=>x.id===i.id)?.name||String(i)).join("، ") : ""}`
     });
     APP.battleReports = APP.battleReports.slice(0, 100);
     APP.unreadMail = APP.battleReports.filter(r => !r.read).length;
@@ -5031,7 +5049,7 @@
     const label = document.getElementById("mapCoordinateText");
     if (!label) return;
     const at = APP.map.selectedMapCell || mapWorldToAxial(APP.map.camera.x, APP.map.camera.y);
-    label.textContent = `X:${Math.max(1, Math.min(800, at.q))} · Y:${Math.max(1, Math.min(800, at.r))}`;
+    label.textContent = `ستون: ${Math.max(1, Math.min(800, at.q))} · ردیف: ${Math.max(1, Math.min(800, at.r))}`;
     document.querySelector(".map-coordinates")?.classList.toggle("has-selection", !!APP.map.selectedMapCell);
   }
   function applyMapCamera() {
@@ -5611,7 +5629,10 @@
     if (!box) return;
     const activeTab = box.querySelector("[data-march-tab].is-active")?.dataset.marchTab || "armies";
     const now = Date.now();
-    const key = APP.marches.map(m => `${m.id}:${m.phase}:${Math.ceil(Math.max(0, (m.phase === "waiting" ? m.returnAt : m.arriveAt) - now) / 1000)}`).join("|");
+    const scrollPositions={};box.querySelectorAll('[data-march-content]').forEach(n=>{scrollPositions[n.dataset.marchContent]=n.scrollTop;});
+    const queueTasks=[...TRAINING_KEYS.map(k=>APP.army[k]),APP.army.healing,...[APP.worker,APP.worker2].filter(w=>w?.task).map(w=>({...w.task,endsAt:w.endsAt}))].filter(Boolean);
+    const taskKey=queueTasks.map(t=>`${t.startedAt}:${Math.ceil(Math.max(0,t.endsAt-now)/1000)}`).join('|');
+    const key = taskKey+';'+APP.marches.map(m => `${m.id}:${m.phase}:${Math.ceil(Math.max(0, (m.phase === "waiting" ? m.returnAt : m.arriveAt) - now) / 1000)}`).join("|");
     if (!force && key === APP.map.lastQueueKey) return;
     APP.map.lastQueueKey = key;
     count.textContent = String(APP.marches.length);
@@ -5625,6 +5646,7 @@
       length: WORLD.marchSlots
     }, (_, i) => APP.marches[i] ? "" : `<div class="march-empty-slot"><b>صف ${i + 1}</b><span>آماده حرکت</span></div>`).join("");
     box.innerHTML = `<div class="march-tabs"><button class="${activeTab === "armies" ? "is-active" : ""}" data-march-tab="armies">لشکرها</button><button class="${activeTab === "territory" ? "is-active" : ""}" data-march-tab="territory">قلمرو</button></div><div class="march-tab-content" data-march-content="armies" ${activeTab === "armies" ? "" : "hidden"}>${activeRows}${slots}</div><div class="march-tab-content" data-march-content="territory" ${activeTab === "territory" ? "" : "hidden"}>${renderTerritoryStatus()}</div>`;
+    box.querySelectorAll('[data-march-content]').forEach(n=>{n.scrollTop=scrollPositions[n.dataset.marchContent]||0;});
   }
 
   // لمس نقشه و جلوگیری از انتخاب ناخواسته
@@ -5769,7 +5791,7 @@
     if (!item?.count) return showBuildNotice("آیتم جابه‌جایی موجود نیست.");
     if (APP.marches.length) return showBuildNotice("پیش از جابه‌جایی، تمام لشکرها باید بازگردند.");
     if (!validTeleportTarget(cell)) return showBuildNotice("این کاشی برای استقرار قلعه مناسب نیست.");
-    if (!(await gameConfirm(`قلعه با مصرف یک آیتم به X:${cell.q} / Y:${cell.r} منتقل شود؟`))) return;
+    if (!(await gameConfirm(`قلعه با مصرف یک آیتم به ستون: ${cell.q} / ردیف: ${cell.r} منتقل شود؟`))) return;
     if (!item.count || APP.marches.length || !validTeleportTarget(cell)) return;
     tickBuildingTask();
     item.count--;
@@ -6123,12 +6145,12 @@
   function openMapBookmarks() {
     const saved = readMapBookmarks(),
       selected = APP.map.selectedMapCell || mapWorldToAxial(APP.map.camera.x, APP.map.camera.y);
-    const rows = saved.map((p, i) => `<div class="bookmark-row"><span>X:${p.q} · Y:${p.r}</span><button type="button" data-bookmark-go="${i}">رفتن</button><button type="button" data-bookmark-remove="${i}" aria-label="حذف نشانک">×</button></div>`).join("");
+    const rows = saved.map((p, i) => `<div class="bookmark-row"><span>ستون: ${p.q} · ردیف: ${p.r}</span><button type="button" data-bookmark-go="${i}">رفتن</button><button type="button" data-bookmark-remove="${i}" aria-label="حذف نشانک">×</button></div>`).join("");
     showGameDialog("مختصات نشان‌شده", `<div class="bookmark-list">${rows || "<p>هنوز مختصاتی نشان نشده است.</p>"}</div>`, [{
       label: "بستن",
       run: closeGameDialog
     }, {
-      label: `نشان کردن X:${selected.q} Y:${selected.r}`,
+      label: `نشان کردن ستون: ${selected.q} ردیف: ${selected.r}`,
       primary: true,
       run: () => {
         if (selected.q < 1 || selected.q > 800 || selected.r < 1 || selected.r > 800) return;
@@ -6700,8 +6722,8 @@
       if (event.target.matches?.("[data-heal-count]")) updateHealingTotals();
     };
   }
-  function openTraining() { renderTrainingPage(); }
-  function openHealing() { renderHealingPage(); }
+  function openTraining() { trainingOverlay=null; renderTrainingPage(); }
+  function openHealing() { healingOverlay=null; renderHealingPage(); }
   function healingSelection() {
     return Object.fromEntries(Array.from(document.querySelectorAll("[data-heal-count]")).map(input => [input.dataset.healCount, Math.max(0, Math.min(Number(input.max) || 0, Math.floor(Number(input.value) || 0)))]));
   }
@@ -6827,7 +6849,7 @@
   function openLeaderboard(metric = null) {
     const players = [{
       id: "own",
-      name: "DreaM",
+      name: APP.playerName || "فرمانروا",
       power: APP.resources.power,
       kills: APP.kills,
       own: true
@@ -6882,7 +6904,7 @@
     if (!r) return;
     const survivor = Math.max(0, r.sent - (r.wounded || 0)),
       defender = r.defender || {};
-    openPage("battle", `<header class="battle-heading ${r.result === "پیروزی" ? "is-victory" : "is-defeat"}"><h2>${escapeHTML(r.title)}</h2><time>${escapeHTML(r.time)}</time><span dir="ltr">X:${escapeHTML(r.target?.q ?? "—")} Y:${escapeHTML(r.target?.r ?? "—")}</span></header><div class="battle-versus"><article><img src="${selectedAvatarSkin().portrait}" alt=""><strong>DreaM</strong><span>قدرت ${formatCompact(r.combatPower || 0)}</span><small>اعزام ${formatCompact(r.sent || 0)}</small></article><b>VS</b><article><img src="${safeAssetPath(defender.image, "assets/enemies/ashen-host.webp")}" alt=""><strong>${escapeHTML(defender.name || "سرگردان")}</strong><span>قدرت ${formatCompact(defender.power || 0)}</span><small>سطح ${escapeHTML(defender.level || "—")}</small></article></div><div class="battle-stat-grid"><span>نیروهای اعزامی<strong>${formatCompact(r.sent || 0)}</strong></span><span>مجروح<strong>${formatCompact(r.wounded || 0)}</strong></span><span>بازمانده<strong>${formatCompact(survivor)}</strong></span></div><h3>غنیمت</h3><div class="battle-loot">${Object.entries(r.rewards || {}).filter(([id]) => RESOURCE_META[id]).map(([id, n]) => `<span><img src="${RESOURCE_META[id].image}" alt="">${formatCompact(n)}</span>`).join("")}${r.coin ? `<span><img src="assets/resources/gold.webp" alt="سکه">${formatCompact(r.coin)} سکه</span>` : ""}</div><div class="battle-loot">${battleItemMarkup(Array.isArray(r.items)?r.items:[])}</div><h3>گزارش نیروها</h3><div class="battle-table-wrap"><table class="battle-table"><thead><tr><th>نیرو</th><th>اعزام</th><th>مجروح</th><th>بازمانده</th></tr></thead><tbody>${Object.entries(r.units || {}).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<tr><th>${TROOPS[id].name}</th><td>${formatCompact(n)}</td><td>${r.casualties?.[id]===undefined?"—":formatCompact(r.casualties[id])}</td><td>${r.casualties ? formatCompact(Math.max(0, n - (r.casualties[id] || 0))) : "—"}</td></tr>`).join("")}</tbody></table></div><p class="panel-copy">در منطق فعلی نبرد، تلفات به بیمارستان منتقل می‌شوند؛ آمار کشتهٔ جداگانه ثبت نمی‌شود.</p><button id="backReports">بازگشت به گزارش‌ها</button>`);
+    openPage("battle", `<header class="battle-heading ${r.result === "پیروزی" ? "is-victory" : "is-defeat"}"><h2>${escapeHTML(r.title)}</h2><time>${escapeHTML(r.time)}</time><span>ستون: ${escapeHTML(r.target?.q ?? "—")} ردیف: ${escapeHTML(r.target?.r ?? "—")}</span></header><div class="battle-versus"><article><img src="${selectedAvatarSkin().portrait}" alt=""><strong>${escapeHTML(APP.playerName||"فرمانروا")}</strong><span>قدرت ${formatCompact(r.combatPower || 0)}</span><small>اعزام ${formatCompact(r.sent || 0)}</small></article><b>در برابر</b><article><img src="${safeAssetPath(defender.image, "assets/enemies/ashen-host.webp")}" alt=""><strong>${escapeHTML(defender.name || "سرگردان")}</strong><span>قدرت ${formatCompact(defender.power || 0)}</span><small>سطح ${escapeHTML(defender.level || "—")}</small></article></div><div class="battle-stat-grid"><span>نیروهای اعزامی<strong>${formatCompact(r.sent || 0)}</strong></span><span>مجروح<strong>${formatCompact(r.wounded || 0)}</strong></span><span>بازمانده<strong>${formatCompact(survivor)}</strong></span></div><h3>غنیمت</h3><div class="battle-loot">${Object.entries(r.rewards || {}).filter(([id]) => RESOURCE_META[id]).map(([id, n]) => `<span><img src="${RESOURCE_META[id].image}" alt="">${formatCompact(n)}</span>`).join("")}${r.coin ? `<span><img src="assets/resources/gold.webp" alt="سکه">${formatCompact(r.coin)} سکه</span>` : ""}</div><div class="battle-loot">${battleItemMarkup(Array.isArray(r.items)?r.items:[])}</div><h3>گزارش نیروها</h3><div class="battle-table-wrap"><table class="battle-table"><thead><tr><th>نیرو</th><th>اعزام</th><th>مجروح</th><th>بازمانده</th></tr></thead><tbody>${Object.entries(r.units || {}).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<tr><th>${TROOPS[id].name}</th><td>${formatCompact(n)}</td><td>${r.casualties?.[id]===undefined?"—":formatCompact(r.casualties[id])}</td><td>${r.casualties ? formatCompact(Math.max(0, n - (r.casualties[id] || 0))) : "—"}</td></tr>`).join("")}</tbody></table></div><p class="panel-copy">در منطق فعلی نبرد، تلفات به بیمارستان منتقل می‌شوند؛ آمار کشتهٔ جداگانه ثبت نمی‌شود.</p><button id="backReports">بازگشت به گزارش‌ها</button>`);
     document.getElementById("backReports")?.addEventListener("click", () => openMessages());
   }
   document.addEventListener("click", event => {
@@ -6919,7 +6941,7 @@
     let body = "", title = "";
     if (overlay === "stats") {
       title = "آمار " + unit.name;
-      body = `<div class="training-stats">${[["قدرت", stats.power, 150], ["حمله", stats.attack, 80], ["دفاع", stats.defense, 80], ["سلامتی", stats.health, 300], ["سرعت", stats.speed, 260], ["ظرفیت حمل", stats.capacity, 15]].map(([label, value, max]) => `<article><span>${label}</span><strong>${formatCompact(value)}</strong><i><b style="width:${Math.min(100, value / max * 100)}%"></b></i></article>`).join("")}</div><p class="training-dialog-note">زمان پایه آموزش: ${unit.seconds} ثانیه · چهار منبع: ${Object.values(troopResourceCosts(unit,1)).map(formatCompact).join(" / ")}</p>`;
+      body = `<div class="training-stats">${[["قدرت", stats.power, 150], ["حمله", stats.attack, 80], ["دفاع", stats.defense, 80], ["سلامتی", stats.health, 300], ["سرعت", stats.speed, 260], ["ظرفیت حمل", stats.capacity, 15]].map(([label, value, max]) => `<article><span>${label}</span><strong>${formatCompact(value)}</strong><i><b style="width:${Math.min(100, value / max * 100)}%"></b></i></article>`).join("")}</div><p class="training-dialog-note">زمان پایه آموزش: ${unit.seconds} ثانیه · چهار منبع: ${Object.entries(troopResourceCosts(unit,1)).map(([id,n])=>RESOURCE_META[id].label+" "+formatCompact(n)).join(" · ")}</p>`;
     } else if (overlay === "counters") {
       title = "تقابل رسته‌ها";
       body = `<div class="counter-center"><span>${trainingRoleIcon(role.id)}</span><strong>${role.name}</strong></div><div class="counter-grid">${UNIT_ROLES.filter(r => r.id !== role.id).map(r => {const value = troopCounterMultiplier(role.id, r.id); return `<article class="${value > 1 ? "counter-strong" : value < 1 ? "counter-weak" : "counter-neutral"}"><span>${trainingRoleIcon(r.id)}</span><strong>${r.name}</strong><small>${value > 1 ? "قوی در مقابل · ۲۵٪ برتری" : value < 1 ? "ضعیف در مقابل · ۲۰٪ کاهش" : "تقابل برابر"}</small></article>`;}).join("")}</div><p class="training-dialog-note">کمان بر سوارکار، سوارکار بر نیزه، نیزه بر ویژه و ویژه بر کمان برتری دارد.<br>این تقابل‌ها برای هر دو دسته یکسان‌اند.</p>`;
@@ -6936,7 +6958,7 @@
     trainingCount = Math.max(1, Math.min(trainingCount, Math.max(1, limit)));
     const remain = Math.max(0, (task?.endsAt || 0) - Date.now());
     const groupName = trainingGroup === "attack" ? "هجومی" : "دفاعی";
-    openPage("training", `<section class="training-screen"><img class="training-art" src="${unit.image}" alt="${unit.name}"><div class="training-vignette"></div><div class="training-title"><small>${BUILD_NAMES.barracks} · سطح ${buildingById("barracks").level}</small><h2>${unit.name}</h2><span>${groupName} · ${formatCompact(APP.army.units?.[unit.id] || 0)} نیروی آماده</span></div><aside class="training-info-buttons"><button data-training-panel="counters" aria-label="دیدن تقابل رسته‌ها">⇄</button><button data-training-panel="stats" aria-label="دیدن آمار نیرو">i</button></aside><div class="training-controls"><nav class="training-groups" aria-label="دسته نیرو"><button data-training-group="attack" class="${trainingGroup === "attack" ? "is-selected" : ""}">هجومی</button><button data-training-group="defense" class="${trainingGroup === "defense" ? "is-selected" : ""}">دفاعی</button></nav><nav class="training-roles" aria-label="رسته نیرو">${UNIT_ROLES.map(r => `<button data-training-role="${r.id}" class="${trainingRole === r.id ? "is-selected" : ""}"><b>${trainingRoleIcon(r.id)}</b><span>${r.name}</span></button>`).join("")}</nav><div class="training-unit-cards">${TROOP_LINES.filter(t => t.group === trainingGroup).map(t => `<button data-training-unit="${t.id}" class="${unit.id === t.id ? "is-selected" : ""}"><img src="${t.image}" alt=""><span>${t.name}</span><small>${formatCompact(APP.army.units?.[t.id] || 0)}${troopUnlocked(t.id) ? "" : " · قفل پژوهش"}</small></button>`).join("")}</div><nav class="training-slots" aria-label="صف‌های آموزش">${TRAINING_KEYS.map((k, i) => `<button data-training-slot="${i}" class="${trainingSlot === i ? "is-selected" : ""}"><strong>صف ${i + 1}</strong><small>${APP.army[k] ? formatCompact(APP.army[k].count) + " در حال آموزش" : "آماده · " + formatCompact(trainingCapacity()) + " نفر"}</small></button>`).join("")}</nav><section class="training-task">${task ? `<div class="training-task-heading"><img src="${TROOPS[task.type].image}" alt=""><div><strong>${TROOPS[task.type].name}</strong><span>${formatCompact(task.count)} نفر در حال آموزش</span></div><button class="training-cancel" data-training-cancel aria-label="لغو صف ${trainingSlot + 1}">×</button></div><div class="training-progress"><progress data-army-progress="${key}" max="${task.duration}" value="${Math.max(0, task.duration - remain)}"></progress><span data-army-timer="${key}">${formatDuration(remain)}</span></div><div class="training-queue-actions"><button data-training-panel="speed">تسریع</button><button data-training-instant data-army-gold="${key}">اتمام · ${formatCompact(instantGold(remain))} سکه</button></div>` : `<input id="armyType" type="hidden" value="${unit.id}"><div class="training-slider-label"><label for="armyCount">تعداد آموزش</label><output id="trainingCountOutput" for="armyCount">${formatCompact(trainingCount)} / ${formatCompact(trainingCapacity())}</output></div><input id="armyCount" type="range" min="1" max="${Math.max(1, limit)}" value="${trainingCount}" step="1" ${!limit ? "disabled" : ""} aria-label="تعداد نیرو برای آموزش"><div class="training-costs">${Object.entries(troopResourceCosts(unit,trainingCount)).map(([id,n])=>`<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}"><b data-training-cost="${id}">${formatCompact(n)}</b></span>`).join("")}<span id="trainingDuration">${formatDuration(trainingDuration(trainingCount))}</span></div><button class="training-start" data-start-army="${key}" ${!limit || !troopUnlocked(unit.id) ? "disabled" : ""}>${!troopUnlocked(unit.id) ? "باز کردن رسته در مرکز تحقیقات" : !limit ? "منابع کافی نیست" : "آغاز آموزش"}</button>`}</section><p class="training-capacity-note">۳ صف مستقل · ظرفیت هر صف ${formatCompact(trainingCapacity())} نفر · هر سطح ارتقا +۱۰۰ نفر</p></div>${trainingDialogMarkup(unit, key)}</section>`);
+    openPage("training", `<section class="training-screen"><img class="training-art" src="${unit.image}" alt="${unit.name}"><div class="training-vignette"></div><div class="training-title"><small>${BUILD_NAMES.barracks} · سطح ${buildingById("barracks").level}</small><h2>${unit.name}</h2><span>${groupName} · ${formatCompact(APP.army.units?.[unit.id] || 0)} نیروی آماده</span></div><aside class="training-info-buttons"><button data-training-panel="counters" aria-label="دیدن تقابل رسته‌ها">⇄</button><button data-training-panel="stats" aria-label="دیدن آمار نیرو">i</button></aside><div class="training-controls"><nav class="training-groups" aria-label="دسته نیرو"><button data-training-group="attack" class="${trainingGroup === "attack" ? "is-selected" : ""}">هجومی</button><button data-training-group="defense" class="${trainingGroup === "defense" ? "is-selected" : ""}">دفاعی</button></nav><nav class="training-roles" aria-label="رسته نیرو">${UNIT_ROLES.map(r => `<button data-training-role="${r.id}" class="${trainingRole === r.id ? "is-selected" : ""}"><b>${trainingRoleIcon(r.id)}</b><span>${r.name}</span></button>`).join("")}</nav><div class="training-unit-cards">${TROOP_LINES.filter(t => t.group === trainingGroup).map(t => `<button data-training-unit="${t.id}" class="${unit.id === t.id ? "is-selected" : ""}"><img src="${t.image}" alt=""><span>${t.name}</span><small>${formatCompact(APP.army.units?.[t.id] || 0)}${troopUnlocked(t.id) ? "" : " · قفل پژوهش"}</small></button>`).join("")}</div><nav class="training-slots" aria-label="صف‌های آموزش">${TRAINING_KEYS.map((k, i) => `<button data-training-slot="${i}" class="${trainingSlot === i ? "is-selected" : ""}"><strong>صف ${i + 1}</strong><small>${APP.army[k] ? formatCompact(APP.army[k].count) + " در حال آموزش" : "آماده · " + formatCompact(trainingCapacity()) + " نفر"}</small></button>`).join("")}</nav><section class="training-task">${task ? `<div class="training-task-heading"><img src="${TROOPS[task.type].image}" alt=""><div><strong>${TROOPS[task.type].name}</strong><span>${formatCompact(task.count)} نفر در حال آموزش</span></div><button class="training-cancel" data-training-cancel aria-label="لغو صف ${trainingSlot + 1}">×</button></div><div class="training-progress"><progress data-army-progress="${key}" max="${task.duration}" value="${Math.max(0, task.duration - remain)}"></progress><span data-army-timer="${key}">${formatDuration(remain)}</span></div><div class="training-queue-actions"><button data-training-panel="speed">تسریع</button><button data-training-instant data-army-gold="${key}">اتمام · ${formatCompact(instantGold(remain))} سکه</button></div>` : `<input id="armyType" type="hidden" value="${unit.id}"><div class="training-slider-label"><label for="armyCount">تعداد آموزش</label><output id="trainingCountOutput" for="armyCount">${formatCompact(trainingCount)} از ${formatCompact(trainingCapacity())}</output></div><input id="armyCount" type="range" min="1" max="${Math.max(1, limit)}" value="${trainingCount}" step="1" ${!limit ? "disabled" : ""} aria-label="تعداد نیرو برای آموزش"><div class="training-costs">${Object.entries(troopResourceCosts(unit,trainingCount)).map(([id,n])=>`<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}"><b data-training-cost="${id}">${formatCompact(n)}</b></span>`).join("")}<span id="trainingDuration">${formatDuration(trainingDuration(trainingCount))}</span></div><button class="training-start" data-start-army="${key}" ${!limit || !troopUnlocked(unit.id) ? "disabled" : ""}>${!troopUnlocked(unit.id) ? "باز کردن رسته در مرکز تحقیقات" : !limit ? "منابع کافی نیست" : "آغاز آموزش"}</button>`}</section><p class="training-capacity-note">۳ صف مستقل · ظرفیت هر صف ${formatCompact(trainingCapacity())} نفر · هر سطح ارتقا +۱۰۰ نفر</p></div>${trainingDialogMarkup(unit, key)}</section>`);
     bindTrainingPage();
   }
   async function cancelArmyQueue(kind) {
@@ -6959,7 +6981,7 @@
       if (event.target.id !== "armyCount") return;
       trainingCount = boundedInteger(Number(event.target.value), 1, 1, Math.max(1, trainingLimit()));
       const unit = trainingUnit();
-      document.getElementById("trainingCountOutput").textContent = `${formatCompact(trainingCount)} / ${formatCompact(trainingCapacity())}`;
+      document.getElementById("trainingCountOutput").textContent = `${formatCompact(trainingCount)} از ${formatCompact(trainingCapacity())}`;
       for (const [id,n] of Object.entries(troopResourceCosts(unit,trainingCount))) document.querySelector(`[data-training-cost="${id}"]`).textContent = formatCompact(n);
       document.getElementById("trainingDuration").textContent = formatDuration(trainingDuration(trainingCount));
     };
@@ -7022,12 +7044,12 @@
     if (APP.tutorial.active && APP.tutorial.phase === "army-healing" && !task && !healingTotal()) healingCounts[healingUnitId] = Math.min(10, healingCountLimit());
     const unit = TROOPS[healingUnitId], count = healingCounts[healingUnitId] || 0, total = healingTotal();
     const remain = Math.max(0, (task?.endsAt || 0) - Date.now()), limit = healingCountLimit();
-    openPage("healing", `<section class="training-screen healing-screen"><img class="training-art" src="${unit.image}" alt="${unit.name}"><div class="training-vignette"></div><div class="training-title"><small>${BUILD_NAMES.hospital} · سطح ${buildingById("hospital").level}</small><h2>بازگشت به میدان</h2><span>${formatCompact(APP.army.wounded)} مجروح · ${formatCompact(task?.count || 0)} در حال درمان</span></div><aside class="training-info-buttons"><button data-healing-panel="counters" aria-label="دیدن تقابل رسته‌ها">⇄</button><button data-healing-panel="stats" aria-label="دیدن آمار نیرو">i</button></aside><div class="training-controls healing-controls"><div class="healing-section-heading"><h3>${task ? "صف درمان" : "انتخاب مجروحان"}</h3>${!task ? '<button data-heal-all>انتخاب همه</button>' : ""}</div><div class="training-unit-cards healing-unit-cards">${Object.values(TROOPS).filter(t => stock[t.id] > 0 || task?.units?.[t.id] > 0).map(t => `<button data-healing-unit="${t.id}" class="${unit.id === t.id ? "is-selected" : ""}"><img src="${t.image}" alt=""><span>${t.name}</span><small>${formatCompact(task ? task.units?.[t.id] || 0 : stock[t.id])} ${task ? "در صف" : "مجروح"}</small>${!task && healingCounts[t.id] > 0 ? `<b class="healing-picked">${formatCompact(healingCounts[t.id])}</b>` : ""}</button>`).join("") || '<div class="healing-empty"><strong>همه نیروها آماده‌اند</strong><span>مجروحی برای درمان ندارید.</span></div>'}</div><section class="training-task">${task ? `<div class="training-task-heading"><img src="${unit.image}" alt=""><div><strong>درمان ${formatCompact(task.count)} سرباز</strong><span>پس از پایان، نیروها به موجودی بازمی‌گردند.</span></div><button class="training-cancel" data-healing-cancel aria-label="لغو درمان">×</button></div><div class="training-progress"><progress data-army-progress="healing" max="${task.duration}" value="${Math.max(0, task.duration - remain)}"></progress><span data-army-timer="healing">${formatDuration(remain)}</span></div><div class="training-queue-actions"><button data-healing-panel="speed">تسریع درمان</button><button data-healing-instant data-army-gold="healing">اتمام · ${formatCompact(instantGold(remain))} سکه</button></div>` : `<div class="training-slider-label"><label for="healingCountRange">${unit.name}</label><output id="healingCountOutput" for="healingCountRange">${formatCompact(count)} / ${formatCompact(stock[unit.id] || 0)}</output></div><input id="healingCountRange" type="range" min="0" max="${limit}" value="${count}" step="1" ${!limit ? "disabled" : ""} aria-label="تعداد سرباز مجروح برای درمان"><div class="healing-hidden-selection"><input id="armyCount" type="hidden" value="${total}">${Object.keys(TROOPS).map(id => `<input data-heal-count="${id}" type="hidden" min="0" max="${stock[id] || 0}" value="${healingCounts[id] || 0}">`).join("")}</div><div class="training-costs"><span><img src="${RESOURCE_META.food.image}" alt="غذا"><b id="healingFoodCost">${formatCompact(total * 12)}</b></span><span id="healingDuration">${formatDuration(healingDuration(total))}</span></div><p id="healingTotals">${formatCompact(total)} سرباز انتخاب شده</p><button class="training-start" data-start-army="healing" ${!total || !buildingById("hospital").level ? "disabled" : ""}>آغاز درمان</button>`}</section><p class="training-capacity-note">انتخاب هر نیرو جداگانه حفظ می‌شود · هزینه هر مجروح ۱۲ غذا</p></div>${trainingDialogMarkup(unit, "healing", healingOverlay, "درمان", "heal")}</section>`);
+    openPage("healing", `<section class="training-screen healing-screen"><img class="training-art" src="${unit.image}" alt="${unit.name}"><div class="training-vignette"></div><div class="training-title"><small>${BUILD_NAMES.hospital} · سطح ${buildingById("hospital").level}</small><h2>بازگشت به میدان</h2><span>${formatCompact(APP.army.wounded)} مجروح · ${formatCompact(task?.count || 0)} در حال درمان</span></div><aside class="training-info-buttons"><button data-healing-panel="counters" aria-label="دیدن تقابل رسته‌ها">⇄</button><button data-healing-panel="stats" aria-label="دیدن آمار نیرو">i</button></aside><div class="training-controls healing-controls"><div class="healing-section-heading"><h3>${task ? "صف درمان" : "انتخاب مجروحان"}</h3>${!task ? '<button data-heal-all>انتخاب همه</button>' : ""}</div><div class="training-unit-cards healing-unit-cards">${Object.values(TROOPS).filter(t => stock[t.id] > 0 || task?.units?.[t.id] > 0).map(t => `<button data-healing-unit="${t.id}" class="${unit.id === t.id ? "is-selected" : ""}"><img src="${t.image}" alt=""><span>${t.name}</span><small>${formatCompact(task ? task.units?.[t.id] || 0 : stock[t.id])} ${task ? "در صف" : "مجروح"}</small>${!task && healingCounts[t.id] > 0 ? `<b class="healing-picked">${formatCompact(healingCounts[t.id])}</b>` : ""}</button>`).join("") || '<div class="healing-empty"><strong>همه نیروها آماده‌اند</strong><span>مجروحی برای درمان ندارید.</span></div>'}</div><section class="training-task">${task ? `<div class="training-task-heading"><img src="${unit.image}" alt=""><div><strong>درمان ${formatCompact(task.count)} سرباز</strong><span>پس از پایان، نیروها به موجودی بازمی‌گردند.</span></div><button class="training-cancel" data-healing-cancel aria-label="لغو درمان">×</button></div><div class="training-progress"><progress data-army-progress="healing" max="${task.duration}" value="${Math.max(0, task.duration - remain)}"></progress><span data-army-timer="healing">${formatDuration(remain)}</span></div><div class="training-queue-actions"><button data-healing-panel="speed">تسریع درمان</button><button data-healing-instant data-army-gold="healing">اتمام · ${formatCompact(instantGold(remain))} سکه</button></div>` : `<div class="training-slider-label"><label for="healingCountRange">${unit.name}</label><output id="healingCountOutput" for="healingCountRange">${formatCompact(count)} از ${formatCompact(stock[unit.id] || 0)}</output></div><input id="healingCountRange" type="range" min="0" max="${limit}" value="${count}" step="1" ${!limit ? "disabled" : ""} aria-label="تعداد سرباز مجروح برای درمان"><div class="healing-hidden-selection"><input id="armyCount" type="hidden" value="${total}">${Object.keys(TROOPS).map(id => `<input data-heal-count="${id}" type="hidden" min="0" max="${stock[id] || 0}" value="${healingCounts[id] || 0}">`).join("")}</div><div class="training-costs"><span><img src="${RESOURCE_META.food.image}" alt="غذا"><b id="healingFoodCost">${formatCompact(total * 12)}</b></span><span id="healingDuration">${formatDuration(healingDuration(total))}</span></div><p id="healingTotals">${formatCompact(total)} سرباز انتخاب شده</p><button class="training-start" data-start-army="healing" ${!total || !buildingById("hospital").level ? "disabled" : ""}>آغاز درمان</button>`}</section><p class="training-capacity-note">انتخاب هر نیرو جداگانه حفظ می‌شود · هزینه هر مجروح ۱۲ غذا</p></div>${trainingDialogMarkup(unit, "healing", healingOverlay, "درمان", "heal")}</section>`);
     bindHealingPage();
   }
   function updateHealingSlider() {
     const total = healingTotal(), stock = woundedStock();
-    document.getElementById("healingCountOutput").textContent = `${formatCompact(healingCounts[healingUnitId] || 0)} / ${formatCompact(stock[healingUnitId] || 0)}`;
+    document.getElementById("healingCountOutput").textContent = `${formatCompact(healingCounts[healingUnitId] || 0)} از ${formatCompact(stock[healingUnitId] || 0)}`;
     document.getElementById("healingFoodCost").textContent = formatCompact(total * 12);
     document.getElementById("healingDuration").textContent = formatDuration(healingDuration(total));
     document.getElementById("healingTotals").textContent = `${formatCompact(total)} سرباز انتخاب شده`;
@@ -7143,6 +7165,7 @@
         if (frame.type === "vip") openVip();
         if (frame.type === "shield") openShield();
       }
+      if (["training","healing"].includes(frame.type)) document.getElementById("genericPanelContent").scrollTop=frame.scrollTop || 0;
     } finally { gameNavigation.restoring=false; }
   }
   function navigateGameBack() {
@@ -7215,7 +7238,7 @@
     const adapter=window.RomaniaAccountAuth;
     if(typeof adapter?.authenticate!=='function'){
       const n=document.getElementById('authStatus')||document.getElementById('entryNotice');
-      if(n){n.hidden=false;n.textContent='سرویس اتصال حساب هنوز به نسخهٔ آزمایشی متصل نشده است. برای تست از AdminMode در صفحهٔ ورود استفاده کنید. حساب شما متصل نشده است.';}
+      if(n){n.hidden=false;n.textContent='سرویس اتصال حساب هنوز به نسخهٔ آزمایشی متصل نشده است. برای تست از حالت مدیر در صفحهٔ ورود استفاده کنید. حساب شما متصل نشده است.';}
       return;
     }
     authBusy=true;
@@ -7238,7 +7261,7 @@
   function renderAccountEntry(){
     const entry=document.getElementById('entryScreen');entry.hidden=false;
     const age=Math.max(0,Date.now()-TEST_SERVER.startedAt),newServer=age<3*86400000;
-    entry.querySelector('.entry-card').innerHTML=`<div class="entry-brand"><small>ROMANIA</small><h1 id="entryTitle">فرمانروایی از اینجا آغاز می‌شود</h1><p>روش ورود و سرور خود را انتخاب کن</p></div>${authMethodsHTML()}<div class="entry-local-actions"><button id="guestEntry" data-entry-guest>ورود به عنوان میهمان</button><button id="adminEntry" data-entry-admin dir="ltr">AdminMode</button></div><section class="server-picker"><h2>سرورهای بازی</h2><button class="server-card is-selected" data-server="test-1" aria-pressed="true"><span class="server-emblem">I</span><span><strong>${TEST_SERVER.name}</strong><small>از شروع: ${Math.floor(age/86400000)} روز و ${Math.floor(age/3600000)%24} ساعت</small></span>${newServer?'<b class="new-server">جدید</b>':'<b>فعال</b>'}</button></section><details class="entry-terms"><summary>شرایط و مقررات</summary><p>این سرور آزمایشی است. پیشرفت محلی روی همین دستگاه ذخیره می‌شود. احترام به بازیکنان و پرهیز از تقلب و سوءاستفاده از باگ الزامی است. قابلیت‌های آنلاین به سرویس بازی نیاز دارند.</p></details><label class="spawn-consent"><input id="entryAccept" type="checkbox"> شرایط و مقررات را می‌پذیرم</label><button id="entryProceed" class="entry-primary" disabled>ادامه</button>${hasSavedProgress()?'<button id="continueEntry">ادامهٔ فرمانروایی ذخیره‌شده</button>':''}<p id="entryNotice" class="entry-notice" role="status" hidden></p>`;
+    entry.querySelector('.entry-card').innerHTML=`<div class="entry-brand"><small>رومانیا</small><h1 id="entryTitle">فرمانروایی از اینجا آغاز می‌شود</h1><p>روش ورود و سرور خود را انتخاب کن</p></div>${authMethodsHTML()}<div class="entry-local-actions"><button id="guestEntry" data-entry-guest>ورود به عنوان میهمان</button><button id="adminEntry" data-entry-admin>حالت مدیر</button></div><section class="server-picker"><h2>سرورهای بازی</h2><button class="server-card is-selected" data-server="test-1" aria-pressed="true"><span class="server-emblem">۱</span><span><strong>${TEST_SERVER.name}</strong><small>از شروع: ${Math.floor(age/86400000)} روز و ${Math.floor(age/3600000)%24} ساعت</small></span>${newServer?'<b class="new-server">جدید</b>':'<b>فعال</b>'}</button></section><details class="entry-terms"><summary>شرایط و مقررات</summary><p>این سرور آزمایشی است. پیشرفت محلی روی همین دستگاه ذخیره می‌شود. احترام به بازیکنان و پرهیز از تقلب و سوءاستفاده از باگ الزامی است. قابلیت‌های آنلاین به سرویس بازی نیاز دارند.</p></details><label class="spawn-consent"><input id="entryAccept" type="checkbox"> شرایط و مقررات را می‌پذیرم</label><button id="entryProceed" class="entry-primary" disabled>ادامه</button>${hasSavedProgress()?'<button id="continueEntry">ادامهٔ فرمانروایی ذخیره‌شده</button>':''}<p id="entryNotice" class="entry-notice" role="status" hidden></p>`;
     entryMethod=null;
     const card=entry.querySelector('.entry-card'),accept=document.getElementById('entryAccept'),proceed=document.getElementById('entryProceed');
     const update=()=>{proceed.disabled=!accept.checked||!entryMethod;};accept.onchange=update;
@@ -7339,6 +7362,7 @@
   }
   window.addEventListener('resize',fitMissionLabel);
   function updateTrainingActivity(){
+    updateHealingActivity();
     if(!state.spriteLayer)return;
     let node=document.getElementById('barracksActivity');
     if(!node){node=document.createElement('button');node.id='barracksActivity';node.className='barracks-activity';node.setAttribute('aria-label','وضعیت سه صف آموزش');node.onclick=e=>{e.stopPropagation();openFacility('barracks');};state.spriteLayer.appendChild(node);}
@@ -7347,6 +7371,19 @@
     if(node.dataset.stamp!==stamp){node.dataset.stamp=stamp;node.innerHTML=tasks.map((t,i)=>`<span class="${t?'busy':'idle'}" title="صف ${i+1} · ${t?formatDuration(t.endsAt-Date.now()):'آماده'}"><i style="width:${t?Math.max(0,Math.min(100,(Date.now()-t.startedAt)/t.duration*100)):0}%"></i><b>${i+1}</b></span>`).join('');}
     const b=buildingById('barracks');if(!b)return;const box=buildingRenderBox(b,b.q,b.r);
     node.style.left=`${box.x+box.width/2}px`;node.style.top=`${box.y+box.height*.85}px`;node.style.setProperty('--collector-scale',1/state.camera.zoom);
+  }
+  function updateHealingActivity(){
+    if(!state.spriteLayer)return;
+    let node=document.getElementById('hospitalHealingProgress');
+    if(!node){node=document.createElement('div');node.id='hospitalHealingProgress';node.className='building-progress hospital-healing-progress';node.setAttribute('role','progressbar');node.setAttribute('aria-label','پیشرفت درمان بیمارستان');node.innerHTML='<span class="building-progress-caption"></span><i><b></b></i>';state.spriteLayer.appendChild(node);}
+    const task=APP.army.healing,now=Date.now();node.hidden=!task||task.endsAt<=now;
+    if(node.hidden)return;
+    const percent=Math.max(0,Math.min(100,(now-task.startedAt)/Math.max(1,task.endsAt-task.startedAt)*100));
+    node.setAttribute('aria-valuenow',String(Math.round(percent)));node.setAttribute('aria-valuemin','0');node.setAttribute('aria-valuemax','100');
+    node.querySelector('.building-progress-caption').textContent=`درمان · ${formatDuration(task.endsAt-now)}`;node.querySelector('i b').style.width=`${percent}%`;
+    const z=state.camera.zoom,[x,y]=progressAnchor('hospital',110,20),offset=APP.worker.task?.id==='hospital'?25/z:0;
+    const bottom=state.camera.y+(stage.clientHeight/2-20)/z;
+    node.style.left=`${x}px`;node.style.top=`${Math.min(bottom,y+offset)}px`;node.style.setProperty('--progress-scale',1/z);
   }
   const basePositionSprites=positionWorldSprites;
   positionWorldSprites=function(){basePositionSprites();updateTrainingActivity();};
@@ -7377,10 +7414,10 @@
   }
   openProfile=function(player=null){
     const own=!player||player.own;
-    const p=own?{name:APP.playerName||'DreaM',power:APP.resources.power,kills:APP.kills,peakPower:APP.peakPower,peakKills:APP.peakKills,level:buildingById('castle').level,vip:1,stamina:APP.stamina,allianceName:APP.alliance?.name||'بدون اتحاد',accountCreatedAt:APP.accountCreatedAt,avatar:selectedAvatarSkin().avatar,portrait:selectedAvatarSkin().portrait}:player;
+    const p=own?{name:APP.playerName||'فرمانروا',power:APP.resources.power,kills:APP.kills,peakPower:APP.peakPower,peakKills:APP.peakKills,level:buildingById('castle').level,vip:1,stamina:APP.stamina,allianceName:APP.alliance?.name||'بدون اتحاد',accountCreatedAt:APP.accountCreatedAt,avatar:selectedAvatarSkin().avatar,portrait:selectedAvatarSkin().portrait}:player;
     const avatar=safeAssetPath(p.avatar,'assets/skins/avatar-01.webp'),portrait=safeAssetPath(p.portrait,avatar),age=Number.isFinite(p.accountCreatedAt)?Math.floor((Date.now()-p.accountCreatedAt)/86400000):null;
-    const records=[['قدرت',p.power],['کشتار',p.kills],['بیشترین قدرت',p.peakPower],['بیشترین کشتار',p.peakKills],['سطح دژ',p.level],['سن حساب',age===null?'ثبت نشده':`${age} روز`],['سرور',TEST_SERVER.name],['VIP',p.vip]];
-    openPage('profile',`<section class="profile-scroll"><div class="profile-full-hero"><img class="profile-backdrop" src="assets/ui/profile-citadel.webp" alt=""><img class="profile-full-avatar" src="${avatar}" alt="${escapeHTML(p.name||'بازیکن')}"><div class="profile-glass-name"><small>فرمانروای ${BUILD_NAMES.castle}</small><h2>${escapeHTML(p.name||'بازیکن')}</h2><span>${escapeHTML(p.allianceName||'بدون اتحاد')}${own&&APP.alliance?.logo?`<img class="alliance-crest" src="${escapeHTML(APP.alliance.logo)}" alt="نشان اتحاد">`:''}</span>${own?`<div class="profile-stamina"><i><b style="width:${APP.stamina}%"></b></i><span>${APP.stamina}/100</span></div>`:''}</div><span class="profile-scroll-hint">جزئیات فرمانروایی ↓</span></div><section class="profile-record-grid">${records.map(([label,n])=>`<article><small>${label}</small><strong>${typeof n==='number'?formatCompact(n):escapeHTML(n??'ثبت نشده')}</strong></article>`).join('')}</section><section class="profile-medals"><h3>مدال‌های ماندگار</h3>${own&&APP.medals.length?APP.medals.map(m=>`<span>${escapeHTML(m.name||m.id||'مدال')}</span>`).join(''):'<p>شما مدالی ندارید</p>'}</section>${own?`<nav class="profile-actions">${['settings','troops','leaderboard','skins'].map((id,i)=>`<button data-profile-tab="${id}">${profileActionIcon(id)}<span>${['تنظیمات','نیروها','لیدربورد','اسکین‌ها'][i]}</span></button>`).join('')}</nav>`:''}</section>`);
+    const records=[['قدرت',p.power],['کشتار',p.kills],['بیشترین قدرت',p.peakPower],['بیشترین کشتار',p.peakKills],['سطح دژ',p.level],['سن حساب',age===null?'ثبت نشده':`${age} روز`],['سرور',TEST_SERVER.name],['ویژه',p.vip]];
+    openPage('profile',`<section class="profile-scroll"><div class="profile-full-hero"><img class="profile-backdrop" src="assets/ui/profile-citadel.webp" alt=""><img class="profile-full-avatar" src="${avatar}" alt="${escapeHTML(p.name||'بازیکن')}"><div class="profile-glass-name"><small>فرمانروای ${BUILD_NAMES.castle}</small><h2>${escapeHTML(p.name||'بازیکن')}</h2><span>${escapeHTML(p.allianceName||'بدون اتحاد')}${own&&APP.alliance?.logo?`<img class="alliance-crest" src="${escapeHTML(APP.alliance.logo)}" alt="نشان اتحاد">`:''}</span>${own?`<div class="profile-stamina"><i><b style="width:${APP.stamina}%"></b></i><span>${APP.stamina}/100</span></div>`:''}</div><span class="profile-scroll-hint">جزئیات فرمانروایی ↓</span></div><section class="profile-record-grid">${records.map(([label,n])=>`<article><small>${label}</small><strong>${typeof n==='number'?formatCompact(n):escapeHTML(n??'ثبت نشده')}</strong></article>`).join('')}</section><section class="profile-medals"><h3>مدال‌های ماندگار</h3>${own&&APP.medals.length?APP.medals.map(m=>`<span>${escapeHTML(m.name||m.id||'مدال')}</span>`).join(''):'<p>شما مدالی ندارید</p>'}</section>${own?`<nav class="profile-actions">${['settings','troops','leaderboard','skins'].map((id,i)=>`<button data-profile-tab="${id}">${profileActionIcon(id)}<span>${['تنظیمات','نیروها','رتبه‌بندی','ظاهرها'][i]}</span></button>`).join('')}</nav>`:''}</section>`);
     gameNavigation.profileView={player:player?{...player}:null,details:false};
     document.getElementById('genericPanelContent').onclick=e=>{const b=e.target.closest('[data-profile-tab]');if(b)({settings:openSettings,troops:openTroopsOverview,leaderboard:openLeaderboard,skins:openSkins})[b.dataset.profileTab]?.();};
   };
@@ -7388,7 +7425,7 @@
     const stock=readyUnitStock();
     openPage('troops',`<section class="troops-full"><header><small>ارتش فرمانروایی</small><h2>${formatCompact(APP.army.troops)} نیروی آماده</h2><span>${formatCompact(APP.army.wounded)} مجروح · ${APP.marches.length}/${WORLD.marchSlots} لشکر فعال</span></header>${Object.entries(stock).filter(([,n])=>n>0).map(([id,n])=>`<button class="troop-full-card" data-unit="${id}"><img src="${TROOPS[id].image}" alt=""><span><small>${TROOPS[id].group==='attack'?'هجومی':'دفاعی'}</small><strong>${TROOPS[id].name}</strong><b>${formatCompact(n)} نیرو</b></span></button>`).join('')||'<p class="empty-page">هنوز نیروی آماده‌ای ندارید.</p>'}<div class="military-actions"><button data-facility="barracks">آموزش نیرو</button><button data-facility="hospital">درمان</button></div></section>`);bindMilitaryPage();
   };
-  function rankedPlayers(metric){return [{id:'own',name:APP.playerName||'DreaM',power:APP.resources.power,kills:APP.kills,own:true,portrait:selectedAvatarSkin().portrait,avatar:selectedAvatarSkin().avatar},...APP.map.castles.filter(c=>!c.own)].filter(p=>Number.isFinite(p[metric])).sort((a,b)=>b[metric]-a[metric]||a.id.localeCompare(b.id));}
+  function rankedPlayers(metric){return [{id:'own',name:APP.playerName||'فرمانروا',power:APP.resources.power,kills:APP.kills,own:true,portrait:selectedAvatarSkin().portrait,avatar:selectedAvatarSkin().avatar},...APP.map.castles.filter(c=>!c.own)].filter(p=>Number.isFinite(p[metric])).sort((a,b)=>b[metric]-a[metric]||a.id.localeCompare(b.id));}
   function playerPortrait(p){return safeAssetPath(p?.portrait,safeAssetPath(p?.avatar,'assets/skins/portrait-01.webp'));}
   openLeaderboard=function(metric=null){
     if(metric&&!['power','kills','alliance'].includes(metric))metric=null;

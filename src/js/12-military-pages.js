@@ -129,8 +129,8 @@
       if (event.target.matches?.("[data-heal-count]")) updateHealingTotals();
     };
   }
-  function openTraining() { renderTrainingPage(); }
-  function openHealing() { renderHealingPage(); }
+  function openTraining() { trainingOverlay=null; renderTrainingPage(); }
+  function openHealing() { healingOverlay=null; renderHealingPage(); }
   function healingSelection() {
     return Object.fromEntries(Array.from(document.querySelectorAll("[data-heal-count]")).map(input => [input.dataset.healCount, Math.max(0, Math.min(Number(input.max) || 0, Math.floor(Number(input.value) || 0)))]));
   }
@@ -256,7 +256,7 @@
   function openLeaderboard(metric = null) {
     const players = [{
       id: "own",
-      name: "DreaM",
+      name: APP.playerName || "فرمانروا",
       power: APP.resources.power,
       kills: APP.kills,
       own: true
@@ -311,7 +311,7 @@
     if (!r) return;
     const survivor = Math.max(0, r.sent - (r.wounded || 0)),
       defender = r.defender || {};
-    openPage("battle", `<header class="battle-heading ${r.result === "پیروزی" ? "is-victory" : "is-defeat"}"><h2>${escapeHTML(r.title)}</h2><time>${escapeHTML(r.time)}</time><span dir="ltr">X:${escapeHTML(r.target?.q ?? "—")} Y:${escapeHTML(r.target?.r ?? "—")}</span></header><div class="battle-versus"><article><img src="${selectedAvatarSkin().portrait}" alt=""><strong>DreaM</strong><span>قدرت ${formatCompact(r.combatPower || 0)}</span><small>اعزام ${formatCompact(r.sent || 0)}</small></article><b>VS</b><article><img src="${safeAssetPath(defender.image, "assets/enemies/ashen-host.webp")}" alt=""><strong>${escapeHTML(defender.name || "سرگردان")}</strong><span>قدرت ${formatCompact(defender.power || 0)}</span><small>سطح ${escapeHTML(defender.level || "—")}</small></article></div><div class="battle-stat-grid"><span>نیروهای اعزامی<strong>${formatCompact(r.sent || 0)}</strong></span><span>مجروح<strong>${formatCompact(r.wounded || 0)}</strong></span><span>بازمانده<strong>${formatCompact(survivor)}</strong></span></div><h3>غنیمت</h3><div class="battle-loot">${Object.entries(r.rewards || {}).filter(([id]) => RESOURCE_META[id]).map(([id, n]) => `<span><img src="${RESOURCE_META[id].image}" alt="">${formatCompact(n)}</span>`).join("")}${r.coin ? `<span><img src="assets/resources/gold.webp" alt="سکه">${formatCompact(r.coin)} سکه</span>` : ""}</div><div class="battle-loot">${battleItemMarkup(Array.isArray(r.items)?r.items:[])}</div><h3>گزارش نیروها</h3><div class="battle-table-wrap"><table class="battle-table"><thead><tr><th>نیرو</th><th>اعزام</th><th>مجروح</th><th>بازمانده</th></tr></thead><tbody>${Object.entries(r.units || {}).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<tr><th>${TROOPS[id].name}</th><td>${formatCompact(n)}</td><td>${r.casualties?.[id]===undefined?"—":formatCompact(r.casualties[id])}</td><td>${r.casualties ? formatCompact(Math.max(0, n - (r.casualties[id] || 0))) : "—"}</td></tr>`).join("")}</tbody></table></div><p class="panel-copy">در منطق فعلی نبرد، تلفات به بیمارستان منتقل می‌شوند؛ آمار کشتهٔ جداگانه ثبت نمی‌شود.</p><button id="backReports">بازگشت به گزارش‌ها</button>`);
+    openPage("battle", `<header class="battle-heading ${r.result === "پیروزی" ? "is-victory" : "is-defeat"}"><h2>${escapeHTML(r.title)}</h2><time>${escapeHTML(r.time)}</time><span>ستون: ${escapeHTML(r.target?.q ?? "—")} ردیف: ${escapeHTML(r.target?.r ?? "—")}</span></header><div class="battle-versus"><article><img src="${selectedAvatarSkin().portrait}" alt=""><strong>${escapeHTML(APP.playerName||"فرمانروا")}</strong><span>قدرت ${formatCompact(r.combatPower || 0)}</span><small>اعزام ${formatCompact(r.sent || 0)}</small></article><b>در برابر</b><article><img src="${safeAssetPath(defender.image, "assets/enemies/ashen-host.webp")}" alt=""><strong>${escapeHTML(defender.name || "سرگردان")}</strong><span>قدرت ${formatCompact(defender.power || 0)}</span><small>سطح ${escapeHTML(defender.level || "—")}</small></article></div><div class="battle-stat-grid"><span>نیروهای اعزامی<strong>${formatCompact(r.sent || 0)}</strong></span><span>مجروح<strong>${formatCompact(r.wounded || 0)}</strong></span><span>بازمانده<strong>${formatCompact(survivor)}</strong></span></div><h3>غنیمت</h3><div class="battle-loot">${Object.entries(r.rewards || {}).filter(([id]) => RESOURCE_META[id]).map(([id, n]) => `<span><img src="${RESOURCE_META[id].image}" alt="">${formatCompact(n)}</span>`).join("")}${r.coin ? `<span><img src="assets/resources/gold.webp" alt="سکه">${formatCompact(r.coin)} سکه</span>` : ""}</div><div class="battle-loot">${battleItemMarkup(Array.isArray(r.items)?r.items:[])}</div><h3>گزارش نیروها</h3><div class="battle-table-wrap"><table class="battle-table"><thead><tr><th>نیرو</th><th>اعزام</th><th>مجروح</th><th>بازمانده</th></tr></thead><tbody>${Object.entries(r.units || {}).filter(([id, n]) => TROOPS[id] && n > 0).map(([id, n]) => `<tr><th>${TROOPS[id].name}</th><td>${formatCompact(n)}</td><td>${r.casualties?.[id]===undefined?"—":formatCompact(r.casualties[id])}</td><td>${r.casualties ? formatCompact(Math.max(0, n - (r.casualties[id] || 0))) : "—"}</td></tr>`).join("")}</tbody></table></div><p class="panel-copy">در منطق فعلی نبرد، تلفات به بیمارستان منتقل می‌شوند؛ آمار کشتهٔ جداگانه ثبت نمی‌شود.</p><button id="backReports">بازگشت به گزارش‌ها</button>`);
     document.getElementById("backReports")?.addEventListener("click", () => openMessages());
   }
   document.addEventListener("click", event => {

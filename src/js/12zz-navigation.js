@@ -65,6 +65,7 @@
         if (frame.type === "vip") openVip();
         if (frame.type === "shield") openShield();
       }
+      if (["training","healing"].includes(frame.type)) document.getElementById("genericPanelContent").scrollTop=frame.scrollTop || 0;
     } finally { gameNavigation.restoring=false; }
   }
   function navigateGameBack() {

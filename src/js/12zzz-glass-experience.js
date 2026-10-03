@@ -21,7 +21,7 @@
     const adapter=window.RomaniaAccountAuth;
     if(typeof adapter?.authenticate!=='function'){
       const n=document.getElementById('authStatus')||document.getElementById('entryNotice');
-      if(n){n.hidden=false;n.textContent='سرویس اتصال حساب هنوز به نسخهٔ آزمایشی متصل نشده است. برای تست از AdminMode در صفحهٔ ورود استفاده کنید. حساب شما متصل نشده است.';}
+      if(n){n.hidden=false;n.textContent='سرویس اتصال حساب هنوز به نسخهٔ آزمایشی متصل نشده است. برای تست از حالت مدیر در صفحهٔ ورود استفاده کنید. حساب شما متصل نشده است.';}
       return;
     }
     authBusy=true;
@@ -44,7 +44,7 @@
   function renderAccountEntry(){
     const entry=document.getElementById('entryScreen');entry.hidden=false;
     const age=Math.max(0,Date.now()-TEST_SERVER.startedAt),newServer=age<3*86400000;
-    entry.querySelector('.entry-card').innerHTML=`<div class="entry-brand"><small>ROMANIA</small><h1 id="entryTitle">فرمانروایی از اینجا آغاز می‌شود</h1><p>روش ورود و سرور خود را انتخاب کن</p></div>${authMethodsHTML()}<div class="entry-local-actions"><button id="guestEntry" data-entry-guest>ورود به عنوان میهمان</button><button id="adminEntry" data-entry-admin dir="ltr">AdminMode</button></div><section class="server-picker"><h2>سرورهای بازی</h2><button class="server-card is-selected" data-server="test-1" aria-pressed="true"><span class="server-emblem">I</span><span><strong>${TEST_SERVER.name}</strong><small>از شروع: ${Math.floor(age/86400000)} روز و ${Math.floor(age/3600000)%24} ساعت</small></span>${newServer?'<b class="new-server">جدید</b>':'<b>فعال</b>'}</button></section><details class="entry-terms"><summary>شرایط و مقررات</summary><p>این سرور آزمایشی است. پیشرفت محلی روی همین دستگاه ذخیره می‌شود. احترام به بازیکنان و پرهیز از تقلب و سوءاستفاده از باگ الزامی است. قابلیت‌های آنلاین به سرویس بازی نیاز دارند.</p></details><label class="spawn-consent"><input id="entryAccept" type="checkbox"> شرایط و مقررات را می‌پذیرم</label><button id="entryProceed" class="entry-primary" disabled>ادامه</button>${hasSavedProgress()?'<button id="continueEntry">ادامهٔ فرمانروایی ذخیره‌شده</button>':''}<p id="entryNotice" class="entry-notice" role="status" hidden></p>`;
+    entry.querySelector('.entry-card').innerHTML=`<div class="entry-brand"><small>رومانیا</small><h1 id="entryTitle">فرمانروایی از اینجا آغاز می‌شود</h1><p>روش ورود و سرور خود را انتخاب کن</p></div>${authMethodsHTML()}<div class="entry-local-actions"><button id="guestEntry" data-entry-guest>ورود به عنوان میهمان</button><button id="adminEntry" data-entry-admin>حالت مدیر</button></div><section class="server-picker"><h2>سرورهای بازی</h2><button class="server-card is-selected" data-server="test-1" aria-pressed="true"><span class="server-emblem">۱</span><span><strong>${TEST_SERVER.name}</strong><small>از شروع: ${Math.floor(age/86400000)} روز و ${Math.floor(age/3600000)%24} ساعت</small></span>${newServer?'<b class="new-server">جدید</b>':'<b>فعال</b>'}</button></section><details class="entry-terms"><summary>شرایط و مقررات</summary><p>این سرور آزمایشی است. پیشرفت محلی روی همین دستگاه ذخیره می‌شود. احترام به بازیکنان و پرهیز از تقلب و سوءاستفاده از باگ الزامی است. قابلیت‌های آنلاین به سرویس بازی نیاز دارند.</p></details><label class="spawn-consent"><input id="entryAccept" type="checkbox"> شرایط و مقررات را می‌پذیرم</label><button id="entryProceed" class="entry-primary" disabled>ادامه</button>${hasSavedProgress()?'<button id="continueEntry">ادامهٔ فرمانروایی ذخیره‌شده</button>':''}<p id="entryNotice" class="entry-notice" role="status" hidden></p>`;
     entryMethod=null;
     const card=entry.querySelector('.entry-card'),accept=document.getElementById('entryAccept'),proceed=document.getElementById('entryProceed');
     const update=()=>{proceed.disabled=!accept.checked||!entryMethod;};accept.onchange=update;
@@ -145,6 +145,7 @@
   }
   window.addEventListener('resize',fitMissionLabel);
   function updateTrainingActivity(){
+    updateHealingActivity();
     if(!state.spriteLayer)return;
     let node=document.getElementById('barracksActivity');
     if(!node){node=document.createElement('button');node.id='barracksActivity';node.className='barracks-activity';node.setAttribute('aria-label','وضعیت سه صف آموزش');node.onclick=e=>{e.stopPropagation();openFacility('barracks');};state.spriteLayer.appendChild(node);}
@@ -153,6 +154,19 @@
     if(node.dataset.stamp!==stamp){node.dataset.stamp=stamp;node.innerHTML=tasks.map((t,i)=>`<span class="${t?'busy':'idle'}" title="صف ${i+1} · ${t?formatDuration(t.endsAt-Date.now()):'آماده'}"><i style="width:${t?Math.max(0,Math.min(100,(Date.now()-t.startedAt)/t.duration*100)):0}%"></i><b>${i+1}</b></span>`).join('');}
     const b=buildingById('barracks');if(!b)return;const box=buildingRenderBox(b,b.q,b.r);
     node.style.left=`${box.x+box.width/2}px`;node.style.top=`${box.y+box.height*.85}px`;node.style.setProperty('--collector-scale',1/state.camera.zoom);
+  }
+  function updateHealingActivity(){
+    if(!state.spriteLayer)return;
+    let node=document.getElementById('hospitalHealingProgress');
+    if(!node){node=document.createElement('div');node.id='hospitalHealingProgress';node.className='building-progress hospital-healing-progress';node.setAttribute('role','progressbar');node.setAttribute('aria-label','پیشرفت درمان بیمارستان');node.innerHTML='<span class="building-progress-caption"></span><i><b></b></i>';state.spriteLayer.appendChild(node);}
+    const task=APP.army.healing,now=Date.now();node.hidden=!task||task.endsAt<=now;
+    if(node.hidden)return;
+    const percent=Math.max(0,Math.min(100,(now-task.startedAt)/Math.max(1,task.endsAt-task.startedAt)*100));
+    node.setAttribute('aria-valuenow',String(Math.round(percent)));node.setAttribute('aria-valuemin','0');node.setAttribute('aria-valuemax','100');
+    node.querySelector('.building-progress-caption').textContent=`درمان · ${formatDuration(task.endsAt-now)}`;node.querySelector('i b').style.width=`${percent}%`;
+    const z=state.camera.zoom,[x,y]=progressAnchor('hospital',110,20),offset=APP.worker.task?.id==='hospital'?25/z:0;
+    const bottom=state.camera.y+(stage.clientHeight/2-20)/z;
+    node.style.left=`${x}px`;node.style.top=`${Math.min(bottom,y+offset)}px`;node.style.setProperty('--progress-scale',1/z);
   }
   const basePositionSprites=positionWorldSprites;
   positionWorldSprites=function(){basePositionSprites();updateTrainingActivity();};
@@ -183,10 +197,10 @@
   }
   openProfile=function(player=null){
     const own=!player||player.own;
-    const p=own?{name:APP.playerName||'DreaM',power:APP.resources.power,kills:APP.kills,peakPower:APP.peakPower,peakKills:APP.peakKills,level:buildingById('castle').level,vip:1,stamina:APP.stamina,allianceName:APP.alliance?.name||'بدون اتحاد',accountCreatedAt:APP.accountCreatedAt,avatar:selectedAvatarSkin().avatar,portrait:selectedAvatarSkin().portrait}:player;
+    const p=own?{name:APP.playerName||'فرمانروا',power:APP.resources.power,kills:APP.kills,peakPower:APP.peakPower,peakKills:APP.peakKills,level:buildingById('castle').level,vip:1,stamina:APP.stamina,allianceName:APP.alliance?.name||'بدون اتحاد',accountCreatedAt:APP.accountCreatedAt,avatar:selectedAvatarSkin().avatar,portrait:selectedAvatarSkin().portrait}:player;
     const avatar=safeAssetPath(p.avatar,'assets/skins/avatar-01.webp'),portrait=safeAssetPath(p.portrait,avatar),age=Number.isFinite(p.accountCreatedAt)?Math.floor((Date.now()-p.accountCreatedAt)/86400000):null;
-    const records=[['قدرت',p.power],['کشتار',p.kills],['بیشترین قدرت',p.peakPower],['بیشترین کشتار',p.peakKills],['سطح دژ',p.level],['سن حساب',age===null?'ثبت نشده':`${age} روز`],['سرور',TEST_SERVER.name],['VIP',p.vip]];
-    openPage('profile',`<section class="profile-scroll"><div class="profile-full-hero"><img class="profile-backdrop" src="assets/ui/profile-citadel.webp" alt=""><img class="profile-full-avatar" src="${avatar}" alt="${escapeHTML(p.name||'بازیکن')}"><div class="profile-glass-name"><small>فرمانروای ${BUILD_NAMES.castle}</small><h2>${escapeHTML(p.name||'بازیکن')}</h2><span>${escapeHTML(p.allianceName||'بدون اتحاد')}${own&&APP.alliance?.logo?`<img class="alliance-crest" src="${escapeHTML(APP.alliance.logo)}" alt="نشان اتحاد">`:''}</span>${own?`<div class="profile-stamina"><i><b style="width:${APP.stamina}%"></b></i><span>${APP.stamina}/100</span></div>`:''}</div><span class="profile-scroll-hint">جزئیات فرمانروایی ↓</span></div><section class="profile-record-grid">${records.map(([label,n])=>`<article><small>${label}</small><strong>${typeof n==='number'?formatCompact(n):escapeHTML(n??'ثبت نشده')}</strong></article>`).join('')}</section><section class="profile-medals"><h3>مدال‌های ماندگار</h3>${own&&APP.medals.length?APP.medals.map(m=>`<span>${escapeHTML(m.name||m.id||'مدال')}</span>`).join(''):'<p>شما مدالی ندارید</p>'}</section>${own?`<nav class="profile-actions">${['settings','troops','leaderboard','skins'].map((id,i)=>`<button data-profile-tab="${id}">${profileActionIcon(id)}<span>${['تنظیمات','نیروها','لیدربورد','اسکین‌ها'][i]}</span></button>`).join('')}</nav>`:''}</section>`);
+    const records=[['قدرت',p.power],['کشتار',p.kills],['بیشترین قدرت',p.peakPower],['بیشترین کشتار',p.peakKills],['سطح دژ',p.level],['سن حساب',age===null?'ثبت نشده':`${age} روز`],['سرور',TEST_SERVER.name],['ویژه',p.vip]];
+    openPage('profile',`<section class="profile-scroll"><div class="profile-full-hero"><img class="profile-backdrop" src="assets/ui/profile-citadel.webp" alt=""><img class="profile-full-avatar" src="${avatar}" alt="${escapeHTML(p.name||'بازیکن')}"><div class="profile-glass-name"><small>فرمانروای ${BUILD_NAMES.castle}</small><h2>${escapeHTML(p.name||'بازیکن')}</h2><span>${escapeHTML(p.allianceName||'بدون اتحاد')}${own&&APP.alliance?.logo?`<img class="alliance-crest" src="${escapeHTML(APP.alliance.logo)}" alt="نشان اتحاد">`:''}</span>${own?`<div class="profile-stamina"><i><b style="width:${APP.stamina}%"></b></i><span>${APP.stamina}/100</span></div>`:''}</div><span class="profile-scroll-hint">جزئیات فرمانروایی ↓</span></div><section class="profile-record-grid">${records.map(([label,n])=>`<article><small>${label}</small><strong>${typeof n==='number'?formatCompact(n):escapeHTML(n??'ثبت نشده')}</strong></article>`).join('')}</section><section class="profile-medals"><h3>مدال‌های ماندگار</h3>${own&&APP.medals.length?APP.medals.map(m=>`<span>${escapeHTML(m.name||m.id||'مدال')}</span>`).join(''):'<p>شما مدالی ندارید</p>'}</section>${own?`<nav class="profile-actions">${['settings','troops','leaderboard','skins'].map((id,i)=>`<button data-profile-tab="${id}">${profileActionIcon(id)}<span>${['تنظیمات','نیروها','رتبه‌بندی','ظاهرها'][i]}</span></button>`).join('')}</nav>`:''}</section>`);
     gameNavigation.profileView={player:player?{...player}:null,details:false};
     document.getElementById('genericPanelContent').onclick=e=>{const b=e.target.closest('[data-profile-tab]');if(b)({settings:openSettings,troops:openTroopsOverview,leaderboard:openLeaderboard,skins:openSkins})[b.dataset.profileTab]?.();};
   };
@@ -194,7 +208,7 @@
     const stock=readyUnitStock();
     openPage('troops',`<section class="troops-full"><header><small>ارتش فرمانروایی</small><h2>${formatCompact(APP.army.troops)} نیروی آماده</h2><span>${formatCompact(APP.army.wounded)} مجروح · ${APP.marches.length}/${WORLD.marchSlots} لشکر فعال</span></header>${Object.entries(stock).filter(([,n])=>n>0).map(([id,n])=>`<button class="troop-full-card" data-unit="${id}"><img src="${TROOPS[id].image}" alt=""><span><small>${TROOPS[id].group==='attack'?'هجومی':'دفاعی'}</small><strong>${TROOPS[id].name}</strong><b>${formatCompact(n)} نیرو</b></span></button>`).join('')||'<p class="empty-page">هنوز نیروی آماده‌ای ندارید.</p>'}<div class="military-actions"><button data-facility="barracks">آموزش نیرو</button><button data-facility="hospital">درمان</button></div></section>`);bindMilitaryPage();
   };
-  function rankedPlayers(metric){return [{id:'own',name:APP.playerName||'DreaM',power:APP.resources.power,kills:APP.kills,own:true,portrait:selectedAvatarSkin().portrait,avatar:selectedAvatarSkin().avatar},...APP.map.castles.filter(c=>!c.own)].filter(p=>Number.isFinite(p[metric])).sort((a,b)=>b[metric]-a[metric]||a.id.localeCompare(b.id));}
+  function rankedPlayers(metric){return [{id:'own',name:APP.playerName||'فرمانروا',power:APP.resources.power,kills:APP.kills,own:true,portrait:selectedAvatarSkin().portrait,avatar:selectedAvatarSkin().avatar},...APP.map.castles.filter(c=>!c.own)].filter(p=>Number.isFinite(p[metric])).sort((a,b)=>b[metric]-a[metric]||a.id.localeCompare(b.id));}
   function playerPortrait(p){return safeAssetPath(p?.portrait,safeAssetPath(p?.avatar,'assets/skins/portrait-01.webp'));}
   openLeaderboard=function(metric=null){
     if(metric&&!['power','kills','alliance'].includes(metric))metric=null;

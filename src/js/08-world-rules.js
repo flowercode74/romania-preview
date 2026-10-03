@@ -158,24 +158,39 @@
     for (let x = Math.floor(a.q / 32) - 1; x <= Math.floor(b.q / 32) + 1; x++) for (let y = Math.floor(a.r / 32) - 1; y <= Math.floor(b.r / 32) + 1; y++) for (const e of enemyBuckets.get(`${x}:${y}`) || []) if ((APP.enemyDefeated[e.id] || 0) <= Date.now() && !APP.map.castles.some(c => mapDistance(c, e) < 2)) result.push(e);
     return result;
   }
+  function enemyRenderSize(zoom=APP.map.camera.zoom){return APP.map.hexSize*1.24*zoom;}
+  function drawEnemyNameplate(ctx,name,level,x,y){
+    ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='600 9px Vazirmatn, sans-serif';
+    const measured=ctx.measureText(name)?.width||name.length*5,limit=78,font=Math.max(7.5,Math.min(9,9*limit/Math.max(1,measured)));
+    ctx.font=`600 ${font}px Vazirmatn, sans-serif`;ctx.lineJoin='round';ctx.lineWidth=2.5;ctx.strokeStyle='#23140fbb';ctx.fillStyle='#f1c58e';
+    ctx.strokeText(name,x,y);ctx.fillText(name,x,y);
+    // Enemy grade is a quiet subtitle, distinct from the circular castle badge.
+    ctx.font='500 7px Vazirmatn, sans-serif';const rank=`درجه ${level}`;ctx.lineWidth=2;ctx.strokeText(rank,x,y+11);ctx.fillStyle='#ecd4b2';ctx.fillText(rank,x,y+11);
+    ctx.restore();
+  }
   function drawEnemies(ctx) {
     if (APP.map.camera.zoom < MAP_DETAIL_ZOOM) return;
     for (const enemy of enemiesInView()) {
       const [x, y] = mapToScreen(enemy.q, enemy.r),
-        size = 24 * APP.map.camera.zoom,
+        size = enemyRenderSize(),
         type = ENEMY_TYPES[enemy.type],
         image = state.images.get(type.image);
-      if (image?.naturalWidth) ctx.drawImage(image, x - size / 2, y - size / 2, size, size);
-      drawNameplate(ctx,type.name,enemy.level,x,y-size*.8-18,84);
+      if (image?.naturalWidth) {
+        const scale=size/Math.max(image.naturalWidth,image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
+        ctx.drawImage(image,x-w/2,y-h/2,w,h);
+      }
+      drawEnemyNameplate(ctx,type.name,enemy.level,x,y-size/2-24);
     }
   }
   function hitEnemy(clientX, clientY) {
     if (APP.map.camera.zoom < MAP_DETAIL_ZOOM) return null;
     const rect = document.getElementById("worldMapLayer").getBoundingClientRect(),
-      size = 24 * APP.map.camera.zoom;
+      size = APP.map.hexSize * APP.map.camera.zoom;
     return enemiesInView().find(e => {
       const [x, y] = mapToScreen(e.q, e.r);
-      return Math.abs(clientX - rect.left - x) < size * .6 && Math.abs(clientY - rect.top - y) < size * .65;
+      const dx=Math.abs(clientX-rect.left-x),dy=Math.abs(clientY-rect.top-y);
+      return dx<=Math.sqrt(3)*size/2 && dy<=size-dx/Math.sqrt(3);
     });
   }
   function enemyDropItem(level, typeIndex, random = Math.random) {
@@ -207,7 +222,7 @@
     const box = document.createElement("section");
     box.id = "enemySheet";
     box.className = "enemy-sheet";
-    box.innerHTML = `<button class="enemy-close" aria-label="بستن">×</button><div class="enemy-head"><img src="${type.image}" alt=""><div><h3>${type.name}</h3><span>درجه ${enemy.level} · X:${enemy.q} Y:${enemy.r}</span></div></div><strong>پاداش پیروزی</strong><div class="enemy-rewards">${["wood", "food", "stone", "iron"].map(id => `<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}">${formatCompact(value)} · قطعی</span>`).join("")}<span><img src="assets/resources/gold.webp" alt="سکه">${5+enemy.level} · قطعی</span>${enemyRewardChips(enemy.level,enemy.type)}</div><p hidden>تسریع ${type.drop === "random" ? "تصادفی" : type.id === "cavarly" ? "درمان" : type.id === "archer" ? "ساخت نیرو" : "ساخت‌وساز"}: ${enemy.level <= 5 ? 1 : enemy.level <= 15 ? 5 : 10} دقیقه با احتمال ۳۵٪ · تسریع حرکت ۱۰٪: ۲۰٪ · تسریع حرکت ۵۰٪: ۵٪</p><small>نیاز پیشنهادی: ${formatCompact(requirement.troops)} سرباز و ${formatCompact(requirement.power)} توان لشکر. نیروی آماده: ${formatCompact(APP.army.troops)}</small><button class="enemy-attack" type="button" ${enemyUnlocked(enemy.type,enemy.level)?"":"disabled"}>${enemyUnlocked(enemy.type,enemy.level)?"انتخاب نیرو و حمله":"ابتدا درجه قبلی را شکست دهید"}</button>`;
+    box.innerHTML = `<button class="enemy-close" aria-label="بستن">×</button><div class="enemy-head"><img src="${type.image}" alt=""><div><h3>${type.name}</h3><span>درجه ${enemy.level} · ستون: ${enemy.q} ردیف: ${enemy.r}</span></div></div><strong>پاداش پیروزی</strong><div class="enemy-rewards">${["wood", "food", "stone", "iron"].map(id => `<span><img src="${RESOURCE_META[id].image}" alt="${RESOURCE_META[id].label}">${formatCompact(value)} · قطعی</span>`).join("")}<span><img src="assets/resources/gold.webp" alt="سکه">${5+enemy.level} · قطعی</span>${enemyRewardChips(enemy.level,enemy.type)}</div><p hidden>تسریع ${type.drop === "random" ? "تصادفی" : type.id === "cavarly" ? "درمان" : type.id === "archer" ? "ساخت نیرو" : "ساخت‌وساز"}: ${enemy.level <= 5 ? 1 : enemy.level <= 15 ? 5 : 10} دقیقه با احتمال ۳۵٪ · تسریع حرکت ۱۰٪: ۲۰٪ · تسریع حرکت ۵۰٪: ۵٪</p><small>نیاز پیشنهادی: ${formatCompact(requirement.troops)} سرباز و ${formatCompact(requirement.power)} توان لشکر. نیروی آماده: ${formatCompact(APP.army.troops)}</small><button class="enemy-attack" type="button" ${enemyUnlocked(enemy.type,enemy.level)?"":"disabled"}>${enemyUnlocked(enemy.type,enemy.level)?"انتخاب نیرو و حمله":"ابتدا درجه قبلی را شکست دهید"}</button>`;
     box.addEventListener("pointerdown", e => e.stopPropagation());
     box.querySelector(".enemy-close").onclick = () => box.remove();
     box.querySelector(".enemy-attack").onclick = () => attackEnemy(enemy);
@@ -281,7 +296,7 @@
       coin: m.result === "پیروزی" ? 5 + m.enemyLevel : 0,
       title: `${m.result} · ${ENEMY_TYPES[m.enemyType]?.name || "سرگردان"} سطح ${m.enemyLevel}`,
       time: new Date().toLocaleString("fa-IR"),
-      text: `توان لشکر: ${formatCompact(m.combatPower || m.troops * 80)} · مختصات X:${m.target?.q} Y:${m.target?.r} · اعزام: ${m.troops} · بازمانده: ${m.troops - (m.lostTroops || 0)} · مجروح: ${m.lostTroops || 0} · غنیمت: ${Object.entries(resources).map(([id, n]) => `${RESOURCE_META[id].label} ${formatCompact(n)}`).join("، ") || "ندارد"}${items.length ? " · آیتم: " + items.map(i=>INVENTORY.find(x=>x.id===i.id)?.name||String(i)).join("، ") : ""}`
+      text: `توان لشکر: ${formatCompact(m.combatPower || m.troops * 80)} · مختصات ستون: ${m.target?.q} ردیف: ${m.target?.r} · اعزام: ${m.troops} · بازمانده: ${m.troops - (m.lostTroops || 0)} · مجروح: ${m.lostTroops || 0} · غنیمت: ${Object.entries(resources).map(([id, n]) => `${RESOURCE_META[id].label} ${formatCompact(n)}`).join("، ") || "ندارد"}${items.length ? " · آیتم: " + items.map(i=>INVENTORY.find(x=>x.id===i.id)?.name||String(i)).join("، ") : ""}`
     });
     APP.battleReports = APP.battleReports.slice(0, 100);
     APP.unreadMail = APP.battleReports.filter(r => !r.read).length;

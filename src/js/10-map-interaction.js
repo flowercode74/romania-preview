@@ -332,7 +332,10 @@
     if (!box) return;
     const activeTab = box.querySelector("[data-march-tab].is-active")?.dataset.marchTab || "armies";
     const now = Date.now();
-    const key = APP.marches.map(m => `${m.id}:${m.phase}:${Math.ceil(Math.max(0, (m.phase === "waiting" ? m.returnAt : m.arriveAt) - now) / 1000)}`).join("|");
+    const scrollPositions={};box.querySelectorAll('[data-march-content]').forEach(n=>{scrollPositions[n.dataset.marchContent]=n.scrollTop;});
+    const queueTasks=[...TRAINING_KEYS.map(k=>APP.army[k]),APP.army.healing,...[APP.worker,APP.worker2].filter(w=>w?.task).map(w=>({...w.task,endsAt:w.endsAt}))].filter(Boolean);
+    const taskKey=queueTasks.map(t=>`${t.startedAt}:${Math.ceil(Math.max(0,t.endsAt-now)/1000)}`).join('|');
+    const key = taskKey+';'+APP.marches.map(m => `${m.id}:${m.phase}:${Math.ceil(Math.max(0, (m.phase === "waiting" ? m.returnAt : m.arriveAt) - now) / 1000)}`).join("|");
     if (!force && key === APP.map.lastQueueKey) return;
     APP.map.lastQueueKey = key;
     count.textContent = String(APP.marches.length);
@@ -346,6 +349,7 @@
       length: WORLD.marchSlots
     }, (_, i) => APP.marches[i] ? "" : `<div class="march-empty-slot"><b>صف ${i + 1}</b><span>آماده حرکت</span></div>`).join("");
     box.innerHTML = `<div class="march-tabs"><button class="${activeTab === "armies" ? "is-active" : ""}" data-march-tab="armies">لشکرها</button><button class="${activeTab === "territory" ? "is-active" : ""}" data-march-tab="territory">قلمرو</button></div><div class="march-tab-content" data-march-content="armies" ${activeTab === "armies" ? "" : "hidden"}>${activeRows}${slots}</div><div class="march-tab-content" data-march-content="territory" ${activeTab === "territory" ? "" : "hidden"}>${renderTerritoryStatus()}</div>`;
+    box.querySelectorAll('[data-march-content]').forEach(n=>{n.scrollTop=scrollPositions[n.dataset.marchContent]||0;});
   }
 
   // لمس نقشه و جلوگیری از انتخاب ناخواسته
@@ -490,7 +494,7 @@
     if (!item?.count) return showBuildNotice("آیتم جابه‌جایی موجود نیست.");
     if (APP.marches.length) return showBuildNotice("پیش از جابه‌جایی، تمام لشکرها باید بازگردند.");
     if (!validTeleportTarget(cell)) return showBuildNotice("این کاشی برای استقرار قلعه مناسب نیست.");
-    if (!(await gameConfirm(`قلعه با مصرف یک آیتم به X:${cell.q} / Y:${cell.r} منتقل شود؟`))) return;
+    if (!(await gameConfirm(`قلعه با مصرف یک آیتم به ستون: ${cell.q} / ردیف: ${cell.r} منتقل شود؟`))) return;
     if (!item.count || APP.marches.length || !validTeleportTarget(cell)) return;
     tickBuildingTask();
     item.count--;
@@ -844,12 +848,12 @@
   function openMapBookmarks() {
     const saved = readMapBookmarks(),
       selected = APP.map.selectedMapCell || mapWorldToAxial(APP.map.camera.x, APP.map.camera.y);
-    const rows = saved.map((p, i) => `<div class="bookmark-row"><span>X:${p.q} · Y:${p.r}</span><button type="button" data-bookmark-go="${i}">رفتن</button><button type="button" data-bookmark-remove="${i}" aria-label="حذف نشانک">×</button></div>`).join("");
+    const rows = saved.map((p, i) => `<div class="bookmark-row"><span>ستون: ${p.q} · ردیف: ${p.r}</span><button type="button" data-bookmark-go="${i}">رفتن</button><button type="button" data-bookmark-remove="${i}" aria-label="حذف نشانک">×</button></div>`).join("");
     showGameDialog("مختصات نشان‌شده", `<div class="bookmark-list">${rows || "<p>هنوز مختصاتی نشان نشده است.</p>"}</div>`, [{
       label: "بستن",
       run: closeGameDialog
     }, {
-      label: `نشان کردن X:${selected.q} Y:${selected.r}`,
+      label: `نشان کردن ستون: ${selected.q} ردیف: ${selected.r}`,
       primary: true,
       run: () => {
         if (selected.q < 1 || selected.q > 800 || selected.r < 1 || selected.r > 800) return;

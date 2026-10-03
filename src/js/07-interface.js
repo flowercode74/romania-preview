@@ -80,6 +80,8 @@
   function openPage(type, contentHTML = "") {
     if (APP.tutorial.active && !APP.worker.task && APP.tutorial.phase !== "ui-tour" && !["missions", "training", "healing"].includes(type)) return;
     document.getElementById("romaniaWelcome")?.remove();
+    const previousType=APP.openPage;
+    const previousScroll=document.getElementById("genericPanelContent")?.scrollTop || 0;
     rememberGameView(navigationPageKey(type, contentHTML));
     setWorldMode(false, false, false);
     closeAllSurfaces();
@@ -93,15 +95,15 @@
       shield: ["شیلد قلعه", "🛡", "mission-modal"],
       events: ["رویدادها", "✦", "mission-modal"],
       shop: ["فروشگاه", "◇", "shop-page"],
-      vip: ["VIP", "VIP", "vip-modal"],
+      vip: ["فرمانروای ویژه", "ویژه", "vip-modal"],
       training: ["سربازخانه", "⚔", "military-page training-page"],
       healing: ["بیمارستان", "✚", "military-page training-page healing-page"],
       research: ["مرکز تحقیقات", "◈", "military-page"],
       unit: ["اطلاعات نیرو", "⚔", "military-page"],
       settings: ["تنظیمات", "⚙", "military-page"],
       troops: ["نیروهای من", "⚔", "military-page troops-page"],
-      leaderboard: ["لیدربورد", "♛", "military-page leaderboard-page"],
-      skins: ["اسکین‌ها", "♜", "military-page"],
+      leaderboard: ["رتبه‌بندی", "♛", "military-page leaderboard-page"],
+      skins: ["ظاهرها", "♜", "military-page"],
       battle: ["گزارش نبرد", "⚔", "military-page"]
     };
     const data = titles[type];
@@ -115,6 +117,7 @@
     content.oninput = null;
     content.onkeydown = null;
     content.innerHTML = contentHTML;
+    content.scrollTop=previousType===type ? previousScroll : 0;
     panel.classList.add("is-active");
     document.getElementById("panelLayer")?.classList.add("is-open");
     document.getElementById("panelLayer")?.setAttribute("aria-hidden", "false");
@@ -372,7 +375,7 @@
       }).join("");
       const destination = missionDestination(m);
       const icon = destination.id === "wall" ? ASSETS.wall : ASSETS.buildings[destination.id];
-      return `<article class="mission-card ${done?"is-claimed":""}">${done?'<span class="mission-claimed-check" aria-label="پاداش دریافت شده">✓</span>':""}<img class="mission-building-icon" src="${icon}" alt=""><div class="mission-description"><strong>${m.title}</strong><small>${m.description}</small><small>${formatCompact(progress)} / ${formatCompact(m.target)}</small></div><div class="mission-reward"><div class="reward-strip">${rewards}</div><button type="button" data-claim-mission="${m.id}" ${done || !missionReady(tab, m) ? "disabled" : ""}>${done ? "دریافت شد" : "دریافت"}</button><button type="button" data-go-mission="${m.id}">برو به ماموریت</button></div></article>`;
+      return `<article class="mission-card ${done?"is-claimed":""}">${done?'<span class="mission-claimed-check" aria-label="پاداش دریافت شده">✓</span>':""}<img class="mission-building-icon" src="${icon}" alt=""><div class="mission-description"><strong>${m.title}</strong><small>${m.description}</small><small>${formatCompact(progress)} از ${formatCompact(m.target)}</small></div><div class="mission-reward"><div class="reward-strip">${rewards}</div><button type="button" data-claim-mission="${m.id}" ${done || !missionReady(tab, m) ? "disabled" : ""}>${done ? "دریافت شد" : "دریافت"}</button><button type="button" data-go-mission="${m.id}">برو به ماموریت</button></div></article>`;
     }).join("");
     const availableTabs = APP.tutorial.active || tutorialRewardsPending() ? ["tutorial"] : ["growth", "daily"];
     const tabNames = {
@@ -389,7 +392,7 @@
       daily: "daily-quests.webp",
       growth: "growth-quests.webp"
     };
-    content.innerHTML = `<div class="mission-banner"><img src="assets/ui/${banners[tab]}" alt="${tabNames[tab]}"></div>${tabs}<div class="mission-list">${list}</div>${tab === "tutorial" ? `<button class="claim-all-button" data-claim-all ${MISSION_DATA.tutorial.some(m => missionReady("tutorial", m)) ? "" : "disabled"}>دریافت همه پاداش‌های آماده</button>` : ""}`;
+    content.innerHTML = `<div class="mission-banner" data-label="${tabNames[tab]}"><img src="assets/ui/${banners[tab]}" alt="${tabNames[tab]}"></div>${tabs}<div class="mission-list">${list}</div>${tab === "tutorial" ? `<button class="claim-all-button" data-claim-all ${MISSION_DATA.tutorial.some(m => missionReady("tutorial", m)) ? "" : "disabled"}>دریافت همه پاداش‌های آماده</button>` : ""}`;
     content.onclick = event => {
       const go = event.target.closest("[data-go-mission]");
       if (go) { const mission = MISSION_DATA[tab].find(m=>m.id === go.dataset.goMission);if(mission) goToMission(mission);return; }
@@ -418,15 +421,15 @@
     const progress = level >= 12 ? 100 : Math.max(0, Math.min(100, (points - previous) / Math.max(1, next - previous) * 100));
     const today = new Date().toISOString().slice(0, 10);
     const claimed = localStorage.getItem("romaniaVipDailyV2") === today;
-    const levels = VIP_BENEFITS.map((benefit, i) => `<article class="vip-level ${i + 1 === level ? "is-current" : ""}"><b>VIP ${i + 1}</b><div><strong>${benefit}</strong><span>مزیت نمایشی سطح ${i + 1}</span></div></article>`).join("");
-    openPage("vip", `<div class="vip-summary"><div class="vip-level-line"><strong>VIP ${level}</strong><span>${formatCompact(points)} / ${formatCompact(next)} پوینت</span></div><div class="vip-progress"><i style="width:${progress}%"></i></div><div class="vip-progress-label">${level >= 12 ? "بالاترین سطح VIP" : `${formatCompact(next - points)} پوینت تا VIP ${level + 1}`}</div><button class="vip-daily" id="vipDailyButton" type="button" ${claimed ? "disabled" : ""}>${claimed ? "VIP روزانه امروز دریافت شد ✓" : "دریافت VIP روزانه"}</button></div><div class="vip-levels">${levels}</div>`);
+    const levels = VIP_BENEFITS.map((benefit, i) => `<article class="vip-level ${i + 1 === level ? "is-current" : ""}"><b>ویژه ${i + 1}</b><div><strong>${benefit}</strong><span>مزیت نمایشی سطح ${i + 1}</span></div></article>`).join("");
+    openPage("vip", `<div class="vip-summary"><div class="vip-level-line"><strong>ویژه ${level}</strong><span>${formatCompact(points)} از ${formatCompact(next)} امتیاز</span></div><div class="vip-progress"><i style="width:${progress}%"></i></div><div class="vip-progress-label">${level >= 12 ? "بالاترین سطح ویژه" : `${formatCompact(next - points)} امتیاز تا ویژه ${level + 1}`}</div><button class="vip-daily" id="vipDailyButton" type="button" ${claimed ? "disabled" : ""}>${claimed ? "پاداش ویژهٔ روزانه امروز دریافت شد ✓" : "دریافت پاداش ویژهٔ روزانه"}</button></div><div class="vip-levels">${levels}</div>`);
     const btn = document.getElementById("vipDailyButton");
     btn?.addEventListener("click", () => {
       if (btn.disabled) return;
       localStorage.setItem("romaniaVipDailyV2", today);
       localStorage.setItem("romaniaVipPointsV2", String(points + 50));
       btn.disabled = true;
-      btn.textContent = "VIP روزانه دریافت شد ✓";
+      btn.textContent = "پاداش ویژهٔ روزانه دریافت شد ✓";
     });
   }
   function openShop() {
@@ -441,7 +444,7 @@
       castle: 0
     };
     const p = own ? {
-      name: "DreaM",
+      name: APP.playerName || "فرمانروا",
       power: APP.resources.power,
       kills: APP.kills,
       peakPower: APP.peakPower,
@@ -460,7 +463,7 @@
     const alliance = own && APP.alliance,
       empire = alliance && EMPIRES.find(e => e.id === alliance.empireId);
     const header = `<div class="profile-nameplate"><h2>${escapeHTML(p.name || "بازیکن")}</h2><span>${escapeHTML(p.allianceName || "بدون اتحاد")}${alliance?.logo ? `<img class="alliance-crest" src="${escapeHTML(alliance.logo)}" alt="نشان اتحاد">` : ""}${empire ? `<img class="alliance-crest" src="${empire.image}" alt="نشان امپراطوری">` : ""}</span></div>`;
-    openPage("profile", `${details ? `<div class="profile-compact"><img src="${avatar}" alt="">${header}</div><div class="profile-lower"><img src="${own ? selectedAvatarSkin().portrait : avatar}" alt=""><div><strong>سن حساب: ${age === null ? "ثبت نشده" : age + " روز"}</strong><span>سطح قلعه: ${p.level || 1}</span><span>مدال‌ها: ${own ? INVENTORY.find(i => i.id === "gold-medal")?.count || 0 : "ثبت نشده"}</span></div></div><div class="profile-records">${[["قدرت", p.power, p.peakPower], ["کشتار", p.kills, p.peakKills]].map(([label, current, peak]) => `<article><small>بیشترین ${label} ثبت‌شده</small><strong>${value(peak)}</strong><span>${label} فعلی: ${value(current)}</span></article>`).join("")}</div><button data-profile-details="back">بازگشت به نمای اصلی</button>` : `<div class="profile-hero"><img class="profile-backdrop" src="assets/ui/profile-background.webp" alt=""><img class="profile-avatar" src="${avatar}" alt="آواتار">${header}</div><div class="profile-details">${[["سرور", p.server ?? 1], ["VIP", p.vip ?? "ثبت نشده"], ["قدرت", value(p.power)], ["کشتار", value(p.kills)], ["اتحاد", p.allianceName || "بدون اتحاد"], ["سطح قلعه", p.level || 1]].map(([name, n]) => `<div><small>${name}</small><strong>${escapeHTML(String(n))}</strong></div>`).join("")}</div>${own ? `<div class="profile-stamina"><span>استقامت ${APP.stamina}/100</span><i><b style="width:${APP.stamina}%"></b></i></div>` : ""}<button data-profile-details="more" class="panel-primary-button">اطلاعات بیشتر</button>`}${own ? `<nav class="profile-bottom"><button data-profile-tab="settings">⚙<span>تنظیمات</span></button><button data-profile-tab="troops">⚔<span>نیروها</span></button><button data-profile-tab="leaderboard">♛<span>لیدربورد</span></button><button data-profile-tab="skins">♜<span>اسکین‌ها</span></button></nav>` : ""}`);
+    openPage("profile", `${details ? `<div class="profile-compact"><img src="${avatar}" alt="">${header}</div><div class="profile-lower"><img src="${own ? selectedAvatarSkin().portrait : avatar}" alt=""><div><strong>سن حساب: ${age === null ? "ثبت نشده" : age + " روز"}</strong><span>سطح قلعه: ${p.level || 1}</span><span>مدال‌ها: ${own ? INVENTORY.find(i => i.id === "gold-medal")?.count || 0 : "ثبت نشده"}</span></div></div><div class="profile-records">${[["قدرت", p.power, p.peakPower], ["کشتار", p.kills, p.peakKills]].map(([label, current, peak]) => `<article><small>بیشترین ${label} ثبت‌شده</small><strong>${value(peak)}</strong><span>${label} فعلی: ${value(current)}</span></article>`).join("")}</div><button data-profile-details="back">بازگشت به نمای اصلی</button>` : `<div class="profile-hero"><img class="profile-backdrop" src="assets/ui/profile-background.webp" alt=""><img class="profile-avatar" src="${avatar}" alt="آواتار">${header}</div><div class="profile-details">${[["سرور", p.server ?? 1], ["ویژه", p.vip ?? "ثبت نشده"], ["قدرت", value(p.power)], ["کشتار", value(p.kills)], ["اتحاد", p.allianceName || "بدون اتحاد"], ["سطح قلعه", p.level || 1]].map(([name, n]) => `<div><small>${name}</small><strong>${escapeHTML(String(n))}</strong></div>`).join("")}</div>${own ? `<div class="profile-stamina"><span>استقامت ${APP.stamina}/100</span><i><b style="width:${APP.stamina}%"></b></i></div>` : ""}<button data-profile-details="more" class="panel-primary-button">اطلاعات بیشتر</button>`}${own ? `<nav class="profile-bottom"><button data-profile-tab="settings">⚙<span>تنظیمات</span></button><button data-profile-tab="troops">⚔<span>نیروها</span></button><button data-profile-tab="leaderboard">♛<span>رتبه‌بندی</span></button><button data-profile-tab="skins">♜<span>ظاهرها</span></button></nav>` : ""}`);
     gameNavigation.profileView = {player:player ? {...player} : null,details};
     document.getElementById("genericPanelContent").onclick = e => {
       const b = e.target.closest("[data-profile-tab]");
